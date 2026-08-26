@@ -1,0 +1,10 @@
+.DS_Store
+*.xcodeproj
+build/
+.build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+Wellkept.app
+*.dmg
+dist/

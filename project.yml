@@ -1,0 +1,109 @@
+name: Wellkept
+options:
+  bundleIdPrefix: studio.stonemesa
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: "RD59TDS75G"
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_STRICT_CONCURRENCY: complete
+    ENABLE_HARDENED_RUNTIME: YES
+
+packages:
+  WellkeptCore:
+    path: Core
+
+targets:
+  Wellkept:
+    type: application
+    platform: macOS
+    sources:
+      - path: App
+    dependencies:
+      - package: WellkeptCore
+        product: WellkeptCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: studio.stonemesa.wellkept
+        PRODUCT_NAME: Wellkept
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSHumanReadableCopyright: "© 2026 Stone Mesa Studio, LLC. GPL-3.0."
+        INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
+        INFOPLIST_KEY_NSMainStoryboardFile: ""
+        CODE_SIGN_ENTITLEMENTS: App/Support/Wellkept.entitlements
+        ENABLE_PREVIEWS: YES
+        COMBINE_HIDPI_IMAGES: YES
+
+  # Declared explicitly so the test action is actually wired to the scheme. Lode shipped 19
+  # builds whose gate never executed a test, because an auto-generated scheme builds the app
+  # alone and passes.
+  WellkeptTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+    dependencies:
+      - package: WellkeptCore
+        product: WellkeptCore
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: studio.stonemesa.wellkept.tests
+        ENABLE_TESTABILITY: YES
+
+  # ── The view harness ─────────────────────────────────────────────────────────
+  # **Renders a real screen to a PNG, at a real window size, with no window.**
+  #
+  # It exists because a green build and a full green suite say nothing at all about whether the
+  # app LOOKS like what was agreed. Waypoint learned that the expensive way: its columns had no
+  # ceiling, so what read correctly in a 680-point mockup put a row's buttons half a screen from
+  # the town they acted on at 1900. Nothing in the suite could see it; the first person who did
+  # was John.
+  #
+  # It compiles the view sources directly rather than hosting the app — hosting would launch the
+  # real thing to take a picture, and this app's real thing reads the disk. `WellkeptApp.swift`
+  # is excluded because it carries `@main`, which a test bundle may not have.
+  ViewShots:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: App
+        excludes:
+          - "WellkeptApp.swift"
+      - path: Tools/ViewShots
+    dependencies:
+      - package: WellkeptCore
+        product: WellkeptCore
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: studio.stonemesa.wellkept.viewshots
+        ENABLE_TESTABILITY: YES
+
+schemes:
+  Wellkept:
+    build:
+      targets:
+        Wellkept: all
+        WellkeptTests: [test]
+        ViewShots: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: false
+      # ViewShots is in the GATE, not only in `bin/make-shots.sh`. A picture that comes back blank
+      # is a view that did not lay out, and that is a build failure whether or not anybody was
+      # looking at pictures that day.
+      targets:
+        - WellkeptTests
+        - ViewShots
