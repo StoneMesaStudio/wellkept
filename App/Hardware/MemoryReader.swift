@@ -155,7 +155,7 @@ enum MemoryReader {
         return Reading(
             topic: .memory,
             headline: headline(outOfMemory, use: use),
-            measure: outOfMemory.isEmpty ? "None" : "\(outOfMemory.count)",
+            measure: outOfMemory.isEmpty ? nil : "\(outOfMemory.count)",
             number: ReadingNumber(Double(outOfMemory.count), ReadingNumber.count),
             severity: severity,
             reason: reason(outOfMemory, recentWeek: recentWeek, window: window, use: use),

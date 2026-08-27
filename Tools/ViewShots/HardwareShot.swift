@@ -87,6 +87,10 @@ struct HardwareShot {
     /// 200% face shot reaches the top of the Options panel and the details themselves are
     /// photographed separately, at the width they actually get — see `optionDetailsAtLargestText`.
     private enum PageHeight {
+        /// Tall enough for the machine block and all five rows with Options shut, and no taller.
+        /// `whole` is for Options open; using it for the faces produced a picture that was four
+        /// fifths empty paper, which is not reviewable either.
+        static let face: CGFloat = 1_500
         static let whole: CGFloat = 3_400
         static let wholeAtLargestText: CGFloat = 4_600
     }
@@ -134,7 +138,7 @@ struct HardwareShot {
     @Test("Hardware, the healthy demo Mac")
     func healthyMac() {
         let size = Layout.windowDefault
-        bothAppearances(window(state(demo: .healthy)), width: size.width, height: size.height,
+        bothAppearances(window(state(demo: .healthy)), width: size.width, height: PageHeight.face,
                         52, "hardware-healthy")
     }
 
@@ -145,7 +149,7 @@ struct HardwareShot {
     @Test("Hardware, the demo Mac with problems")
     func macWithProblems() {
         let size = Layout.windowDefault
-        bothAppearances(window(state(demo: .problems)), width: size.width, height: size.height,
+        bothAppearances(window(state(demo: .problems)), width: size.width, height: PageHeight.face,
                         54, "hardware-problems")
     }
 

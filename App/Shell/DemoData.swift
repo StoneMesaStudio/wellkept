@@ -207,7 +207,7 @@ enum DemoData {
             Reading(
                 topic: .memory,
                 headline: "This Mac has enough memory for what you run on it.",
-                measure: "None",
+                measure: nil,
                 number: ReadingNumber(0, ReadingNumber.count),
                 severity: .information,
                 reason: "Nothing has been closed to free memory in the last 12 days. Memory is not "
@@ -224,7 +224,7 @@ enum DemoData {
             Reading(
                 topic: .restarts,
                 headline: "This Mac has not restarted on its own.",
-                measure: "None",
+                measure: nil,
                 number: ReadingNumber(0, ReadingNumber.count),
                 severity: .information,
                 reason: "Nothing since \(day(daysAgo(12))), which is as far back as macOS keeps "

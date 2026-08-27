@@ -131,7 +131,7 @@ enum RestartReader {
         return Reading(
             topic: .restarts,
             headline: headline(found),
-            measure: found.isEmpty ? "None" : "\(found.count)",
+            measure: found.isEmpty ? nil : "\(found.count)",
             number: ReadingNumber(Double(found.count), ReadingNumber.count),
             severity: severity,
             reason: reason(found,
