@@ -161,10 +161,13 @@ enum FullDiskAccess {
         on the screen rather than call this Mac clean after a partial look.
         """)
 
-    static let reassurance = String(localized: """
-        Wellkept only reads. It never deletes anything, nothing it reads leaves this Mac, and you \
-        can switch this off again in System Settings whenever you like.
-        """)
+    /// ⚠️ **The privacy half of this sentence is not written here.** It comes from `Privacy`, which
+    /// is the one place in the app allowed to make a claim about what does and does not leave this
+    /// Mac. Until 2026-08-27 this line said "nothing it reads leaves this Mac" while the welcome
+    /// page said something narrower and Help said something different again — three promises about
+    /// the same thing, drifting apart. See the header of `Privacy.swift`.
+    static let reassurance = Privacy.readingOnly + " "
+        + String(localized: "It never deletes anything, and you can switch this off again in System Settings whenever you like.")
 
     // MARK: - Noticing a grant that has not taken effect yet
 

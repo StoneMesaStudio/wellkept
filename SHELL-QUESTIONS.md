@@ -53,6 +53,14 @@ questions go to him in chat, a few at a time, in this order. Answers get recorde
 | C6 | Uninstall: what does it touch? | — | **Ask the user about quarantine at uninstall: restore, or move to a location of their choosing** (John, 2026-08-26 — never decide it for them, never leave it buried). Remove settings. **Never touch backups**, just say where they are |
 | C7 | Does anything leave the Mac? | — | **Nothing leaves unless the user presses something, except the update check.** Named on the welcome page. Update checking necessarily tells each vendor a copy exists here — unavoidable, so say it. Crowdsourced stability reports stay deferred to v2 |
 
+> ⚠️ **C7 was superseded on 2026-08-27.** John struck the absolute "nothing leaves your Mac"
+> wording as Claude's, not his: *"it is about not scraping user data, violating their privacy or
+> collecting contact information for marketing… Information leaving the computer to benefit their
+> experience and app functionality is disclosed and optional… **Inform and consent**."* The shape
+> is now: say what is never done, then name every departure with its switch and its cost. The
+> canonical sentences live in `Core/Sources/WellkeptCore/Privacy.swift` and nowhere else. See
+> `APPS-QUESTIONS.md`, question 1.
+
 ## D. Look
 
 | # | Question | Recommendation | Answer |

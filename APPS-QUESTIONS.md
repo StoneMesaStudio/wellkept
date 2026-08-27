@@ -85,7 +85,14 @@ Applications folder" is not true and is not to be said anywhere in the app or it
   dates-as-versions, Apple's marketing string lagging the shipped one. Where the comparison is not
   confident, the row says we could not tell rather than guessing.
 - **Apps does not run on launch.** The inventory call alone takes 7–8 seconds.
-- **Nothing in Apps needs Full Disk Access**, so it works completely for someone who tapped
-  "Finish later". Only the uninstaller, later, will need it.
+- ⚠️ **CORRECTED 2026-08-27: the leftovers row DOES need Full Disk Access.** A build agent walking
+  `~/Library/Containers` and `~/Library/Group Containers` raised the macOS *"would like to access
+  data from other apps"* prompt on John's screen — attributed to Xcode, because the code was running
+  under the test harness. That gate is real and it applies to Wellkept too.
+  **So: Wellkept never touches another app's container unless Full Disk Access is already granted.**
+  Without it the leftovers row reports the house sentence and offers the button; with it, the row
+  works. Everything else in Apps — the inventory, versions, update checks, crashes — still needs no
+  permission at all. **Wellkept must never be the cause of that prompt**: an unexplained dialog from
+  a background process is the exact trust failure this product exists to avoid.
 - **Leftovers are shown for removed apps only, and never totalled as one number.** The removal
   half waits for quarantine; the hooks are named now so this screen is not torn up later.

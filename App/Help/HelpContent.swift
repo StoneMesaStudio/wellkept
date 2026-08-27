@@ -124,8 +124,26 @@ enum HelpLibrary {
                 .heading("It never changes your Mac on a schedule"),
                 .paragraph("Automatic means *looking*. Manual means *touching*. Backup is the one exception, and only because a backup that waits to be asked is a backup that does not exist."),
 
-                .heading("Nothing leaves this Mac"),
-                .paragraph("There is no account, no sign-in, no analytics and no tracking. The single exception is **checking for updates**: to find out whether a newer version of an app exists, Wellkept has to ask the people who make it, and that necessarily tells them a copy is installed somewhere. That is unavoidable, so it is said here rather than discovered."),
+                // ⚠️ **This section is generated from `Privacy`, not written here.** It used to say
+                // "Nothing leaves this Mac" with one exception attached, while the welcome page said
+                // something narrower and Settings said something different again. Three copies of a
+                // promise is three promises. See the header of `Privacy.swift` for John's words on
+                // 2026-08-27 and for why the absolute form went.
+                .heading("It never collects anything, and never sells anything"),
+            ]
+            + Privacy.neverDone.map(HelpBlock.bullet)
+            + [
+                .heading("What does leave this Mac"),
+                // Counted rather than written, so a third departure cannot be added while this page
+                // still says two.
+                .paragraph("\(Self.departureCount), and there is nothing else. Each one is listed below with what it buys you, and each one has a switch in **Settings**. Switching one off costs you that and nothing else — the same trade as declining Full Disk Access."),
+            ]
+            + Privacy.Departure.allCases.flatMap { departure in
+                [HelpBlock.heading(departure.title),
+                 HelpBlock.paragraph(departure.whatLeaves),
+                 HelpBlock.paragraph(departure.cost)]
+            }
+            + [
 
                 .heading("It never touches your backups"),
                 .paragraph("Not to check them, not to tidy them, and not when you remove the app. Wellkept will tell you where they are and what is not covered by them. It will not write to them."),
@@ -160,6 +178,18 @@ enum HelpLibrary {
                 .note("Dragging the app to the Trash by hand works too, but it leaves the settings, the history and anything in quarantine behind. The uninstaller exists so that nothing of Wellkept's outlives it without your say-so."),
             ]),
     ]
+
+    /// "Two things" — the number of things that leave this Mac, spelled out, counted from the
+    /// register rather than typed here. See `Privacy.Departure`.
+    private static var departureCount: String {
+        switch Privacy.Departure.allCases.count {
+        case 0:  "Nothing"
+        case 1:  "One thing"
+        case 2:  "Two things"
+        case 3:  "Three things"
+        default: "\(Privacy.Departure.allCases.count) things"
+        }
+    }
 
     /// Articles matching a search, title and body alike. An empty query is everything.
     ///

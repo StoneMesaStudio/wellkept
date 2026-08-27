@@ -32,6 +32,12 @@ Waypoint.
 - **Automatic means looking. Manual means touching.** Nothing that changes the Mac ever happens
   on a schedule. Backup is the single exception, and only because it writes to the backup drive.
 - **The verbs are fixed app-wide:** Quarantine · Restore · Delete · Ignore.
+- **Privacy is inform-and-consent, never an absolute promise.** "Nothing leaves your Mac" was
+  Claude's wording and John struck it on 2026-08-27. Say what is never done — nothing collected,
+  nothing sold, no account, no identifier, no telemetry, nothing for marketing — then name every
+  thing that does leave, with its switch and what switching it off costs. The canonical sentences
+  live in `Core/Sources/WellkeptCore/Privacy.swift` and **nowhere else**; anything that leaves this
+  Mac and is not registered in `Privacy.Departure` does not ship.
 - **The word for something wrong is "problem"** — only where something is actually wrong. A large
   folder is not a problem, it is large.
 - **Section status: Good · Needs attention · Not checked.**

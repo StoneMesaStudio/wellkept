@@ -31,6 +31,14 @@ must be one line in a `label` property, never a migration.
 | `demoMode` | Bool | `false` |
 | `demoMachine` | String — `healthy` \| `problems` | `healthy` |
 | `fullDiskAccessAsked` | Bool | `false` |
+| `checkAppUpdates` | Bool? — **unset means nobody has been asked** | *unset* |
+| `checkWellkeptUpdates` | Bool | `true` |
+
+⚠️ The two update keys are the switches behind `Privacy.Departure`, and their names come from
+`Departure.settingsKey` rather than being typed at each call site. `checkAppUpdates` is an
+**optional** Bool on purpose: "not set" is a real third state meaning the first Apps run has not
+yet asked. Reading a missing key as `true` would turn inform-and-consent into a default nobody was
+told about.
 
 `setupFinished` is removed by the uninstaller, which is what makes setup run again after a
 reinstall but not after an update.

@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import WellkeptCore
 
 //  SettingsView.swift
 //  Wellkept — App/Settings
@@ -300,7 +301,11 @@ private struct PermissionSettings: View {
             VStack(alignment: .leading, spacing: Space.card) {
                 // The one thing a person reading this page wants settled before they read anything
                 // else, and the one thing they cannot work out from the screen.
-                Text("Wellkept asks for as little as it can, and nothing it reads leaves this Mac.")
+                //
+                // ⚠️ The privacy sentence comes from `Privacy`, not from here. This page used to
+                // claim "nothing it reads leaves this Mac" while the welcome page made a narrower
+                // promise and Help made a third one — see the header of `Privacy.swift`.
+                Text("Wellkept asks for as little as it can. " + Privacy.readingOnly)
                     .font(.appBody)
                     .fixedSize(horizontal: false, vertical: true)
 
