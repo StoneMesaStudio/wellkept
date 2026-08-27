@@ -112,7 +112,8 @@ enum DemoData {
         let found = findings(machine)
         var out: [SectionID: CheckRecord] = [:]
 
-        for section in SectionID.checkable where section != .hardware && section != .security {
+        let ownRecord: Set<SectionID> = [.hardware, .security, .apps]
+        for section in SectionID.checkable where !ownRecord.contains(section) {
             let mine = found.filter { $0.section == section }
             out[section] = CheckRecord(
                 section: section,
@@ -129,6 +130,11 @@ enum DemoData {
         // Security's line, for the same reason: the chip on the sidebar's audit trail and the chip
         // on the Security screen are one fact, and `SecurityReport.record` is where it lives.
         out[.security] = security(machine).report.record
+
+        // Apps' line, for the same reason. It is always `Good`: `AppsReport.status` has no route to
+        // `.needsAttention`, so the chip in the sidebar's audit trail and the chip on the Apps
+        // screen are one fact that cannot drift.
+        out[.apps] = apps(machine).report.record
 
         // Overview's own line is the whole sweep: the oldest of the six, because that is when the
         // sweep began, and honest about any partial look inside it.
@@ -154,9 +160,15 @@ enum DemoData {
     /// into a second copy of itself, and the section a person should actually open gets lost among
     /// its own details.
     static func findings(_ machine: DemoMachine) -> [Finding] {
-        let others = storage + apps + backup + changes
+        let others = storage + backup + changes
         let kept = machine == .healthy ? others.filter { $0.severity < .attention } : others
-        return [hardware(machine).overviewFinding, security(machine).report.overviewFinding]
+        // ⚠️ Apps contributes exactly one row, `.information`, on both Macs — and it is **not**
+        // filtered out of the healthy one, because `.information` is what it always is. Apps cannot
+        // turn Overview amber this round: without vulnerability data a version behind is not
+        // something wrong, so the row is there for the audit trail and never in "what needs you".
+        return [hardware(machine).overviewFinding,
+                security(machine).report.overviewFinding,
+                apps(machine).report.overviewFinding]
             .compactMap { $0 } + kept
     }
 
@@ -373,36 +385,510 @@ enum DemoData {
                 verb: "Reveal in Finder"),
     ]
 
-    // MARK: Apps
+    // MARK: - Apps
 
-    private static let apps: [Finding] = [
-        Finding(section: .apps,
-                title: "Zoom is six versions behind",
-                reason: "6.0.10 is installed. The vendor lists two security fixes since, one of them in the screen-sharing code.",
-                severity: .attention,
-                measure: "6.0.10 → 6.5.7",
-                verb: "Open vendor page"),
-        Finding(section: .apps,
-                title: "Adobe Acrobat starts a background updater at login",
-                reason: "AdobeARMservice runs whether or not Acrobat is open, and was not asked for separately.",
-                severity: .information,
-                verb: "Open Login Items"),
-        Finding(section: .apps,
-                title: "Docker Desktop has a newer version",
-                reason: "4.29.0 installed, 4.41.2 released 11 days ago. No security note attached to it.",
-                severity: .information,
-                measure: "4.29.0 → 4.41.2",
-                verb: "Open vendor page"),
-        Finding(section: .apps,
-                title: "Four apps are Intel-only",
-                reason: "Audacity, Kindle, Silverlight and TextWrangler run under Rosetta on this Mac. They work; they are slower and none of them is being updated.",
-                severity: .information,
-                measure: "4 apps"),
-        Finding(section: .apps,
-                title: "112 apps, 96 of them current",
-                reason: "Twelve came from the App Store, ninety-four from vendor downloads, six from Homebrew.",
-                severity: .information,
-                measure: "112 apps"),
+    /// The whole Apps answer for one machine, built once so its `Finding` keeps a stable `id`.
+    ///
+    /// ⚠️ Computed once and cached, not rebuilt per call. `AppsReport` mints a fresh `UUID` for its
+    /// Overview row, and a `Finding` with a new identity on every draw is how a list animates itself
+    /// to pieces.
+    ///
+    /// ## ⚠️ Built out of the real row builders, exactly as Hardware and Security are
+    ///
+    /// Every row below comes from `InventoryReader.row`, `MacOSRow.row`, `UpdatesRow.row`,
+    /// `CrashReader.answer` and `LeftoverReader.answer` — the same functions the real check calls,
+    /// and for the last two the same **pure** functions, fed an invented survey. Only the facts are
+    /// invented.
+    ///
+    /// ## ⚠️ Neither demo Mac may show anything the real readers cannot produce
+    ///
+    /// That rule does real work here, and three places show it:
+    ///
+    /// - **"Keeps itself up to date" is only ever said about an app on `SelfUpdatingApps`' list**,
+    ///   and the demo looks the entry up rather than typing the standing in. Drop an app from that
+    ///   list and it disappears from the demo instead of appearing there with a claim the real
+    ///   reader would never make.
+    /// - **Nothing is amber.** `AppsRow.severity` is a constant, so there is no arrangement of these
+    ///   facts that could colour a row — which is exactly what the picture is meant to prove.
+    /// - **The crash counts are what survives the filter**, not what is in the folder. Both Macs
+    ///   below carry the seven kinds of report that are not crashes, because a demo that showed only
+    ///   real crashes would photograph a screen whose filtering is invisible.
+    static func apps(_ machine: DemoMachine) -> AppsAnswer {
+        switch machine {
+        case .healthy:  healthyApps
+        case .problems: unwellApps
+        }
+    }
+
+    // MARK: One invented app
+
+    private static func app(_ name: String,
+                            _ bundleID: String,
+                            version: String,
+                            build: String? = nil,
+                            megabytes: Double,
+                            installed: Int,
+                            opened: Int?,
+                            architecture: AppArchitecture = .universal,
+                            signedBy: SignedBy,
+                            origin: AppOrigin,
+                            update: UpdateStanding,
+                            addedByHand: Bool = false) -> InstalledApp {
+        InstalledApp(name: name,
+                     bundleID: bundleID,
+                     version: version,
+                     build: build,
+                     bytes: Int64(megabytes * 1_000_000),
+                     installedAt: daysAgo(installed),
+                     lastOpenedAt: opened.map { daysAgo($0) },
+                     architecture: architecture,
+                     signedBy: signedBy,
+                     origin: origin,
+                     update: update,
+                     addedByHand: addedByHand)
+    }
+
+    /// An app that looks after itself — **looked up in `SelfUpdatingApps` rather than asserted.**
+    ///
+    /// ⚠️ Returns `nil` when the name is not on that list, and the caller drops it. That is the
+    /// enforcement of the rule in the header: the demo cannot say "keeps itself up to date" about an
+    /// app the real reader would call unknown, because the standing comes from the same lookup the
+    /// reader uses.
+    private static func selfUpdatingApp(_ name: String,
+                                        version: String,
+                                        megabytes: Double,
+                                        installed: Int,
+                                        opened: Int?,
+                                        signedBy: SignedBy,
+                                        origin: AppOrigin = .developerID) -> InstalledApp? {
+        guard let entry = SelfUpdatingApps.entries.first(where: { $0.name == name }),
+              let standing = SelfUpdatingApps.standing(forBundleID: entry.bundleID)
+        else { return nil }
+        return app(entry.name, entry.bundleID,
+                   version: version, megabytes: megabytes,
+                   installed: installed, opened: opened,
+                   signedBy: signedBy, origin: origin, update: standing)
+    }
+
+    /// The apps that come with macOS. **Counted, never listed** — 37 here, and folding them into the
+    /// person's list would more than double the number on the section's first line.
+    private static let macOSApps: [InstalledApp] = [
+        "App Store", "Automator", "Books", "Calculator", "Calendar", "Chess", "Clock", "Contacts",
+        "Dictionary", "FaceTime", "Find My", "Font Book", "Freeform", "Home", "Image Capture",
+        "Mail", "Maps", "Messages", "Music", "News", "Notes", "Photo Booth", "Photos", "Podcasts",
+        "Preview", "QuickTime Player", "Reminders", "Shortcuts", "Stickies", "Stocks",
+        "System Settings", "TextEdit", "Time Machine", "TV", "Voice Memos", "Weather", "Terminal",
+    ].map { name in
+        app(name, "com.apple." + name.replacingOccurrences(of: " ", with: ""),
+            version: "26.6", megabytes: 24, installed: 981, opened: nil,
+            signedBy: .apple, origin: .bundledWithMacOS,
+            update: .couldNotTell(.shipsWithMacOS))
+    }
+
+    /// macOS itself, through the real reader's pure half, so the row is assembled exactly as it is
+    /// on a real Mac. **Nothing about a waiting update is claimed** — the caveat travels with it.
+    private static func macOSState(version: String,
+                                   build: String,
+                                   installedDaysAgo: Int,
+                                   automatic: Bool) -> MacOSUpdateState {
+        MacOSUpdateState.make(
+            settings: [
+                "AutomaticCheckEnabled": automatic,
+                "AutomaticDownload": automatic,
+                "CriticalUpdateInstall": true,
+                "ConfigDataInstall": true,
+                "AutomaticallyInstallMacOSUpdates": automatic,
+                "LastSuccessfulDate": daysAgo(1),
+                "FirstOfferDateDictionary": [
+                    "MSU_UPDATE_\(build)_patch_\(version)_minor": daysAgo(installedDaysAgo + 2),
+                ],
+                "InstallDateDictionary": [build: daysAgo(installedDaysAgo)],
+            ],
+            managed: nil,
+            systemVersion: ["ProductVersion": version, "ProductBuildVersion": build])
+    }
+
+    // MARK: Apps — a healthy Mac
+
+    /// **A tidy Applications folder: two updates waiting, four apps that look after themselves, and
+    /// three nobody publishes a version for.**
+    ///
+    /// ⚠️ This is the picture the coverage sentence exists for. Six apps were genuinely checked out
+    /// of fifteen installed, and the section says so in the same breath as the count — never "2
+    /// updates available", which is true and leaves out the part that matters.
+    private static let healthyApps: AppsAnswer = {
+        let installed: [InstalledApp] = [
+            // ⚠️ Absent from macOS's own inventory — a symlink into the Preboot Cryptex with
+            // restricted and hidden flags — and the 4th most-launched app on the measured Mac. Added
+            // by hand, and the line says so.
+            app("Safari", "com.apple.Safari", version: "26.6", megabytes: 118,
+                installed: 981, opened: 0, signedBy: .apple, origin: .bundledWithMacOS,
+                update: .couldNotTell(.shipsWithMacOS), addedByHand: true),
+
+            app("Pages", "com.apple.iWork.Pages", version: "15.3.1", megabytes: 812,
+                installed: 640, opened: 9, signedBy: .apple, origin: .appStore, update: .current),
+            app("Numbers", "com.apple.iWork.Numbers", version: "15.3.1", megabytes: 704,
+                installed: 640, opened: 31, signedBy: .apple, origin: .appStore, update: .current),
+            // ⚠️ macOS reports nothing at all for 6 of the 31 apps on the measured Mac, Keynote
+            // among them, and it is demonstrably run. A blank here is ordinary, which is why "apps
+            // you have not opened" is not a finding anywhere in this section.
+            app("Keynote", "com.apple.iWork.Keynote", version: "15.3.1", megabytes: 934,
+                installed: 640, opened: nil, signedBy: .apple, origin: .appStore, update: .current),
+
+            app("Things 3", "com.culturedcode.ThingsMac", version: "3.20.4", megabytes: 61,
+                installed: 412, opened: 0,
+                signedBy: .developer("Cultured Code GmbH & Co. KG"), origin: .appStore,
+                update: .newerAvailable("3.20.6")),
+            app("Transmit", "com.panic.Transmit", version: "5.10.6", megabytes: 96,
+                installed: 300, opened: 4,
+                signedBy: .developer("Panic, Inc."), origin: .developerID,
+                update: .newerAvailable("5.10.7")),
+            app("Rectangle", "com.knollsoft.Rectangle", version: "0.87", megabytes: 12,
+                installed: 220, opened: 1,
+                signedBy: .developer("Ryan Hanson"), origin: .homebrew, update: .current),
+            app("Fantastical", "com.flexibits.fantastical2.mac", version: "4.0.6", megabytes: 148,
+                installed: 560, opened: 0,
+                signedBy: .developer("Flexibits Inc."), origin: .appStore, update: .current),
+            app("Bear", "net.shinyfrog.bear", version: "2.6.2", megabytes: 92,
+                installed: 380, opened: 2,
+                signedBy: .developer("Shiny Frog Ltd."), origin: .appStore, update: .current),
+            app("Pixelmator Pro", "com.pixelmatorteam.pixelmator.x", version: "3.6.16",
+                megabytes: 1_180, installed: 450, opened: 18,
+                signedBy: .developer("Pixelmator Team"), origin: .appStore, update: .current),
+            app("HandBrake", "fr.handbrake.HandBrake", version: "1.9.2", megabytes: 132,
+                installed: 260, opened: 44,
+                signedBy: .developer("HandBrake Team"), origin: .homebrew, update: .current),
+
+            // The honest cost of the decision of 2026-08-27 not to keep a list of makers' version
+            // pages. Three apps here, and the row says why rather than shrugging.
+            app("BBEdit", "com.barebones.bbedit", version: "15.5.2", megabytes: 168,
+                installed: 700, opened: 2,
+                signedBy: .developer("Bare Bones Software, Inc."), origin: .developerID,
+                update: .couldNotTell(.noSourceToAsk)),
+            app("iTerm2", "com.googlecode.iterm2", version: "3.5.11", megabytes: 142,
+                installed: 900, opened: 0,
+                signedBy: .developer("GEORGE NACHMAN"), origin: .developerID,
+                update: .couldNotTell(.noSourceToAsk)),
+            app("Obsidian", "md.obsidian", version: "1.7.7", megabytes: 540,
+                installed: 340, opened: 0,
+                signedBy: .developer("Dynalist Inc."), origin: .developerID,
+                update: .couldNotTell(.noSourceToAsk)),
+            app("Signal", "org.whispersystems.signal-desktop", version: "7.35.0", megabytes: 480,
+                installed: 520, opened: 1,
+                signedBy: .developer("Quiet Riddle Ventures LLC"), origin: .developerID,
+                update: .couldNotTell(.noSourceToAsk)),
+            app("Zotero", "org.zotero.zotero", version: "7.0.11", megabytes: 410,
+                installed: 290, opened: 26,
+                signedBy: .developer("Corporation for Digital Scholarship"), origin: .developerID,
+                update: .couldNotTell(.noSourceToAsk)),
+            // "2.6.0.3141" against a storefront's "2.6.0" is the hazard 13 of 18 apps carry. We
+            // have both numbers and cannot compare them honestly, so we say that.
+            app("Affinity Photo 2", "com.seriflabs.affinityphoto2", version: "2.6.0",
+                build: "2.6.0.3141", megabytes: 1_640, installed: 500, opened: 22,
+                signedBy: .developer("Serif (Europe) Ltd"), origin: .appStore,
+                update: .couldNotTell(.versionsNotComparable)),
+
+            // A pre-release build. The storefront answers about the shipping version, which is a
+            // different piece of software — so it is out of scope rather than out of date.
+            app("Ivory", "com.tapbots.Ivory", version: "1.9.1", megabytes: 44,
+                installed: 180, opened: 3,
+                signedBy: .developer("TestFlight Beta Distribution"), origin: .unknown,
+                update: .couldNotTell(.testFlightBuild)),
+        ] + [
+            selfUpdatingApp("Google Chrome", version: "141.0.7390.54", megabytes: 620,
+                            installed: 800, opened: 0, signedBy: .developer("Google LLC")),
+            selfUpdatingApp("Firefox", version: "144.0.1", megabytes: 480,
+                            installed: 640, opened: 6, signedBy: .developer("Mozilla Corporation")),
+            selfUpdatingApp("Visual Studio Code", version: "1.96.2", megabytes: 720,
+                            installed: 520, opened: 0,
+                            signedBy: .developer("Microsoft Corporation")),
+            selfUpdatingApp("Slack", version: "4.44.65", megabytes: 340,
+                            installed: 470, opened: 1,
+                            signedBy: .developer("Slack Technologies, LLC")),
+            selfUpdatingApp("Notion", version: "4.3.1", megabytes: 380,
+                            installed: 410, opened: 0, signedBy: .developer("Notion Labs, Inc.")),
+            selfUpdatingApp("Raycast", version: "1.85.2", megabytes: 210,
+                            installed: 330, opened: 0,
+                            signedBy: .developer("Raycast Technologies Inc.")),
+            selfUpdatingApp("Discord", version: "0.0.340", megabytes: 290,
+                            installed: 610, opened: 5,
+                            signedBy: .developer("Discord Inc.")),
+            selfUpdatingApp("Brave", version: "1.72.165", megabytes: 640,
+                            installed: 720, opened: 34, signedBy: .developer("Brave Software, Inc.")),
+        ].compactMap { $0 }
+
+        // ⚠️ 26 apps, 37 that come with macOS, and 359 bundles that are not apps — **422 in all,
+        // which is the number the measured Mac actually holds.** A cleaner would print the 422. The
+        // number a person recognises is the first one, and the block says where the other two went.
+        let inventory = AppsInventory(apps: installed,
+                                      otherBundles: 359,
+                                      gatheredAt: minutesAgo(11))
+        let macOS = macOSState(version: "26.6.2", build: "25G83",
+                               installedDaysAgo: 12, automatic: true)
+        let update = UpdateReader.Answer(
+            standings: [:],
+            namedToAppStore: ["Affinity Photo 2", "Bear", "Fantastical", "Keynote", "Numbers",
+                              "Pages", "Pixelmator Pro", "Things 3"],
+            consent: .allowed,
+            casksRead: 62)
+
+        let known = Set(installed.map(\.bundleID) + macOSApps.map(\.bundleID))
+
+        // 78 files in the folder, none of them an app on this Mac crashing. That is the measured
+        // truth and it is the whole reason this row exists in the shape it does.
+        let crash = CrashReader.answer(from: quietCrashFolder, appsOnThisMac: known, now: launched)
+
+        let left = LeftoverReader.answer(from: LeftoverReader.Survey(candidates: tidyLibrary,
+                                                                    notIdentifiers: 14),
+                                         appsOnThisMac: known,
+                                         runningBundleIDs: [],
+                                         isRegistered: { _ in false })
+
+        let rows = [
+            InventoryReader.row(inventory: inventory, bundledWithMacOS: macOSApps,
+                                blockShownAbove: true),
+            MacOSRow.row(macOS),
+            UpdatesRow.row(inventory: inventory, update: update),
+            crash.row,
+            left.row,
+        ]
+
+        return AppsAnswer(report: AppsReport(inventory: inventory,
+                                             rows: rows,
+                                             ranAt: minutesAgo(11)),
+                          crashes: crash.crashes,
+                          leftovers: left.leftovers,
+                          macOS: macOS,
+                          update: update,
+                          bundledWithMacOS: macOSApps,
+                          crashWindowDays: crash.windowDays)
+    }()
+
+    // MARK: Apps — a Mac with problems
+
+    /// **The five paths nobody building this will otherwise see**: an app that has stopped working
+    /// over and over, four updates waiting, an Intel-only app, and two removed apps that left things
+    /// behind.
+    ///
+    /// ⚠️ **Everything here is still `.information`, and that is the point of the picture.** Nothing
+    /// on this screen is amber and nothing is red. A version behind is not something wrong, an
+    /// Intel-only app is a labelled fact rather than a countdown, and an app that crashes is
+    /// reported without being dressed up as an emergency.
+    private static let unwellApps: AppsAnswer = {
+        let installed: [InstalledApp] = [
+            app("Safari", "com.apple.Safari", version: "15.7", megabytes: 118,
+                installed: 2_760, opened: 0, signedBy: .apple, origin: .bundledWithMacOS,
+                update: .couldNotTell(.shipsWithMacOS), addedByHand: true),
+
+            app("Pages", "com.apple.iWork.Pages", version: "14.2", megabytes: 780,
+                installed: 900, opened: 40, signedBy: .apple, origin: .appStore, update: .current),
+            app("Numbers", "com.apple.iWork.Numbers", version: "14.1", megabytes: 690,
+                installed: 900, opened: 61, signedBy: .apple, origin: .appStore,
+                update: .newerAvailable("14.2")),
+            app("Keynote", "com.apple.iWork.Keynote", version: "14.2", megabytes: 910,
+                installed: 900, opened: nil, signedBy: .apple, origin: .appStore, update: .current),
+
+            app("Things 3", "com.culturedcode.ThingsMac", version: "3.19.0", megabytes: 61,
+                installed: 700, opened: 12,
+                signedBy: .developer("Cultured Code GmbH & Co. KG"), origin: .appStore,
+                update: .newerAvailable("3.20.6")),
+            app("Transmit", "com.panic.Transmit", version: "5.8.2", megabytes: 96,
+                installed: 800, opened: 90,
+                signedBy: .developer("Panic, Inc."), origin: .developerID,
+                update: .newerAvailable("5.10.7")),
+            app("Kindle", "com.amazon.Lassen", version: "7.24", megabytes: 214,
+                installed: 1_500, opened: 210,
+                signedBy: .developer("AMZN Mobile LLC"), origin: .appStore,
+                update: .newerAvailable("7.30")),
+
+            // ⚠️ **A plain labelled fact and nothing else.** No colour, no countdown, no "will stop
+            // working". macOS 26.4 already warns at launch, only the developer can act, and nothing
+            // about a Rosetta app is a security matter.
+            app("Audacity", "org.audacityteam.audacity", version: "3.4.2", megabytes: 190,
+                installed: 1_900, opened: 400, architecture: .intelOnly,
+                signedBy: .developer("Audacity Team"), origin: .developerID,
+                update: .couldNotTell(.noSourceToAsk)),
+
+            app("Microsoft Teams", "com.microsoft.teams2", version: "24.255.1", megabytes: 1_180,
+                installed: 400, opened: nil,
+                signedBy: .developer("Microsoft Corporation"), origin: .developerID,
+                update: .couldNotTell(.noSourceToAsk)),
+            app("LibreOffice", "org.libreoffice.script", version: "25.2.5.2", megabytes: 1_460,
+                installed: 600, opened: 55,
+                signedBy: .developer("The Document Foundation"), origin: .developerID,
+                update: .couldNotTell(.versionsNotComparable)),
+            app("Adobe Acrobat Reader", "com.adobe.Reader", version: "24.002.20857",
+                megabytes: 640, installed: 1_100, opened: 30,
+                signedBy: .developer("Adobe Inc."), origin: .developerID,
+                update: .couldNotTell(.askFailed)),
+            app("iTerm2", "com.googlecode.iterm2", version: "3.4.19", megabytes: 142,
+                installed: 1_400, opened: 2,
+                signedBy: .developer("GEORGE NACHMAN"), origin: .developerID,
+                update: .couldNotTell(.noSourceToAsk)),
+            app("VLC", "org.videolan.vlc", version: "3.0.21", megabytes: 128,
+                installed: 1_000, opened: 120,
+                signedBy: .developer("VideoLAN"), origin: .homebrew, update: .current),
+        ] + [
+            selfUpdatingApp("Google Chrome", version: "139.0.7258.66", megabytes: 620,
+                            installed: 1_200, opened: 0, signedBy: .developer("Google LLC")),
+            selfUpdatingApp("Zoom", version: "6.0.10", megabytes: 410,
+                            installed: 900, opened: 3,
+                            signedBy: .developer("Zoom Video Communications, Inc.")),
+            selfUpdatingApp("Slack", version: "4.41.98", megabytes: 340,
+                            installed: 800, opened: 1,
+                            signedBy: .developer("Slack Technologies, LLC")),
+            selfUpdatingApp("Docker Desktop", version: "4.29.0", megabytes: 2_100,
+                            installed: 600, opened: 7,
+                            signedBy: .developer("Docker Inc")),
+        ].compactMap { $0 }
+
+        let inventory = AppsInventory(apps: installed,
+                                      otherBundles: 318,
+                                      gatheredAt: minutesAgo(11))
+        let macOS = macOSState(version: "15.7.1", build: "24G231",
+                               installedDaysAgo: 96, automatic: false)
+        let update = UpdateReader.Answer(
+            standings: [:],
+            namedToAppStore: ["Keynote", "Kindle", "Numbers", "Pages", "Things 3"],
+            consent: .allowed,
+            casksRead: 9)
+
+        let known = Set(installed.map(\.bundleID) + macOSApps.map(\.bundleID))
+
+        let crash = CrashReader.answer(from: teamsKeepsCrashing, appsOnThisMac: known, now: launched)
+
+        let left = LeftoverReader.answer(from: LeftoverReader.Survey(candidates: tidyLibrary + removedApps,
+                                                                    notIdentifiers: 22),
+                                         appsOnThisMac: known,
+                                         runningBundleIDs: [],
+                                         isRegistered: { _ in false })
+
+        let rows = [
+            InventoryReader.row(inventory: inventory, bundledWithMacOS: macOSApps,
+                                blockShownAbove: true),
+            MacOSRow.row(macOS),
+            UpdatesRow.row(inventory: inventory, update: update),
+            crash.row,
+            left.row,
+        ]
+
+        return AppsAnswer(report: AppsReport(inventory: inventory,
+                                             rows: rows,
+                                             ranAt: minutesAgo(11)),
+                          crashes: crash.crashes,
+                          leftovers: left.leftovers,
+                          macOS: macOS,
+                          update: update,
+                          bundledWithMacOS: macOSApps,
+                          crashWindowDays: crash.windowDays)
+    }()
+
+    // MARK: Apps — the crash folder
+
+    /// **The seven kinds of report that are not an app on this Mac crashing**, one of each.
+    ///
+    /// ⚠️ Present on **both** demo Macs, because the filtering is the row's entire value and a demo
+    /// that showed only real crashes would photograph a screen whose work is invisible. 108 files on
+    /// the measured Mac reduced to zero; these seven plus 71 uncounted notices reduce to zero too,
+    /// and the row's tally says where each of them went.
+    private static let notCrashes: [CrashReader.Report] = [
+        // A performance notice. Nothing crashed.
+        CrashReader.Report(fileName: "Sample-2026-cpu_resource.diag",
+                           bundleID: "com.example.sample", appName: "Sample",
+                           bugType: "226", platform: 1, at: daysAgo(4)),
+        // macOS stopped it for memory. Named separately so it can never be swallowed by the
+        // general bucket — Hardware's memory reading is where that answer belongs.
+        CrashReader.Report(fileName: "Sample-2026-08-hang.ips",
+                           bundleID: "com.example.sample", appName: "Sample",
+                           bugType: "298", platform: 1, at: daysAgo(9)),
+        // Filed by an app about itself, which then carried on running. Safari did this four times
+        // on the measured Mac while staying open the whole time.
+        CrashReader.Report(fileName: "ExcUserFault_Sample-2026-08.ips",
+                           bundleID: "com.example.sample", appName: "Sample",
+                           bugType: "309", platform: 1, isSelfFiled: true, at: daysAgo(11)),
+        // The iPhone simulator's own machinery.
+        CrashReader.Report(fileName: "SimLaunchHost-2026-08.ips",
+                           bundleID: "com.apple.CoreSimulator.SimLaunchHost",
+                           appName: "SimLaunchHost", bugType: "309", platform: 1, at: daysAgo(13)),
+        // Built for another device, running here under the simulator.
+        CrashReader.Report(fileName: "SampleiOS-2026-08.ips",
+                           bundleID: "com.example.sample.ios", appName: "SampleiOS",
+                           bugType: "309", platform: 2, at: daysAgo(15)),
+        // A command-line tool. Nobody launched an app.
+        CrashReader.Report(fileName: "sample-helper-2026-08.ips",
+                           bundleID: nil, appName: "sample-helper",
+                           bugType: "309", platform: 1, at: daysAgo(17)),
+        // An app, but not one this section lists — something being built, or since removed.
+        CrashReader.Report(fileName: "OldThing-2026-08.ips",
+                           bundleID: "com.example.oldthing", appName: "Old Thing",
+                           bugType: "309", platform: 1, at: daysAgo(19)),
+    ]
+
+    /// The healthy Mac's folder: 78 files, and not one of them an app crashing.
+    private static let quietCrashFolder = CrashReader.Survey(
+        reports: notCrashes,
+        nonCrashFiles: 71,
+        earliestRecord: daysAgo(24))
+
+    /// The unwell Mac's: the same noise, plus one app that really has stopped working, five times.
+    private static let teamsKeepsCrashing = CrashReader.Survey(
+        reports: notCrashes + [2, 6, 8, 14, 20].map { day in
+            CrashReader.Report(fileName: "Teams-2026-08-\(day).ips",
+                               bundleID: "com.microsoft.teams2", appName: "Microsoft Teams",
+                               bugType: "309", platform: 1, at: daysAgo(day))
+        },
+        nonCrashFiles: 84,
+        earliestRecord: daysAgo(21))
+
+    // MARK: Apps — the Library
+
+    /// **Three things in the Library that look like leftovers and are not** — on both Macs.
+    ///
+    /// ⚠️ These are the guards doing their job, and the reason the row is worth trusting. The
+    /// Keystone folder is the case that matters: an updater belonging to an installed browser, filed
+    /// under a name that app has never used, and exactly what a name-matching cleaner offers to
+    /// delete.
+    private static let tidyLibrary: [LeftoverReader.Candidate] = [
+        LeftoverReader.Candidate(identifier: "com.apple.Safari",
+                                 place: .caches,
+                                 path: "~/Library/Caches/com.apple.Safari",
+                                 bytes: 240_000_000),
+        LeftoverReader.Candidate(identifier: "com.google.Keystone",
+                                 place: .applicationSupport,
+                                 path: "~/Library/Application Support/com.google.Keystone",
+                                 bytes: 18_000_000),
+        LeftoverReader.Candidate(identifier: "com.culturedcode.ThingsMac",
+                                 place: .applicationSupport,
+                                 path: "~/Library/Application Support/com.culturedcode.ThingsMac",
+                                 bytes: 96_000_000),
+    ]
+
+    /// Two apps that really are gone, each with a folder macOS made on its behalf.
+    ///
+    /// ⚠️ **Each carries its own size and there is no total anywhere.** Name-matching everything on
+    /// the measured Mac produces 7.6 GB against about 350 MB genuinely orphaned — a headline number
+    /// would be wrong by a factor of twenty, and it is the number a cleaner puts in a big font.
+    private static let removedApps: [LeftoverReader.Candidate] = [
+        LeftoverReader.Candidate(identifier: "com.superduper.SuperDuper",
+                                 place: .applicationSupport,
+                                 path: "~/Library/Application Support/com.superduper.SuperDuper",
+                                 bytes: 148_000_000),
+        LeftoverReader.Candidate(identifier: "com.superduper.SuperDuper",
+                                 place: .preferences,
+                                 path: "~/Library/Preferences/com.superduper.SuperDuper.plist",
+                                 bytes: 24_000),
+        LeftoverReader.Candidate(identifier: "com.evernote.Evernote",
+                                 place: .applicationSupport,
+                                 path: "~/Library/Application Support/com.evernote.Evernote",
+                                 bytes: 612_000_000),
+        LeftoverReader.Candidate(identifier: "com.evernote.Evernote",
+                                 place: .savedApplicationState,
+                                 path: "~/Library/Saved Application State/com.evernote.Evernote.savedState",
+                                 bytes: 1_400_000),
+        LeftoverReader.Candidate(identifier: "com.evernote.Evernote",
+                                 place: .logs,
+                                 path: "~/Library/Logs/com.evernote.Evernote",
+                                 bytes: 3_100_000),
     ]
 
     // MARK: Security

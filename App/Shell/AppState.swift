@@ -191,6 +191,64 @@ final class AppState {
         publish(report.record, finding: report.overviewFinding)
     }
 
+    // MARK: The Apps engine
+
+    /// Apps' own model — five readers, one report.
+    ///
+    /// ⚠️ **Nothing starts this but a press.** There is no launch check here and there must not be
+    /// one: asking macOS for the list of apps alone takes 7–8 seconds and the whole sweep about
+    /// thirteen, and a section that spent that on every launch would make the app feel broken.
+    let apps = AppsModel()
+
+    /// Whether Wellkept may ask anybody whether an app is current.
+    ///
+    /// ⚠️ **Held here, above `AppearanceHost`, like everything else that must survive a text-size
+    /// change.** A ⌘+ press re-identifies the whole content tree and throws away every `@State`
+    /// beneath it; a consent question held in a `@State` inside the Apps face would vanish
+    /// mid-question the first time somebody made the text bigger in order to read it.
+    let updateConsent = UpdateConsentStore()
+
+    /// True while the consent question is on the Apps screen, waiting for an answer.
+    ///
+    /// It is a panel in the page rather than a sheet — see `AppsView.consentQuestion` — so it does
+    /// not go through the window's one sheet slot.
+    private(set) var askingUpdateConsent = false
+
+    /// Run the Apps check and file what it found.
+    ///
+    /// ⚠️ **The question comes first, and only once.** On the very first press, nobody has been
+    /// asked whether Wellkept may ask Apple and a few makers about the apps installed here. So the
+    /// press puts the question on the screen instead of starting a check that would have to guess
+    /// at the answer. Every press after that runs straight through.
+    ///
+    /// ⚠️ **Never in demo mode.** Demo mode's whole promise is that nothing on screen has been read
+    /// from this Mac, and a check running underneath the invented rows would break it silently.
+    func runAppsCheck() async {
+        guard !demoMode else { return }
+        guard updateConsent.hasBeenAsked else {
+            askingUpdateConsent = true
+            return
+        }
+        await runApps()
+    }
+
+    /// The answer to the consent question, and the check it was holding up.
+    ///
+    /// Either answer starts the check. Saying no is a supported way to run this section — every
+    /// app's line reads "Not checked", the section still lists everything installed, and nothing
+    /// about this Mac is named to anybody.
+    func answerUpdateConsent(_ allowed: Bool) async {
+        updateConsent.setAllowed(allowed)
+        askingUpdateConsent = false
+        await runApps()
+    }
+
+    private func runApps() async {
+        await apps.check(consent: updateConsent.answer)
+        guard let report = apps.answer?.report else { return }
+        publish(report.record, finding: report.overviewFinding)
+    }
+
     /// File one section's result: its line in the audit trail, and the single row it sends up to
     /// Overview.
     ///

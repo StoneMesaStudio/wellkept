@@ -505,3 +505,122 @@ private enum Sample {
         #expect(unweighed.sizeText == nil)
     }
 }
+
+// MARK: - 8. ⭐ "Keeps itself up to date" and "could not tell" are opposite messages
+
+/// ⚠️ **The failure this suite exists to catch does not look like a failure.**
+///
+/// Chrome, Firefox, VS Code and Claude are never compared against anything — nobody publishes a
+/// current version for them and it would be pointless if they did, because they have already
+/// updated themselves by the time anybody looks. So they are *not checked*, in the same literal
+/// sense as an app nothing publishes a version for.
+///
+/// Which makes it very easy to write one sentence covering both, and that sentence is a lie in the
+/// expensive direction: on the measured Mac it turns four apps that are current by construction
+/// into four apps of unknown standing, on the summary line, in larger type than the rows that say
+/// the opposite. **A well-kept Applications folder photographed as a neglected one.**
+///
+/// Three separate places have to keep them apart — the case, the label, and the arithmetic — and
+/// each is tested here, because getting two right and one wrong produces a screen that contradicts
+/// itself and still passes.
+@Suite struct SelfUpdatingIsNotUncheckableTests {
+
+    /// **The case.** They are not the same value and neither can be mistaken for the other.
+    @Test func theyAreDifferentAnswersToTheSameQuestion() {
+        let selfUpdating = UpdateStanding.keepsItselfUpToDate
+        let unknown = UpdateStanding.couldNotTell(.noSourceToAsk)
+        #expect(selfUpdating != unknown)
+
+        // Neither was compared with anything, and neither claims a version.
+        #expect(!selfUpdating.wasChecked)
+        #expect(!unknown.wasChecked)
+        #expect(selfUpdating.newerVersion == nil)
+        #expect(!selfUpdating.hasNewerVersion)
+
+        // Both are in scope: an app that looks after itself is still an app somebody expects this
+        // section to have an opinion about. Being in scope is what makes the third number necessary.
+        #expect(selfUpdating.isInScope)
+        #expect(unknown.isInScope)
+    }
+
+    /// **The label.** No `UpdateUnknown` reason may ever read like the self-updating message, and
+    /// the self-updating message may never read like a shrug.
+    @Test func noReasonForNotKnowingReadsLikeTheGoodNews() {
+        let good = UpdateStanding.keepsItselfUpToDate.label
+        #expect(good == "Keeps itself up to date")
+        for why in UpdateUnknown.allCases {
+            #expect(why.label != good, "\(why.rawValue) has taken the self-updating wording")
+            #expect(UpdateStanding.couldNotTell(why).label != good)
+        }
+        // Every reason is distinct, so a row can never say two things at once.
+        #expect(Set(UpdateUnknown.allCases.map(\.label)).count == UpdateUnknown.allCases.count)
+    }
+
+    /// ⭐ **The arithmetic, on the measured Mac's own shape.** Nine compared, four self-updating,
+    /// six nothing publishes a version for. The caveat is about the six.
+    @Test func theCaveatCountsOnlyWhatIsGenuinelyUnknown() {
+        var apps: [InstalledApp] = []
+        for i in 0..<9 { apps.append(Sample.app("Compared \(i)", "test.compared.\(i)", update: .current)) }
+        for i in 0..<4 { apps.append(Sample.app("Self \(i)", "test.self.\(i)", update: .keepsItselfUpToDate)) }
+        for i in 0..<6 { apps.append(Sample.app("Silent \(i)", "test.silent.\(i)",
+                                                update: .couldNotTell(.noSourceToAsk))) }
+
+        let coverage = UpdateCoverage.measuring(apps)
+        #expect(coverage.checked == 9)
+        #expect(coverage.checkable == 19)
+        #expect(coverage.selfUpdating == 4)
+        #expect(coverage.unchecked == 6, """
+            The caveat is about \(coverage.unchecked) apps. It must be about the six nothing \
+            publishes a version for — not the ten, which would put Chrome, Firefox, VS Code and \
+            Claude into a sentence saying we do not know whether they are current.
+            """)
+
+        let sentence = UpdateTally.measuring(apps).sentenceWithCoverage
+        #expect(sentence.contains("6 more apps could not be checked."))
+        #expect(sentence.contains("4 apps keep themselves up to date."))
+        #expect(!sentence.contains("10 more apps could not be checked"))
+    }
+
+    /// A Mac where everything looks after itself is not a Mac we failed to read. It is the best
+    /// case, and the sentence has to say so rather than reporting a total blank.
+    @Test func aMacWhereEverythingUpdatesItselfIsNotAFailure() {
+        let apps = (0..<3).map { Sample.app("Self \($0)", "test.self.\($0)", update: .keepsItselfUpToDate) }
+        let coverage = UpdateCoverage.measuring(apps)
+        #expect(coverage.checked == 0)
+        #expect(coverage.unchecked == 0)
+        #expect(coverage.selfUpdating == 3)
+        #expect(coverage.sentence == "All 3 apps here that can be checked keep themselves up to date.")
+        #expect(!coverage.sentence.contains("could not"))
+
+        // And nothing is padded on afterwards — the news has already been given.
+        let tally = UpdateTally.measuring(apps)
+        #expect(tally.sentenceWithCoverage == coverage.sentence)
+    }
+
+    /// The clause is dropped where there is nothing to say, so a Mac with no self-updating apps
+    /// reads exactly as it did before this number existed.
+    @Test func aMacWithNoneOfThemSaysNothingAboutThem() {
+        let tally = UpdateTally.measuring(Sample.measuredMac.apps)
+        #expect(tally.coverage.selfUpdating == 0)
+        #expect(!tally.sentenceWithCoverage.contains("keep themselves"))
+        #expect(tally.sentenceWithCoverage == "4 of the 13 apps we could check have a newer version. "
+                                            + "11 more apps could not be checked.")
+    }
+
+    /// The third number cannot be inflated past what is left, and an old stored figure that
+    /// predates it reads back as none rather than failing to decode.
+    @Test func theThirdNumberIsClampedAndOptionalOnTheWayIn() throws {
+        let silly = UpdateCoverage(checked: 5, checkable: 6, selfUpdating: 99)
+        #expect(silly.selfUpdating == 1)
+        #expect(silly.unchecked == 0)
+
+        let old = Data(#"{"checked":2,"checkable":5}"#.utf8)
+        let decoded = try JSONDecoder().decode(UpdateCoverage.self, from: old)
+        #expect(decoded.selfUpdating == 0)
+        #expect(decoded.unchecked == 3)
+
+        let round = try JSONDecoder().decode(
+            UpdateCoverage.self, from: try JSONEncoder().encode(silly))
+        #expect(round == silly)
+    }
+}

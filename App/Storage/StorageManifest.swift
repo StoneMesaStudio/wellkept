@@ -1,4 +1,5 @@
 import Foundation
+import WellkeptCore
 
 //  StorageManifest.swift
 //  Wellkept — App/Storage
@@ -67,6 +68,17 @@ enum StorageManifest {
         /// where the backups are while leaving them exactly where they are.
         static let backupDestination = "backupDestination"
 
+        /// Whether Wellkept may ask anybody whether your apps are current.
+        ///
+        /// ⚠️ **Taken from `Privacy.Departure`, never typed.** The key is a fact about a departure
+        /// from this Mac, and a second copy of the literal is a second thing to keep in step. Stored
+        /// as an optional Bool: absent means nobody has been asked yet, which is a real third state
+        /// and the reason the Apps section puts the question up on its first run.
+        static let checkAppUpdates = Privacy.Departure.appUpdateCheck.settingsKey
+
+        /// Whether Wellkept may check for a newer Wellkept. Same shape, same register.
+        static let checkWellkeptUpdates = Privacy.Departure.wellkeptUpdateCheck.settingsKey
+
         /// Every key the app writes, appearance included.
         static let all: [String] = [
             AppearancePrefs.modeKey,
@@ -79,6 +91,8 @@ enum StorageManifest {
             demoMachine,
             fullDiskAccessAsked,
             backupDestination,
+            checkAppUpdates,
+            checkWellkeptUpdates,
         ]
     }
 

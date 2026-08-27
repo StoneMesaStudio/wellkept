@@ -463,16 +463,43 @@ public struct UpdateCoverage: Sendable, Hashable, Codable {
     /// Apps a check was meaningful for at all. Always `>= checked`.
     public let checkable: Int
 
+    /// ⭐ **Apps in scope that look after themselves — Chrome, Firefox, VS Code and the like.**
+    ///
+    /// ⚠️ **They are the third number because they are neither of the other two, and folding them
+    /// into either one says something untrue.** They were not compared, so they are not `checked`.
+    /// But "we could not check Chrome" and "Chrome keeps itself up to date" are opposite messages,
+    /// and on the measured Mac four apps sit here — enough that lumping them into the caveat turns
+    /// a well-kept Applications folder into a neglected-looking one.
+    ///
+    /// Their own rows already say `keepsItselfUpToDate`. This is the same fact, arriving at the
+    /// summary sentence, where it would otherwise be lost.
+    public let selfUpdating: Int
+
     /// Clamped rather than trusted: `checked` above `checkable` is arithmetic nobody can read, and
-    /// it would put a number larger than its own denominator on somebody's screen.
-    public init(checked: Int, checkable: Int) {
+    /// it would put a number larger than its own denominator on somebody's screen. `selfUpdating`
+    /// is clamped to what is left after `checked`, for the same reason.
+    public init(checked: Int, checkable: Int, selfUpdating: Int = 0) {
         let floor = max(0, checkable)
         self.checkable = floor
-        self.checked = min(max(0, checked), floor)
+        let counted = min(max(0, checked), floor)
+        self.checked = counted
+        self.selfUpdating = min(max(0, selfUpdating), floor - counted)
     }
 
-    /// The apps in scope that we could not get an answer for.
-    public var unchecked: Int { checkable - checked }
+    // ⚠️ Decoded by hand so that a coverage figure written before this third number existed still
+    // reads back, as nothing rather than as a decoding failure.
+    private enum CodingKeys: String, CodingKey { case checked, checkable, selfUpdating }
+
+    public init(from decoder: Decoder) throws {
+        let box = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(checked: try box.decode(Int.self, forKey: .checked),
+                  checkable: try box.decode(Int.self, forKey: .checkable),
+                  selfUpdating: try box.decodeIfPresent(Int.self, forKey: .selfUpdating) ?? 0)
+    }
+
+    /// The apps in scope that we could not get an answer for — and that nothing else answers for
+    /// either. **An app that updates itself is not one of these.**
+    public var unchecked: Int { max(0, checkable - checked - selfUpdating) }
 
     /// Nothing was in scope — an empty Applications folder, or update checking switched off.
     public var isEmpty: Bool { checkable == 0 }
@@ -486,24 +513,35 @@ public struct UpdateCoverage: Sendable, Hashable, Codable {
         if checkable == 0 {
             return "Nothing here could be checked for a newer version."
         }
-        if checked == 0 {
-            return checkable == 1
-                ? "We could not find out whether the one app that can be checked is current."
-                : "We could not find out whether any of the \(checkable) apps that can be checked are current."
+        // ⚠️ Nothing is outstanding. That is a different sentence from "we could not look", and the
+        // branch order is what keeps them apart on a Mac whose apps all update themselves.
+        if unchecked == 0 {
+            if checked == 0 {
+                return selfUpdating == 1
+                    ? "The one app here that can be checked keeps itself up to date."
+                    : "All \(selfUpdating) apps here that can be checked keep themselves up to date."
+            }
+            if selfUpdating == 0 {
+                return checked == 1
+                    ? "We could check the one app that can be checked."
+                    : "We could check all \(checked) apps that can be checked."
+            }
+            return "We could check \(checked) of the \(checkable) apps that can be checked."
         }
-        if checked == checkable {
-            return checked == 1
-                ? "We could check the one app that can be checked."
-                : "We could check all \(checked) apps that can be checked."
+        if checked == 0 {
+            return unchecked == 1
+                ? "We could not find out whether the one app that can be checked is current."
+                : "We could not find out whether any of the \(unchecked) apps that can be checked are current."
         }
         return "We could check \(checked) of the \(checkable) apps that can be checked."
     }
 
-    /// Coverage worked out from a list of apps, which is how `AppsReport` builds it — so the pair
-    /// can never disagree with the list it is about.
+    /// Coverage worked out from a list of apps, which is how `AppsReport` builds it — so the three
+    /// numbers can never disagree with the list they are about.
     public static func measuring(_ apps: [InstalledApp]) -> UpdateCoverage {
         UpdateCoverage(checked: apps.filter { $0.update.wasChecked }.count,
-                       checkable: apps.filter { $0.update.isInScope }.count)
+                       checkable: apps.filter { $0.update.isInScope }.count,
+                       selfUpdating: apps.filter { $0.update == .keepsItselfUpToDate }.count)
     }
 }
 
@@ -566,12 +604,26 @@ public struct UpdateTally: Sendable, Hashable, Codable {
 
     /// The sentence, followed by what it does not cover — the form Overview and the section face
     /// both use. Where coverage is complete, the caveat is dropped rather than padded out.
+    ///
+    /// ⚠️ **The apps that update themselves get their own clause, never the caveat's.** Folding
+    /// them in reads "4 more apps could not be checked" about Chrome, Firefox, VS Code and Claude,
+    /// each of whose own rows says the opposite two lines further down. Same page, two contradictory
+    /// answers, and the one in larger type is the wrong one.
     public var sentenceWithCoverage: String {
-        guard coverage.unchecked > 0 else { return sentence }
-        let rest = coverage.unchecked == 1
-            ? "One more app could not be checked."
-            : "\(coverage.unchecked) more apps could not be checked."
-        return "\(sentence) \(rest)"
+        var parts = [sentence]
+        if coverage.unchecked > 0 {
+            parts.append(coverage.unchecked == 1
+                ? "One more app could not be checked."
+                : "\(coverage.unchecked) more apps could not be checked.")
+        }
+        // Only where it is news. A Mac with no self-updating apps gets no clause about them, and a
+        // Mac where they are the whole story has already said so in `sentence`.
+        if coverage.selfUpdating > 0, coverage.checked > 0 || coverage.unchecked > 0 {
+            parts.append(coverage.selfUpdating == 1
+                ? "One app keeps itself up to date."
+                : "\(coverage.selfUpdating) apps keep themselves up to date.")
+        }
+        return parts.joined(separator: " ")
     }
 }
 

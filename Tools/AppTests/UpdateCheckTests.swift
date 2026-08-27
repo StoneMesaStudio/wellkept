@@ -543,9 +543,13 @@ import WellkeptCore
         #expect(result.disclosureSentence.contains("Nothing was sent"))
     }
 
-    /// ⚠️ "Keeps itself up to date" and "cannot be checked" are opposite messages, and collapsing
+    /// ⚠️ **"Keeps itself up to date" and "cannot be checked" are opposite messages**, and collapsing
     /// them makes a well-kept Mac look neglected. They are also counted differently: a self-updating
-    /// app is in scope but was never compared, so it inflates neither half of the coverage pair.
+    /// app is in scope, was never compared, and is **not** one of the ones we could not check.
+    ///
+    /// Two apps here, one of each. The caveat is about one app, not two — and if this ever reads
+    /// "2", Chrome is being reported as unknown on the summary line while its own row says the
+    /// opposite four lines below.
     @Test func selfUpdatingIsNotTheSameAsUncheckable() async {
         let apps = [app("Google Chrome", "com.google.Chrome"),
                     app("Some Utility", "studio.stonemesa.wellkept.test.utility")]
@@ -555,7 +559,14 @@ import WellkeptCore
         let coverage = UpdateCoverage.measuring(updated)
         #expect(coverage.checked == 0)
         #expect(coverage.checkable == 2)
-        #expect(coverage.sentence.contains("2"))
+        #expect(coverage.selfUpdating == 1)
+        #expect(coverage.unchecked == 1)
+        #expect(coverage.sentence.contains("the one app"))
+
+        // And the sentence the section actually shows keeps the two apart, in both directions.
+        let tally = UpdateTally.measuring(updated)
+        #expect(tally.sentenceWithCoverage.contains("One app keeps itself up to date."))
+        #expect(!tally.sentenceWithCoverage.contains("2 more apps could not be checked"))
     }
 
     /// The standings drop straight into the inventory, which is the whole point of keying them by

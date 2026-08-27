@@ -73,6 +73,45 @@ struct ContainerGuardTests {
             """)
     }
 
+    /// ⚠️ **Nothing anywhere may hand the gate a `true`.**
+    ///
+    /// This is the one the two incidents on 2026-08-27 actually needed. The gate was in place both
+    /// times; what walked into the sandbox folder was code that passed the grant in as a constant —
+    /// under `xctest`, where the dialog names **Xcode** and the owner has to press Don't Allow on a
+    /// prompt about a process he did not start.
+    ///
+    /// The app itself never writes the literal either: `read(appsOnThisMac:)` passes
+    /// `FullDiskAccess.isGranted`, which is a probe of a file we are permitted to attempt. So a
+    /// literal `true` at this call site has exactly one meaning — somebody is about to raise a
+    /// privacy dialog on a machine that did not agree to it.
+    @Test("Nobody passes the gate a constant true")
+    func nobodyForcesTheGateOpen() {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+        var offenders: [String] = []
+
+        for relative in Self.swiftFiles() {
+            guard let text = try? String(contentsOf: root.appendingPathComponent(relative), encoding: .utf8) else { continue }
+            for (number, line) in text.split(separator: "\n", omittingEmptySubsequences: false).enumerated() {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                if trimmed.hasPrefix("//") || trimmed.hasPrefix("///") { continue }
+                // ⚠️ **The survey specifically, not every `fullDiskAccess:` in the build.** The
+                // first version of this check matched `GrantReader.read(fullDiskAccess: true, …)`
+                // five times in the Security tests, which read a TCC fixture out of a temp folder
+                // and open nothing gated. A guard that cries wolf gets deleted.
+                if line.contains("survey(fullDiskAccess: true") {
+                    offenders.append("\(relative):\(number + 1)")
+                }
+            }
+        }
+
+        #expect(offenders.isEmpty, """
+            These force the Full Disk Access gate open with a constant: \(offenders.joined(separator: ", ")).
+            That walks another app's sandbox folder whether or not the grant is held, and under the
+            test harness the dialog it raises names Xcode. Pass FullDiskAccess.isGranted, or pass
+            false.
+            """)
+    }
+
     @Test("The gated places are gated")
     func theGateExists() {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()

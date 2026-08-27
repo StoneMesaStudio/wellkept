@@ -126,8 +126,15 @@ enum FullDiskAccess {
         switch section {
         case .storage:
             String(localized: "Full Disk Access is off, so this cannot see everything using your space.")
+        // ⚠️ **Corrected 2026-08-27, against the measurement.** This used to say "some apps will be
+        // missing from the list", which is not true of anything Apps does: the inventory comes from
+        // LaunchServices, versions from the storefront and Homebrew, crashes from a folder in your
+        // own Library — none of them gated. **One row needs the grant**, the one that looks at what
+        // a removed app left behind, because that means reading another app's sandbox folder. A
+        // notice claiming the app list is short would send somebody to System Settings to fix a
+        // problem they do not have.
         case .apps:
-            String(localized: "Full Disk Access is off, so some apps will be missing from the list.")
+            String(localized: "Full Disk Access is off, so this cannot see what removed apps left behind. Nothing else here needs it.")
         case .security:
             String(localized: "Full Disk Access is off, so the camera, microphone and screen list is empty rather than short.")
         case .backup:

@@ -312,6 +312,12 @@ private struct PermissionSettings: View {
                 ForEach(WellkeptPermission.all) { permission in
                     PermissionCard(permission: permission)
                 }
+
+                // The one thing on this page that is not a macOS permission: whether Wellkept may
+                // ask anybody whether your apps are current. It lives here because this is the page
+                // about what the app is allowed to do, and because it is the switch behind the
+                // question the Apps section asks on its first run.
+                UpdateCheckSetting()
             }
             .padding(Space.page)
             .readableColumn(Layout.readableColumn)

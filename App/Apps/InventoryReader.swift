@@ -803,20 +803,33 @@ enum InventoryReader {
     /// ⚠️ **Three numbers, kept apart, all three said.** The apps a person recognises, the apps that
     /// come with macOS, and the bundles that are not apps at all. Any two of them added together is
     /// a number that overstates what is on the Mac, and the whole section exists to not do that.
-    static func row(inventory: AppsInventory, bundledWithMacOS: [InstalledApp] = []) -> AppsRow {
+    /// - Parameter blockShownAbove: whether the "What is installed" panel is on screen. It says the
+    ///   count, the origins and where the other bundles went, one inch above this row — so when it
+    ///   is there, the row must not say any of it again. **Rendered together they printed the same
+    ///   paragraph twice, an inch apart** (caught in the 2026-08-27 shots, not by a test), which is
+    ///   the house rule about never saying the same thing twice on one screen. The row keeps the
+    ///   figure, because a row without one is not a row, and it keeps the hand-added note, which is
+    ///   the one thing the count alone cannot be checked against.
+    static func row(inventory: AppsInventory,
+                    bundledWithMacOS: [InstalledApp] = [],
+                    blockShownAbove: Bool = false) -> AppsRow {
         AppsRow(topic: .installed,
-                headline: headline(inventory),
+                headline: headline(inventory, alone: !blockShownAbove),
                 measure: measure(inventory.apps.count),
-                reason: reason(inventory, bundledWithMacOS: bundledWithMacOS),
+                reason: blockShownAbove ? nil : reason(inventory, bundledWithMacOS: bundledWithMacOS),
                 details: details(inventory, bundledWithMacOS: bundledWithMacOS))
     }
 
-    static func headline(_ inventory: AppsInventory) -> String {
+    /// - Parameter alone: false when the panel above has already said the count. Then this sentence
+    ///   is only the part the panel does not carry.
+    static func headline(_ inventory: AppsInventory, alone: Bool = true) -> String {
         let sentence: String
         switch inventory.apps.count {
-        case 0:  sentence = "No apps were found in the folders apps live in."
-        case 1:  sentence = "One app is installed."
-        default: sentence = "\(inventory.apps.count) apps are installed."
+        case 0:  sentence = alone ? "No apps were found in the folders apps live in."
+                                  : "No apps were found in the folders apps live in."
+        case 1:  sentence = alone ? "One app is installed." : "Every app you installed yourself."
+        default: sentence = alone ? "\(inventory.apps.count) apps are installed."
+                                  : "Every app in your Applications and Utilities folders."
         }
 
         // The hand-added ones are named on the row rather than behind Options. A list that quietly

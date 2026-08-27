@@ -143,14 +143,25 @@ struct PermissionNoticeLine: View {
 
     private let center = PermissionCenter.shared
 
+    /// ⚠️ **A seam for the shot harness, and for nothing else.** `nil` — the only value the app ever
+    /// passes — reads this Mac's real answer.
+    ///
+    /// It exists because this notice draws only while the grant is OFF, which makes it the one piece
+    /// of the app that cannot be photographed on a machine where it is on. Without the seam, whether
+    /// the refused screen gets a picture at all depends on the permissions of whoever ran the shots
+    /// — and the refused screen is precisely the one nobody sees by accident.
+    private let grantedOverride: Bool?
+
     @Environment(\.palette) private var palette
 
-    init(section: SectionID) {
+    init(section: SectionID, granted: Bool? = nil) {
         self.section = section
+        self.grantedOverride = granted
     }
 
     var body: some View {
-        if !center.fullDiskAccessGranted, let shortfall = FullDiskAccess.shortfall(for: section) {
+        if !(grantedOverride ?? center.fullDiskAccessGranted),
+           let shortfall = FullDiskAccess.shortfall(for: section) {
             // The button sits UNDER the sentence, not beside it. Beside it, the button claims a
             // column and the sentence wraps into a four-line ribbon three words wide — measured,
             // not guessed: see the 2026-08-27 shots of the Security face.
