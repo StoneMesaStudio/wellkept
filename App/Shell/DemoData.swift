@@ -31,14 +31,17 @@ import WellkeptCore
 //    going to break a drive to look at that screen, so unless it is invented it never gets looked
 //    at at all.
 //
-//  For the other five sections the difference is a **filter, not a second set of inventions**: the
-//  healthy Mac is the same list with everything at `.attention` or worse taken out. Two
-//  hand-maintained copies of six sections' findings would disagree with each other inside a month.
+//  For the four sections with no engine yet the difference is a **filter, not a second set of
+//  inventions**: the healthy Mac is the same list with everything at `.attention` or worse taken
+//  out. Two hand-maintained copies of four sections' findings would disagree with each other inside
+//  a month.
 //
-//  ## Hardware is built out of the real row builders
+//  ## Hardware and Security are built out of the real row builders
 //
 //  The Hardware readings below are handed to `DriveReader.reading(for:)`, `BatteryReader.row(_:)`
-//  and `HardwareReport.init` — the same functions the real check uses. Only the *facts* are
+//  and `HardwareReport.init`, and the Security rows to `ProtectionReader.row`, `GrantReader.row`,
+//  `StartupReader.row`, `BrowserExtensionReader.row`, `ReachableReader.row` and
+//  `MacOSFindingsReader.answer` — the same functions the real checks use. Only the *facts* are
 //  invented. A demo that hand-wrote the finished sentences would photograph a screen whose wording
 //  the app is no longer capable of producing, which is the failure this whole harness exists to
 //  avoid from the other direction.
@@ -52,7 +55,9 @@ import WellkeptCore
 enum DemoMachine: String, CaseIterable, Identifiable, Sendable {
     /// Everything checked, nothing wrong. The default, because it is the product's own case.
     case healthy
-    /// A drive declaring failure, a failed battery, panics, and memory pressure.
+    /// A drive declaring failure, a failed battery, panics, memory pressure — and, in Security,
+    /// FileVault and the firewall both off, a permission held by an app that is gone, an app whose
+    /// signature no longer matches, and something macOS found and dealt with.
     case problems
 
     var id: String { rawValue }
@@ -71,7 +76,8 @@ enum DemoMachine: String, CaseIterable, Identifiable, Sendable {
         case .healthy:
             "Everything checked and nothing wrong — what most Macs, most of the time, look like."
         case .problems:
-            "A failing drive, a failed battery, kernel panics and a Mac running out of memory."
+            "A failing drive, a failed battery, kernel panics, a Mac running out of memory, and "
+          + "FileVault and the firewall both switched off."
         }
     }
 }
@@ -106,7 +112,7 @@ enum DemoData {
         let found = findings(machine)
         var out: [SectionID: CheckRecord] = [:]
 
-        for section in SectionID.checkable where section != .hardware {
+        for section in SectionID.checkable where section != .hardware && section != .security {
             let mine = found.filter { $0.section == section }
             out[section] = CheckRecord(
                 section: section,
@@ -119,6 +125,10 @@ enum DemoData {
         // on the sidebar's audit trail and the chip on the Hardware screen are then the same fact,
         // and cannot drift apart.
         out[.hardware] = hardware(machine).record
+
+        // Security's line, for the same reason: the chip on the sidebar's audit trail and the chip
+        // on the Security screen are one fact, and `SecurityReport.record` is where it lives.
+        out[.security] = security(machine).report.record
 
         // Overview's own line is the whole sweep: the oldest of the six, because that is when the
         // sweep began, and honest about any partial look inside it.
@@ -139,13 +149,15 @@ enum DemoData {
 
     /// Every row demo mode shows, for one machine.
     ///
-    /// ⚠️ Hardware contributes **exactly one** row here, whatever it found — `overviewFinding`.
-    /// A section that posts five rows to Overview has turned the summary into a second copy of
-    /// itself, and the section a person should actually open gets lost among its own details.
+    /// ⚠️ Hardware and Security each contribute **exactly one** row here, whatever they found —
+    /// their `overviewFinding`. A section that posts five rows to Overview has turned the summary
+    /// into a second copy of itself, and the section a person should actually open gets lost among
+    /// its own details.
     static func findings(_ machine: DemoMachine) -> [Finding] {
-        let others = storage + apps + security + backup + changes
+        let others = storage + apps + backup + changes
         let kept = machine == .healthy ? others.filter { $0.severity < .attention } : others
-        return [hardware(machine).overviewFinding].compactMap { $0 } + kept
+        return [hardware(machine).overviewFinding, security(machine).report.overviewFinding]
+            .compactMap { $0 } + kept
     }
 
     // MARK: - Hardware
@@ -395,33 +407,441 @@ enum DemoData {
 
     // MARK: Security
 
-    private static let security: [Finding] = [
-        Finding(section: .security,
-                title: "The firewall is off",
-                reason: "Anything on the same Wi-Fi can reach a service running on this Mac. Screen Sharing and Remote Login are both on, so there are two.",
-                severity: .problem,
-                verb: "Open Firewall settings"),
-        Finding(section: .security,
-                title: "Five apps can record the screen",
-                reason: "Two of them — CleanShot X and an old Loom install — have not been opened in over a year.",
-                severity: .information,
-                measure: "5 apps",
-                verb: "Open Screen Recording"),
-        Finding(section: .security,
-                title: "FileVault is on",
-                reason: "The disk is encrypted, and the recovery key is held by Apple rather than written down here.",
-                severity: .information),
-        Finding(section: .security,
-                title: "macOS has found nothing",
-                reason: "XProtect signatures are 4 days old. No malware removal has run on this Mac.",
-                severity: .information,
-                measure: "v5286"),
-        Finding(section: .security,
-                title: "Gatekeeper is on, and one app is exempt",
-                reason: "An old build of HandBrake was allowed through by hand in 2023. That exemption is still in place.",
-                severity: .information,
-                verb: "Reveal in Finder"),
+    /// The whole Security answer for one machine, built once so its `Finding` keeps a stable `id`.
+    ///
+    /// ⚠️ Computed once and cached, not rebuilt per call. `SecurityReport.overviewFinding` mints a
+    /// fresh `UUID`, and a `Finding` with a new identity on every draw is how a list animates itself
+    /// to pieces.
+    ///
+    /// ## ⚠️ Built out of the real row builders, exactly as Hardware is
+    ///
+    /// Every row below comes from `ProtectionReader.row`, `GrantReader.row`, `StartupReader.row`,
+    /// `BrowserExtensionReader.row`, `ReachableReader.row` and `MacOSFindingsReader.answer` — the
+    /// same functions the real check calls. Only the *facts* are invented. A demo that hand-wrote
+    /// the finished sentences would photograph a screen whose wording the app is no longer capable
+    /// of producing, which is the failure the whole harness exists to avoid from the other side.
+    static func security(_ machine: DemoMachine) -> SecurityAnswer {
+        switch machine {
+        case .healthy:  healthySecurity
+        case .problems: unwellSecurity
+        }
+    }
+
+    // MARK: Security — a healthy Mac
+
+    /// Six rows, all clean, and the window stated.
+    ///
+    /// ⚠️ **This is the case the product exists to be able to show**, and the one worth reading
+    /// hardest: nothing is amber, nothing is red, and the summary still says what was looked at and
+    /// how far back. Lockdown Mode reports as "this Mac does not report it" here because that is
+    /// true on every Mac ever made — there is no readable state for it anywhere — and a demo that
+    /// quietly showed it as On would be teaching a screen the app cannot draw.
+    private static let healthySecurity: SecurityAnswer = {
+        let block = ProtectionsBlock(
+            protections: [
+                Protection(kind: .fileVault, state: .on, detail: "the disk is locked"),
+                Protection(kind: .systemProtection, state: .on,
+                           detail: "every protected part of macOS"),
+                Protection(kind: .gatekeeper, state: .on,
+                           detail: "apps are checked before they run"),
+                Protection(kind: .secureBoot, state: .on, detail: "Full Security"),
+                Protection(kind: .firewall, state: .on,
+                           detail: "limiting connections, with stealth mode on"),
+                Protection(kind: .automaticSecurityUpdates, state: .on,
+                           detail: "security fixes and system files both"),
+                Protection(kind: .automaticLogin, state: .off,
+                           detail: "a password is asked for at startup"),
+                // Not a guess and not an omission: no reading anywhere on macOS reports it.
+                Protection(kind: .lockdownMode, state: .unreadable(.notReported)),
+            ],
+            xprotectVersion: "5361",
+            xprotectUpdated: daysAgo(6))
+
+        let protections = ProtectionReader.row(
+            block: block,
+            details: [
+                DetailPair("Allowed to accept connections", "14 apps"),
+                DetailPair("XProtect Remediator", "Version 161"),
+                // ⚠️ No recovery-key sentence here. It belongs to a Mac whose disk is NOT
+                // encrypted — it is the warning that turning FileVault on creates a key you can
+                // lose. Repeating it on a Mac that is already encrypted is advice about a decision
+                // already made, and it is the one piece of advice in this app that can cost
+                // somebody every file they own.
+            ],
+            notes: [],
+            managedSentence: nil)
+
+        let grants = GrantReader.tidy(healthyGrants)
+        let watch = GrantReader.row(grants: grants,
+                                    unplaceable: ["com.example.sync.helper"],
+                                    systemServicesUsingLocation: 3)
+
+        let startup = StartupReader.row(from: healthyStartup)
+        let extensions = BrowserExtensionReader.row(from: healthyExtensions)
+
+        let reachable = ReachableReader.row(from: ReachableReader.Survey(
+            sockets: [
+                // Bonjour and the printing system: macOS's own, on every Mac, and proof of no
+                // sharing service at all.
+                ReachableReader.Socket(port: 5353, address: "*", isUDP: true),
+                ReachableReader.Socket(port: 631, address: "127.0.0.1", isUDP: false),
+            ],
+            guestLoginEnabled: false,
+            sharedFolders: []))
+
+        let found = MacOSFindingsReader.answer(
+            from: MacOSFindingsReader.Survey(
+                results: [
+                    MacOSFindingsReader.ScanResult(scanner: "Adload", at: minutesAgo(95),
+                                                   outcome: .clean,
+                                                   statusMessage: "NoThreatDetected",
+                                                   statusCode: 0),
+                    MacOSFindingsReader.ScanResult(scanner: "BlueTop", at: minutesAgo(96),
+                                                   outcome: .clean,
+                                                   statusMessage: "NoThreatDetected",
+                                                   statusCode: 0),
+                    MacOSFindingsReader.ScanResult(scanner: "Pirrit", at: minutesAgo(97),
+                                                   outcome: .clean,
+                                                   statusMessage: "NoThreatDetected",
+                                                   statusCode: 0),
+                    // ⚠️ The ordinary case, on purpose. About twenty of these run when the Mac is
+                    // idle and one being stopped mid-flight is what a normal Tuesday looks like.
+                    // A demo with a perfect twenty would teach that anything else is a fault.
+                    MacOSFindingsReader.ScanResult(scanner: "KeySteal", at: minutesAgo(98),
+                                                   outcome: .didNotFinish,
+                                                   statusMessage: "PluginCanceled",
+                                                   statusCode: 4),
+                ],
+                earliestRecord: daysAgo(12),
+                lastActivity: minutesAgo(95),
+                isAdministrator: true),
+            now: launched)
+
+        return SecurityAnswer(
+            report: SecurityReport(block: block,
+                                   rows: [protections, watch, startup, extensions,
+                                          reachable, found.row],
+                                   ranAt: minutesAgo(11),
+                                   measuredDays: found.measuredDays),
+            grants: grants,
+            unplaceable: ["com.example.sync.helper"],
+            systemServicesUsingLocation: 3)
+    }()
+
+    /// What a working Mac's permission list actually looks like: a handful of apps that need what
+    /// they hold, and Wellkept itself, which holds Full Disk Access and says so.
+    private static let healthyGrants: [Grant] = [
+        Grant(appName: "Zoom", bundleID: "us.zoom.xos", permission: .camera,
+              signature: .matches, grantedAt: daysAgo(240)),
+        Grant(appName: "Zoom", bundleID: "us.zoom.xos", permission: .microphone,
+              signature: .matches, grantedAt: daysAgo(240)),
+        Grant(appName: "Sample Meetings", bundleID: "com.example.meetings", permission: .camera,
+              signature: .matches, grantedAt: daysAgo(88)),
+        Grant(appName: "Sample Meetings", bundleID: "com.example.meetings", permission: .screenRecording,
+              signature: .matches, grantedAt: daysAgo(88)),
+        Grant(appName: "Rectangle", bundleID: "com.knollsoft.Rectangle", permission: .accessibility,
+              signature: .matches, grantedAt: daysAgo(410)),
+        Grant(appName: "Wellkept", bundleID: "studio.stonemesa.wellkept", permission: .fullDiskAccess,
+              signature: .matches, grantedAt: daysAgo(3), isWellkept: true),
+        Grant(appName: "Sample Weather", bundleID: "com.example.weather", permission: .location,
+              signature: .matches),
     ]
+
+    private static let healthyStartup = StartupReader.Survey(
+        items: [
+            StartupReader.Item(label: "com.example.backups.agent",
+                               name: "Sample Backups",
+                               developer: "Example Software",
+                               program: "/Applications/Sample Backups.app",
+                               origin: .userAgent,
+                               trigger: .onASchedule("every day at 2:30 AM"),
+                               disabled: false,
+                               file: "~/Library/LaunchAgents/com.example.backups.agent.plist"),
+            StartupReader.Item(label: "com.example.sync",
+                               name: "Sample Sync",
+                               developer: "Example Software",
+                               program: "/Applications/Sample Sync.app",
+                               origin: .userAgent,
+                               trigger: .atLogin,
+                               disabled: false,
+                               file: "~/Library/LaunchAgents/com.example.sync.plist"),
+            StartupReader.Item(label: "com.example.printer.daemon",
+                               name: "Sample Printer Helper",
+                               developer: "Example Peripherals",
+                               program: "/Library/PrivilegedHelperTools/com.example.printer",
+                               origin: .globalDaemon,
+                               trigger: .whenSomethingAsksForIt,
+                               disabled: false,
+                               file: "/Library/LaunchDaemons/com.example.printer.daemon.plist"),
+        ],
+        carriedInsideApps: [
+            StartupReader.Item(label: "com.example.chat.helper",
+                               name: "Sample Chat",
+                               developer: "Example Software",
+                               program: "/Applications/Sample Chat.app",
+                               origin: .appBundled,
+                               trigger: .atLogin,
+                               disabled: false,
+                               file: "/Applications/Sample Chat.app"),
+        ],
+        // ⚠️ The rule that defines this row. Two 181-byte files whose whole body is an empty
+        // dictionary: they start nothing, they are reported as leftovers, and they are NOT counted.
+        // A tool that counts files says "Example runs 2 things at login" when nothing runs, and
+        // that is exactly the scare other cleaners sell.
+        leftovers: [
+            StartupReader.Leftover(file: "~/Library/LaunchAgents/com.example.updater.agent.plist",
+                                   why: "The file names no program, so it starts nothing."),
+            StartupReader.Leftover(file: "~/Library/LaunchAgents/com.example.updater.xpc.plist",
+                                   why: "The file names no program, so it starts nothing."),
+        ],
+        filesRead: 5,
+        foldersSearched: ["~/Library/LaunchAgents", "/Library/LaunchAgents", "/Library/LaunchDaemons"])
+
+    private static let healthyExtensions = BrowserExtensionReader.Survey(
+        extensions: [
+            BrowserExtensionReader.Extension(
+                name: "Sample Blocker",
+                identifier: "com.example.blocker.extension",
+                browser: .safari,
+                publisher: "Example Software",
+                version: "5.2",
+                reach: .everySite,
+                enabled: nil),
+            BrowserExtensionReader.Extension(
+                name: "Sample Passwords",
+                identifier: "aaaabbbbccccddddeeeeffffgggghhhh",
+                browser: .chrome,
+                publisher: nil,
+                version: "3.1.4",
+                reach: .everySite,
+                enabled: true),
+            BrowserExtensionReader.Extension(
+                name: "Sample Reader",
+                identifier: "iiiijjjjkkkkllllmmmmnnnnoooopppp",
+                browser: .chrome,
+                publisher: nil,
+                version: "1.9",
+                reach: .onlyWhenYouClickIt,
+                enabled: true),
+        ],
+        browsersSearched: [.safari, .chrome],
+        // Counted, never listed. Chrome ships eight of its own and Firefox five; a tool that counts
+        // them says eighteen extensions on a Mac where somebody installed three.
+        shippedWithBrowser: 13,
+        profilesRead: 2)
+
+    // MARK: Security — a Mac with problems
+
+    /// The paths nobody will otherwise see: FileVault off, the firewall off, a permission held by
+    /// an app that is gone, an app whose signature no longer matches what was approved, and a real
+    /// XProtect Remediator finding.
+    ///
+    /// ⚠️ **Still amber, never red.** All nine of Security's conditions are `.attention` by
+    /// construction — see `SecurityConcern` — so this is the most alarming this section is capable
+    /// of being, and that is deliberate. Every one of these is something a person may have chosen
+    /// on purpose.
+    private static let unwellSecurity: SecurityAnswer = {
+        let block = ProtectionsBlock(
+            protections: [
+                Protection(kind: .fileVault, state: .off, detail: "the disk is not locked",
+                           settingsPane: SystemSettingsPane.fileVault.rawValue),
+                Protection(kind: .systemProtection, state: .on,
+                           detail: "every protected part of macOS"),
+                Protection(kind: .gatekeeper, state: .on,
+                           detail: "apps are checked before they run"),
+                Protection(kind: .secureBoot, state: .on, detail: "Full Security"),
+                Protection(kind: .firewall, state: .off,
+                           detail: "no connection is being filtered",
+                           settingsPane: SystemSettingsPane.firewall.rawValue),
+                Protection(kind: .automaticSecurityUpdates, state: .on,
+                           detail: "security fixes and system files both"),
+                Protection(kind: .automaticLogin, state: .off,
+                           detail: "a password is asked for at startup"),
+                Protection(kind: .lockdownMode, state: .unreadable(.notReported)),
+            ],
+            xprotectVersion: "5361",
+            xprotectUpdated: daysAgo(9))
+
+        let protections = ProtectionReader.row(
+            block: block,
+            details: [
+                DetailPair("Allowed to accept connections", "Not filtered — the firewall is off"),
+                DetailPair("XProtect Remediator", "Version 161"),
+            ],
+            // The one piece of advice in this app that can cost somebody every file they own. It
+            // comes from the reader's own constant rather than being retyped, so the demo cannot
+            // photograph a sentence the app no longer says.
+            notes: [ProtectionReader.recoveryKeySentence],
+            managedSentence: nil)
+
+        let grants = GrantReader.tidy(unwellGrants)
+        let watch = GrantReader.row(grants: grants,
+                                    unplaceable: ["com.example.old.helper"],
+                                    systemServicesUsingLocation: 3)
+
+        let startup = StartupReader.row(from: unwellStartup)
+        let extensions = BrowserExtensionReader.row(from: unwellExtensions)
+
+        let reachable = ReachableReader.row(from: ReachableReader.Survey(
+            sockets: [
+                ReachableReader.Socket(port: 5900, address: "*", isUDP: false),
+                ReachableReader.Socket(port: 22, address: "*", isUDP: false),
+                ReachableReader.Socket(port: 5353, address: "*", isUDP: true),
+            ],
+            guestLoginEnabled: true,
+            sharedFolders: [
+                ReachableReader.SharedFolder(name: "Public Folder",
+                                             path: "~/Public",
+                                             guestAccess: true),
+            ]))
+
+        let found = MacOSFindingsReader.answer(
+            from: MacOSFindingsReader.Survey(
+                results: [
+                    // ⚠️ The row nobody will otherwise see. macOS found it and removed it at the
+                    // time — before Wellkept looked — which is why the copy calls it a record of
+                    // something already handled rather than a thing to act on.
+                    MacOSFindingsReader.ScanResult(scanner: "Adload", at: daysAgo(4),
+                                                   outcome: .dealtWith,
+                                                   statusMessage: "ThreatRemediated",
+                                                   statusCode: 2),
+                    MacOSFindingsReader.ScanResult(scanner: "Pirrit", at: minutesAgo(140),
+                                                   outcome: .clean,
+                                                   statusMessage: "NoThreatDetected",
+                                                   statusCode: 0),
+                    MacOSFindingsReader.ScanResult(scanner: "BlueTop", at: minutesAgo(141),
+                                                   outcome: .didNotFinish,
+                                                   statusMessage: "PluginCanceled",
+                                                   statusCode: 4),
+                ],
+                earliestRecord: daysAgo(9),
+                lastActivity: minutesAgo(140),
+                isAdministrator: true),
+            now: launched)
+
+        return SecurityAnswer(
+            report: SecurityReport(block: block,
+                                   rows: [protections, watch, startup, extensions,
+                                          reachable, found.row],
+                                   ranAt: minutesAgo(11),
+                                   measuredDays: found.measuredDays),
+            grants: grants,
+            unplaceable: ["com.example.old.helper"],
+            systemServicesUsingLocation: 3)
+    }()
+
+    /// Two of the nine conditions live in here, and nothing else on the list is a fault.
+    ///
+    /// - **Loom is gone and its screen-recording permission is not.** Anything later installed
+    ///   under that identity starts with the permission already granted.
+    /// - **CleanShot X no longer signs as the app the permission was given to.** That is a
+    ///   statement about the signature, never an accusation about the software.
+    private static let unwellGrants: [Grant] = [
+        Grant(appName: "Zoom", bundleID: "us.zoom.xos", permission: .camera,
+              signature: .matches, grantedAt: daysAgo(700)),
+        Grant(appName: "Zoom", bundleID: "us.zoom.xos", permission: .microphone,
+              signature: .matches, grantedAt: daysAgo(700)),
+        Grant(appName: "CleanShot X", bundleID: "com.example.cleanshot",
+              permission: .screenRecording,
+              stillInstalled: true, signature: .changed, grantedAt: daysAgo(520)),
+        Grant(appName: "Loom", bundleID: "com.example.loom", permission: .screenRecording,
+              stillInstalled: false, signature: .unknown, grantedAt: daysAgo(880)),
+        Grant(appName: "Sample Remote", bundleID: "com.example.remote", permission: .accessibility,
+              signature: .matches, grantedAt: daysAgo(300)),
+        Grant(appName: "Wellkept", bundleID: "studio.stonemesa.wellkept", permission: .fullDiskAccess,
+              signature: .matches, grantedAt: daysAgo(1), isWellkept: true),
+    ]
+
+    private static let unwellStartup = StartupReader.Survey(
+        items: [
+            StartupReader.Item(label: "com.example.updater.agent",
+                               name: "Sample Updater",
+                               developer: "Example Software",
+                               program: "/Library/Application Support/Example/Updater",
+                               origin: .globalAgent,
+                               trigger: .keptRunning,
+                               disabled: false,
+                               file: "/Library/LaunchAgents/com.example.updater.agent.plist"),
+            StartupReader.Item(label: "com.example.remote.daemon",
+                               name: "Sample Remote Helper",
+                               // ⚠️ `nil` means UNRECOGNISED, and the word for it is never
+                               // "suspicious". Plenty of good software is unsigned; saying more
+                               // than we know is how a health check turns into an accusation.
+                               developer: nil,
+                               program: "/usr/local/bin/example-remote",
+                               origin: .globalDaemon,
+                               trigger: .atStartup,
+                               disabled: false,
+                               file: "/Library/LaunchDaemons/com.example.remote.daemon.plist"),
+            StartupReader.Item(label: "com.example.telemetry",
+                               name: "Sample Telemetry",
+                               developer: "Example Analytics",
+                               program: "/Library/Application Support/Example/telemetry",
+                               origin: .globalDaemon,
+                               trigger: .onASchedule("every 6 hours"),
+                               disabled: false,
+                               file: "/Library/LaunchDaemons/com.example.telemetry.plist"),
+            StartupReader.Item(label: "com.example.old.launcher",
+                               name: "Sample Legacy Launcher",
+                               developer: nil,
+                               program: "/Applications/Sample Legacy.app",
+                               origin: .userAgent,
+                               trigger: .atLogin,
+                               disabled: true,
+                               file: "~/Library/LaunchAgents/com.example.old.launcher.plist"),
+        ],
+        carriedInsideApps: [],
+        leftovers: [
+            StartupReader.Leftover(file: "/Library/LaunchDaemons/com.example.gone.plist",
+                                   why: "The program it names is not on this Mac any more."),
+        ],
+        filesRead: 5,
+        foldersSearched: ["~/Library/LaunchAgents", "/Library/LaunchAgents", "/Library/LaunchDaemons"])
+
+    /// Three extensions that can read every page — and the wording never accuses them, because
+    /// reading every page is exactly what a password manager, a content blocker or an assistant
+    /// needs in order to work at all. None of the nine conditions covers it, so this row cannot go
+    /// amber however alarming the list looks.
+    private static let unwellExtensions = BrowserExtensionReader.Survey(
+        extensions: [
+            BrowserExtensionReader.Extension(
+                name: "Sample Coupons",
+                identifier: "qqqqrrrrssssttttuuuuvvvvwwwwxxxx",
+                browser: .chrome,
+                publisher: nil,
+                version: "12.0.3",
+                reach: .everySite,
+                enabled: true),
+            BrowserExtensionReader.Extension(
+                name: "Sample Passwords",
+                identifier: "aaaabbbbccccddddeeeeffffgggghhhh",
+                browser: .chrome,
+                publisher: nil,
+                version: "3.1.4",
+                reach: .everySite,
+                enabled: true),
+            BrowserExtensionReader.Extension(
+                name: "Sample Assistant",
+                identifier: "yyyyzzzz0000111122223333444455556",
+                browser: .chrome,
+                publisher: nil,
+                version: "0.9.2",
+                reach: .everySite,
+                enabled: true),
+            BrowserExtensionReader.Extension(
+                name: "Sample Blocker",
+                identifier: "com.example.blocker.extension",
+                browser: .safari,
+                publisher: "Example Software",
+                version: "5.2",
+                reach: .namedSites(["example.com", "example.org"]),
+                // Safari will not say which of its extensions are switched on. `nil` is that, and
+                // it is never read as off.
+                enabled: nil),
+        ],
+        browsersSearched: [.safari, .chrome],
+        shippedWithBrowser: 13,
+        profilesRead: 2)
 
     // MARK: Backup
 

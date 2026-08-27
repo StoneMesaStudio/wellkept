@@ -48,9 +48,12 @@ import WellkeptCore
 //  ⚠️ The folder is `drwxrwx--- root:_analyticsusers`, and `_analyticsusers` nests exactly one
 //  group: `admin`. **Only an administrator account can read it.** That is decided by the kind of
 //  account you sign in with, not by a privacy setting — the same gate as kernel panics, and
-//  **Full Disk Access does not open it.** So a standard account gets the house sentence, no
-//  button, and the check honestly reports itself incomplete. Reporting "nothing was closed" from
-//  a folder we were refused would be the one thing this section never does.
+//  **Full Disk Access does not open it.** So a standard account gets the house sentence and no
+//  button: `Unreadable.notGrantable`, refused with nothing to offer. The check still calls itself
+//  complete, because no permission this app could ever ask for would have shown it more, and a
+//  caveat on Overview that a standard account can never clear is the warning-nobody-can-clear this
+//  product exists to avoid. What it never does is report "nothing was closed" from a folder we
+//  were refused.
 //
 //  ## The window is stated, never implied
 //
@@ -116,8 +119,11 @@ enum MemoryReader {
             )
 
         case .refused:
+            // ⚠️ `.notGrantable`, never `.notPermitted`. The obstacle is the account type, and no
+            // permission this app could ask for lifts it — so the row says so, offers nothing, and
+            // does not leave Overview carrying a caveat a standard account could never clear.
             return .unreadable(
-                .memory, .notPermitted,
+                .memory, .notGrantable,
                 about: "Whether macOS has closed anything to free memory",
                 reason: "Only an administrator account can read this Mac's memory reports. That is "
                       + "decided by the kind of account you sign in with, not by a privacy "

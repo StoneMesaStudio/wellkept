@@ -53,14 +53,15 @@ struct ShellShot {
     ///
     /// Assembled here rather than photographing `RootView` itself because `RootView` also carries
     /// the setup cover, which needs `SetupState` and would put the welcome page in every picture.
-    /// ⚠️ **Hardware is photographed as the REAL `HardwareView`, not as a generic face.** It is the
-    /// only section with an engine behind it, and a harness that kept showing the placeholder here
-    /// would certify a screen the app no longer draws.
+    /// ⚠️ **Hardware and Security are photographed as the REAL views, not as generic faces.** They
+    /// are the two sections with an engine behind them, and a harness that kept showing the
+    /// placeholder here would certify a screen the app no longer draws.
     ///
     /// It reads nothing from this Mac. In demo mode `AppState` returns an invented machine by
     /// construction, and outside demo mode `HardwareModel` has no report — the launch check is
     /// started by `RootView`, which this harness does not render, and `checkOnLaunch` refuses under
-    /// `xctest` in any case.
+    /// `xctest` in any case. `SecurityModel` has no launch check at all: Security runs only on a
+    /// press, so there is nothing here that could start its six-second sweep of this Mac.
     private func window(_ section: SectionID,
                         demo: Bool = false,
                         machine: DemoMachine = .healthy) -> some View {
@@ -71,6 +72,7 @@ struct ShellShot {
                 switch section {
                 case .overview: AnyView(OverviewView())
                 case .hardware: AnyView(HardwareView())
+                case .security: AnyView(SecurityView())
                 default:        AnyView(SectionFace(section))
                 }
             }

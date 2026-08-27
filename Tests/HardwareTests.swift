@@ -218,7 +218,12 @@ import WellkeptCore
     @Test func thereIsOneHouseSentenceForSomethingWeCouldNotRead() {
         #expect(Unreadable.notReported.sentence  == "This Mac does not report it.")
         #expect(Unreadable.notPermitted.sentence == "We were not allowed to look.")
+        #expect(Unreadable.notGrantable.sentence == "There is no permission that would let us see it.")
         #expect(Unreadable.notReported.sentence(about: "Drive wear") == "Drive wear — this Mac does not report it.")
+
+        // Three flavours, three different sentences. Two of them saying the same thing would leave
+        // the user unable to tell the row with a button from the row without one.
+        #expect(Set(Unreadable.allCases.map(\.sentence)).count == Unreadable.allCases.count)
 
         // The default headline names the row, so a row never reads as a bare shrug.
         #expect(Reading.unreadable(.battery, .notReported).headline == "Battery — this Mac does not report it.")
@@ -250,12 +255,14 @@ import WellkeptCore
         #expect(report.record.section == .hardware)
     }
 
-    /// Being refused is different, and it is the one that has to travel. Kernel panics are readable
-    /// only by an administrator account — by account type, not by any privacy setting — so the row
-    /// says so and the check honestly reports that it did not see everything.
-    @Test func beingRefusedIsWhatMakesACheckIncomplete() {
+    /// ⚠️ **A refusal only counts against the check when somebody could actually lift it.**
+    ///
+    /// `.notPermitted` is Full Disk Access: there is a switch, we can point at it, and until it is
+    /// flipped we genuinely did not see everything. That caveat belongs on Overview because a
+    /// person can clear it.
+    @Test func aRefusalSomebodyCanLiftIsWhatMakesACheckIncomplete() {
         let report = HardwareReport(facts: .unknown, readings: [
-            Reading.unreadable(.restarts, .notPermitted, about: "Kernel panics"),
+            Reading.unreadable(.drive, .notPermitted, about: "Drive wear"),
             Reading(topic: .battery, headline: "Fine."),
         ])
         #expect(!report.complete)
@@ -263,6 +270,61 @@ import WellkeptCore
         // Still Good: nothing we could see is wrong. Overview's job is to say both halves, not to
         // pick one.
         #expect(report.status == .good)
+    }
+
+    /// ⚠️ **The bug this split exists to fix.** Kernel panics are readable only by an administrator
+    /// account — by account type, not by any privacy setting — so no permission grant fixes it.
+    ///
+    /// Under the old two-state shape that was `.notPermitted`, which made the check incomplete on
+    /// every standard account for ever. Security made it fatal: every root-only Security fact is a
+    /// refusal nobody can lift, so **100% of Macs, including a flawless one**, would have carried
+    /// "I could not see everything" on Overview permanently, with no button that could clear it.
+    @Test func aRefusalNothingCanLiftLeavesTheCheckComplete() {
+        let report = HardwareReport(facts: .unknown, readings: [
+            Reading.unreadable(.restarts, .notGrantable, about: "Kernel panics"),
+            Reading(topic: .battery, headline: "Fine."),
+        ])
+        #expect(report.complete,
+                "a standard account is now permanently 'incomplete' over a log no permission opens")
+        #expect(report.record.complete)
+        #expect(report.status == .good)
+
+        // ⚠️ And it is still reported. The row says plainly that we did not see it; the only thing
+        // dropped is the unclearable caveat on Overview.
+        let row = report.reading(.restarts)
+        #expect(row?.status == .notChecked)
+        #expect(row?.unreadable == .notGrantable)
+        #expect(report.unreadableTopics.map(\.topic) == [.restarts])
+    }
+
+    /// ⚠️ **A Mac that read cleanly is never reported incomplete.** The guard the split was written
+    /// for: the only thing on earth that may put a caveat on Overview is a refusal a person can
+    /// lift, and every other state — including every kind of "we could not see it" — leaves a
+    /// flawlessly readable Mac saying so.
+    @Test func aFullyReadableMacIsNeverReportedIncomplete() {
+        let readable = HardwareReport(facts: .unknown, readings: HardwareTopic.allCases.map {
+            Reading(topic: $0, headline: "Fine.")
+        })
+        #expect(readable.complete)
+        #expect(readable.record.complete)
+
+        // And case by case, so a fourth flavour added later cannot quietly join the caveat.
+        for why in Unreadable.allCases {
+            let report = HardwareReport(facts: .unknown,
+                                        readings: [Reading.unreadable(.drive, why)])
+            #expect(report.complete == (why != .notPermitted),
+                    "\(why.rawValue) decided the wrong way on whether the check saw everything")
+        }
+    }
+
+    /// ⚠️ **The invariant that keeps the caveat clearable.** Anything that marks a check incomplete
+    /// must be something a button can lead somewhere about — otherwise Overview carries a warning
+    /// with no way out, which is how an app teaches people to ignore its warnings.
+    @Test func nothingIsIncompleteUnlessAButtonCouldFixIt() {
+        for why in Unreadable.allCases where !why.stillComplete {
+            #expect(why.mayOfferRemedy,
+                    "\(why.rawValue) makes a check incomplete but offers nobody a way to clear it")
+        }
     }
 
     /// ⚠️ **Only the refused row gets a button**, and it is enforced in the initialiser rather than
@@ -274,7 +336,12 @@ import WellkeptCore
         let notReported = Reading.unreadable(.drive, .notReported, remedy: offered)
         #expect(notReported.remedy == nil, "a row nothing can fix is offering a fix")
 
-        let refused = Reading.unreadable(.restarts, .notPermitted, remedy: offered)
+        // Refused, and nothing on this Mac can grant it. A button here would be a door with no
+        // room behind it.
+        let reserved = Reading.unreadable(.restarts, .notGrantable, remedy: offered)
+        #expect(reserved.remedy == nil, "a row no permission can open is offering a permission")
+
+        let refused = Reading.unreadable(.drive, .notPermitted, remedy: offered)
         #expect(refused.remedy == offered)
 
         // And a row that read fine cannot carry one either — there is nothing to remedy.
@@ -283,14 +350,22 @@ import WellkeptCore
 
         #expect(Unreadable.notReported.mayOfferRemedy == false)
         #expect(Unreadable.notPermitted.mayOfferRemedy == true)
+        #expect(Unreadable.notGrantable.mayOfferRemedy == false)
         #expect(Unreadable.notReported.stillComplete == true)
         #expect(Unreadable.notPermitted.stillComplete == false)
+        #expect(Unreadable.notGrantable.stillComplete == true)
+
+        // Both refusals agree that something was withheld. They disagree about everything that
+        // follows from it, which is the whole reason there are two.
+        #expect(Unreadable.notReported.wasRefused == false)
+        #expect(Unreadable.notPermitted.wasRefused)
+        #expect(Unreadable.notGrantable.wasRefused)
     }
 
     /// A refused row is allowed to carry no button at all, and usually should. There is nothing
     /// honest to offer somebody whose account type is the obstacle.
     @Test func aRefusedRowWithNothingToOfferOffersNothing() {
-        let row = Reading.unreadable(.restarts, .notPermitted, about: "Kernel panics",
+        let row = Reading.unreadable(.restarts, .notGrantable, about: "Kernel panics",
                                      reason: "Only an administrator account can read these reports. No permission setting changes that.")
         #expect(row.remedy == nil)
         #expect(row.reason?.isEmpty == false)
@@ -310,12 +385,12 @@ import WellkeptCore
         let report = HardwareReport(facts: .unknown, readings: [
             Reading.unreadable(.drive, .notReported, about: "Drive wear"),
             Reading(topic: .battery, headline: "Fine."),
-            Reading.unreadable(.restarts, .notPermitted, about: "Kernel panics"),
+            Reading.unreadable(.restarts, .notGrantable, about: "Kernel panics"),
         ])
         let unreadable = report.unreadableTopics
         #expect(unreadable.count == 2)
         #expect(unreadable.map(\.topic) == [.drive, .restarts])
-        #expect(unreadable.map(\.why) == [.notReported, .notPermitted])
+        #expect(unreadable.map(\.why) == [.notReported, .notGrantable])
     }
 }
 

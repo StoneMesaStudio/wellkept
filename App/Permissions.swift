@@ -129,7 +129,7 @@ enum FullDiskAccess {
         case .apps:
             String(localized: "Full Disk Access is off, so some apps will be missing from the list.")
         case .security:
-            String(localized: "Full Disk Access is off, so this cannot read what macOS has already blocked.")
+            String(localized: "Full Disk Access is off, so the camera, microphone and screen list is empty rather than short.")
         case .backup:
             String(localized: "Full Disk Access is off, so this cannot see every backup on this Mac.")
         case .changes:
@@ -141,22 +141,52 @@ enum FullDiskAccess {
 
     /// What the grant is for, said once, in the fewest plain words that carry it. Used by the setup
     /// step, the standing notice and Settings ▸ Permissions, so the app never contradicts itself.
+    ///
+    /// ⚠️ **It leads with the camera, the microphone and the screen, and that is a measured
+    /// decision, not a choice of emphasis.** Until 2026-08-27 this sentence sold the grant on
+    /// storage. Then the Security research measured what actually happens without it: **eleven of
+    /// the twelve permissions read exactly zero.** Not a shorter list — an empty one. So the
+    /// strongest true reason to grant it is the one that was being left out, and storage, which is
+    /// merely incomplete without it, comes second.
     static let purpose = String(localized: """
-        macOS keeps parts of this Mac private, even from you. Full Disk Access lets Wellkept read \
-        them — the records macOS keeps of what it has blocked, other apps' support files, and \
-        folders like Mail and Messages.
+        Full Disk Access lets Wellkept see which apps can use your camera, your microphone and \
+        your screen. Without it that list is empty, not short — macOS keeps it private even from \
+        you. It also lets Wellkept see everything using your storage, and the records macOS keeps \
+        of what it has already blocked.
         """)
 
     static let consequence = String(localized: """
-        Without it Wellkept still works. It just cannot see all of your storage, cannot tell you \
-        what macOS has already blocked, and will say so on the screen rather than call this Mac \
-        clean after a partial look.
+        Without it Wellkept still works. It just cannot show you which apps can watch you, cannot \
+        see all of your storage, cannot tell you what macOS has already blocked, and will say so \
+        on the screen rather than call this Mac clean after a partial look.
         """)
 
     static let reassurance = String(localized: """
         Wellkept only reads. It never deletes anything, nothing it reads leaves this Mac, and you \
         can switch this off again in System Settings whenever you like.
         """)
+
+    // MARK: - Noticing a grant that has not taken effect yet
+
+    /// **Where macOS records a Full Disk Access grant.**
+    ///
+    /// Root-owned and mode 644, so its contents are ours only with the grant itself — but its
+    /// *modification date* is readable by anybody. Measured on this Mac, 2026-08-27: `stat`
+    /// succeeds and returns a real timestamp while `open()` on the same file is refused.
+    private static let privacyStore =
+        URL(fileURLWithPath: "/Library/Application Support/com.apple.TCC/TCC.db")
+
+    /// When this Mac's privacy list was last written. `nil` where it could not be read at all,
+    /// which is never treated as "it changed".
+    ///
+    /// ⚠️ **This is the whole detection story for the dead end below**, and it is evidence rather
+    /// than a guess: the file's date moves when somebody adds or removes an app in Privacy &
+    /// Security, and it does not move otherwise.
+    static func privacyListLastChanged() -> Date? {
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: privacyStore.path)
+        else { return nil }
+        return attributes[.modificationDate] as? Date
+    }
 }
 
 // MARK: - The model
@@ -213,6 +243,25 @@ final class PermissionCenter {
     /// Deliberately not stored: it describes this run of the app, not the user.
     private(set) var visitedSettings = false
 
+    /// True when System Settings has been in front at some point since Wellkept opened, whether or
+    /// not the app is what sent them there.
+    ///
+    /// ⚠️ **The "Finish later" path is why this exists.** Somebody taps Finish later, goes to
+    /// System Settings on their own an hour afterwards, grants the permission and comes back — and
+    /// without this the app would still be saying it was not allowed, with no offer to fix it. It
+    /// reads as a broken app, and the app is right.
+    private(set) var sawSystemSettings = false
+
+    /// This Mac's privacy list has been written since Wellkept opened, and Wellkept still cannot
+    /// read. **Evidence, not a guess** — see `FullDiskAccess.privacyListLastChanged()`.
+    ///
+    /// It is the strongest thing this app can honestly say about the dead end: a grant made to an
+    /// app that is already running does not reach that app, and only starting again fixes it.
+    private(set) var privacyListChanged = false
+
+    /// The privacy list's date at the moment Wellkept opened. Everything after is compared to this.
+    @ObservationIgnored private let privacyListAtLaunch: Date? = FullDiskAccess.privacyListLastChanged()
+
     /// `nonisolated(unsafe)` for one reason, and it is a narrow one: this is written only on the
     /// main actor, in `watchForReturn()`, and read only in `deinit` — which by definition runs when
     /// nothing else holds a reference and no other thread can be touching it. Without the
@@ -220,14 +269,22 @@ final class PermissionCenter {
     /// centre created for a test would leave a live block behind.
     @ObservationIgnored private nonisolated(unsafe) var activationObserver: (any NSObjectProtocol)?
 
+    /// The same narrow exception, for the workspace notification that says which app came to the
+    /// front. Written once in `watchForSystemSettings()` on the main actor, read only in `deinit`.
+    @ObservationIgnored private nonisolated(unsafe) var settingsObserver: (any NSObjectProtocol)?
+
     init() {
         refresh()
         watchForReturn()
+        watchForSystemSettings()
     }
 
     deinit {
         if let activationObserver {
             NotificationCenter.default.removeObserver(activationObserver)
+        }
+        if let settingsObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(settingsObserver)
         }
     }
 
@@ -244,15 +301,53 @@ final class PermissionCenter {
     /// clean result from a partial look is the one lie this app must not tell.
     var everythingVisible: Bool { fullDiskAccessGranted }
 
-    /// True when the user has been to System Settings and we still cannot read.
+    /// **True when Wellkept still cannot read and there is reason to think that is only because it
+    /// was already running.**
     ///
-    /// macOS does not extend an already-running process's access the moment the switch is flipped;
-    /// the app has to start again. This is the state that offers that, rather than asking the user
-    /// whether they really did it.
-    var needsReopenToSee: Bool { visitedSettings && !fullDiskAccessGranted }
+    /// macOS does not extend an already-running process's access the moment the switch is flipped —
+    /// it offers "Quit & Reopen", and somebody who declines that keeps an app that says it was not
+    /// allowed. Three things put us here, in descending order of how certain they are:
+    ///
+    /// 1. **The privacy list was written while Wellkept was open** — measured from the store's own
+    ///    modification date, which needs no permission to read.
+    /// 2. The app sent them to System Settings this launch.
+    /// 3. System Settings was in front at some point this launch, whoever opened it.
+    ///
+    /// ⚠️ It can never be true once the grant is actually working, so there is no state in which
+    /// this offers to restart an app that has nothing to gain by restarting.
+    var needsReopenToSee: Bool {
+        !fullDiskAccessGranted && (privacyListChanged || visitedSettings || sawSystemSettings)
+    }
+
+    /// What to say at the dead end. Two versions, because one of them is a measurement and the
+    /// other is an inference, and the app does not dress the second up as the first.
+    var reopenSentence: String {
+        privacyListChanged
+            ? String(localized: """
+                This Mac's privacy list changed while Wellkept was open. If Full Disk Access was \
+                switched on for Wellkept, macOS gives it only to a copy of the app that starts \
+                afterwards.
+                """)
+            : String(localized: """
+                Wellkept still cannot read. If you have just switched Full Disk Access on, macOS \
+                gives the new setting to Wellkept only once it has started again.
+                """)
+    }
 
     func refresh() {
         permissions = [fullDiskAccess]
+
+        // Only worth asking while we are still shut out. Once the grant works there is nothing for
+        // a changed privacy list to mean, and leaving the flag set would keep an offer on screen
+        // that has already been taken.
+        guard !fullDiskAccessGranted else {
+            privacyListChanged = false
+            return
+        }
+        guard let atLaunch = privacyListAtLaunch,
+              let now = FullDiskAccess.privacyListLastChanged()
+        else { return }
+        privacyListChanged = now > atLaunch
     }
 
     private static let fullDiskID = "fullDisk"
@@ -321,4 +416,31 @@ final class PermissionCenter {
             Task { @MainActor in self?.refresh() }
         }
     }
+
+    /// Notice that System Settings has been in front, whoever opened it.
+    ///
+    /// ⚠️ This is not surveillance of what the user is doing — `NSWorkspace` announces every app
+    /// activation to every app, and all that is kept is a single Bool about one bundle identifier.
+    /// It exists so that the person who grants the permission on their own, an hour after tapping
+    /// "Finish later", is offered the restart instead of a screen that appears to be broken.
+    private func watchForSystemSettings() {
+        settingsObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] note in
+            let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
+            let identifier = app?.bundleIdentifier
+            Task { @MainActor in
+                guard let self, Self.systemSettingsIdentifiers.contains(identifier ?? "") else { return }
+                self.sawSystemSettings = true
+            }
+        }
+    }
+
+    /// System Settings on macOS 13 and later, and System Preferences before it. Both are checked
+    /// because Wellkept runs on macOS 14 and Apple has renamed this once already.
+    private static let systemSettingsIdentifiers: Set<String> = [
+        "com.apple.systempreferences", "com.apple.SystemPreferences",
+    ]
 }

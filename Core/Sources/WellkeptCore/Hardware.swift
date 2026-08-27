@@ -29,8 +29,9 @@ import Foundation
 //    nobody — Apple included — publishes what is too hot. A number nobody can act on is not
 //    information.
 //  - **Kernel panics are readable only by administrator accounts**, by account type rather than
-//    by Full Disk Access. No permission grant fixes it, which is why `Unreadable.notPermitted` is
-//    allowed to carry no button at all.
+//    by Full Disk Access. No permission grant fixes it, which is why `Unreadable.notGrantable`
+//    exists: refused, no button, and the check still honestly complete, because no run of this app
+//    on this account was ever going to see more.
 //  - **Nothing in Hardware needs Full Disk Access.** The whole section works for someone who
 //    tapped "Finish later".
 //
@@ -107,46 +108,83 @@ public enum HardwareTopic: String, CaseIterable, Sendable, Identifiable, Codable
 
 // MARK: - Something we could not read
 
-/// **The one house sentence for anything Wellkept could not read**, in exactly two flavours.
+/// **The one house sentence for anything Wellkept could not read**, in exactly three flavours.
 ///
 /// A reader returns this instead of a number. It exists so that "we do not know" is a first-class
 /// answer with one wording, rather than five sections each inventing a way to say nothing — and
 /// so that the far worse alternative, reporting a zero we never measured, has no place to hide.
 ///
-/// The two flavours are not interchangeable, and the difference decides two separate things:
+/// The three flavours are not interchangeable, and the difference decides two separate things:
 ///
 /// | | What it means | Does the row get a button? | Does it make the check incomplete? |
 /// |---|---|---|---|
 /// | `.notReported` | The machine does not have this to give | No | **No** |
-/// | `.notPermitted` | It exists, and we were refused | Only if something can actually fix it | **Yes** |
+/// | `.notPermitted` | Refused, **and the person can grant it** | Yes | **Yes** |
+/// | `.notGrantable` | Refused, and **nothing can grant it** | No | **No** |
 ///
-/// ⚠️ **`.notReported` must never mark a check incomplete.** Drive wear is unreadable on every
-/// Apple Silicon Mac ever made. If that counted as "could not see everything", Overview would
-/// carry a caveat on every modern Mac, for ever, that no button could clear — and a warning
-/// nothing can clear is how an app teaches people to ignore it.
+/// ## ⚠️ Why "refused" had to split in two — the bug this shape fixes
+///
+/// Until 2026-08-27 there were two cases, and every refusal was `.notPermitted`, which marked the
+/// whole check incomplete. That was survivable while Hardware was the only section: its one
+/// refusal is the panic log, which a standard account cannot read.
+///
+/// **Security breaks it outright.** Every root-only Security fact is a refusal that no user on
+/// earth can lift from inside an app — the FileVault recovery key, which accounts can unlock the
+/// Mac, Gatekeeper's exception list, the Intel firmware password, Apple's own login-items store.
+/// Under two cases, Overview would have said "I could not see everything" on **100% of Macs,
+/// including a flawlessly configured one**, for ever, with no button anywhere that could clear
+/// it. That is precisely the warning-nobody-can-clear this whole app is built to avoid.
+///
+/// So the question a reader now has to answer is not "were we refused" but **"is there something
+/// the person could actually do about it"**:
+///
+/// - Full Disk Access is refused → `.notPermitted`. There is a switch, we can point at it, and
+///   until it is flipped we genuinely did not see everything. Both halves are true and both are
+///   said.
+/// - macOS reserves it for an administrator, or for nobody → `.notGrantable`. There is no switch,
+///   no button we could honestly draw, and no version of this run that would have seen more. The
+///   check looked at everything it was ever able to look at, so it is **complete** — and the row
+///   still says plainly that we did not see it, which is the part that must never be dropped.
+///
+/// ⚠️ **`.notGrantable` is not a quiet way to hide a refusal.** It still reports `.notChecked` on
+/// the row, still prints the house sentence, and still appears in `unreadableTopics`. The only
+/// thing it does not do is put a permanent caveat on Overview that nobody can clear.
 public enum Unreadable: String, Sendable, Hashable, Codable, CaseIterable {
 
     /// The machine does not report it. Nothing is wrong and nothing can be done.
     case notReported
 
-    /// It exists and we were refused. **A button only where a button would actually help** — see
-    /// `Reading.remedy`. Kernel panics are the case that proves the point: only an administrator
-    /// account can read them, by account type rather than by any privacy setting, so the row says
-    /// so and offers nothing, because there is nothing honest to offer.
+    /// It exists, we were refused, **and the person could grant it** — in this app that means Full
+    /// Disk Access, the one permission Wellkept ever asks for.
     ///
-    /// ⚠️ A reader should reach for this **only where something was genuinely refused**, and
-    /// should prefer to answer as much of the question as it can from what it *is* allowed to
-    /// read. On a standard (non-administrator) account this state is permanent, and a permanent
-    /// "could not see everything" on Overview is close to the warning-nobody-can-clear this app
-    /// avoids everywhere else. It is accepted here for one reason: it is true, and the alternative
-    /// is claiming we checked for crashes we were never able to look for.
+    /// This is the only state that marks a check incomplete, and it is the only one that should
+    /// ever carry a button, because it is the only one where a button leads somewhere that changes
+    /// the answer. Both facts are the same fact: something is being withheld that the user can
+    /// hand over.
+    ///
+    /// ⚠️ A reader should reach for this **only where a grant would genuinely change the reading**,
+    /// and should still answer as much of the question as it can from what it *is* allowed to read.
     case notPermitted
+
+    /// It exists, we were refused, **and nothing can grant it** — macOS reserves it for an
+    /// administrator account, or for nobody at all.
+    ///
+    /// Kernel panics are the case that proves the point: `/Library/Logs/DiagnosticReports` is
+    /// readable by the `admin` group, so it is **the kind of account you sign in with** that
+    /// decides it, not a privacy setting. No switch exists. Offering a button would be offering a
+    /// door with no room behind it.
+    ///
+    /// Added 2026-08-27. It sits after `.notPermitted` rather than replacing it: raw values are
+    /// written into the reading history, which cannot be rebuilt, so cases are **added, never
+    /// renumbered or re-meant**.
+    case notGrantable
 
     /// The clause, lower case, for building a sentence around a thing.
     public var clause: String {
         switch self {
         case .notReported:  "this Mac does not report it"
         case .notPermitted: "we were not allowed to look"
+        case .notGrantable: "there is no permission that would let us see it"
         }
     }
 
@@ -155,23 +193,35 @@ public enum Unreadable: String, Sendable, Hashable, Codable, CaseIterable {
         switch self {
         case .notReported:  "This Mac does not report it."
         case .notPermitted: "We were not allowed to look."
+        case .notGrantable: "There is no permission that would let us see it."
         }
     }
 
     /// The house sentence, about a named thing: "Drive wear — this Mac does not report it."
     public func sentence(about thing: String) -> String { "\(thing) — \(clause)." }
 
+    /// Whether something exists that we were kept away from, either way round.
+    ///
+    /// Useful to a reader that wants to say "we could not see it" without caring which kind of
+    /// refusal it was. Nothing in the app should branch on this to decide a button or a caveat —
+    /// those are `mayOfferRemedy` and `stillComplete`, and they deliberately disagree here.
+    public var wasRefused: Bool { self != .notReported }
+
     /// Whether a row in this state is ever allowed to carry a button.
     ///
-    /// `true` is permission, not obligation: `.notPermitted` may carry a remedy, and often has
-    /// none.
+    /// `true` is permission, not obligation: a `.notPermitted` row may carry a remedy and may
+    /// still, in a particular case, have none worth offering.
     public var mayOfferRemedy: Bool { self == .notPermitted }
 
     /// Whether a check containing this can still call itself complete. See the table above.
-    public var stillComplete: Bool { self == .notReported }
+    ///
+    /// ⚠️ **Read this as "could a person have made this run see more".** Only `.notPermitted`
+    /// answers yes, and only that answer earns a caveat on Overview — because only that caveat can
+    /// ever be cleared.
+    public var stillComplete: Bool { self != .notPermitted }
 }
 
-/// The button on a `.notPermitted` row, and where it goes.
+/// The button on a `.notPermitted` row — the one refusal a person can lift — and where it goes.
 ///
 /// The pane is a *name*, not a URL. Every `x-apple.systempreferences:` link in the app lives in
 /// one file in the app layer (`SystemSettingsPane`), because those anchors are internal names
@@ -324,11 +374,13 @@ public struct Reading: Sendable, Hashable, Identifiable, Codable {
     /// Whether this row leaves the check able to call itself complete.
     public var complete: Bool { unreadable?.stillComplete ?? true }
 
-    /// ⚠️ **`remedy` is dropped unless `unreadable == .notPermitted`.**
+    /// ⚠️ **`remedy` is dropped unless `unreadable == .notPermitted`** — the one refusal a person
+    /// can actually lift.
     ///
-    /// Enforced here rather than trusted to five call sites. "Only the refused row gets a button"
-    /// is a rule about what the user is offered, and a rule enforced by everyone remembering it is
-    /// a rule that lasts until the fourth reader is written by somebody who read a different file.
+    /// Enforced here rather than trusted to five call sites. "Only a refusal somebody can lift gets
+    /// a button" is a rule about what the user is offered, and a rule enforced by everyone
+    /// remembering it is a rule that lasts until the fourth reader is written by somebody who read
+    /// a different file.
     public init(topic: HardwareTopic,
                 headline: String,
                 measure: String? = nil,
@@ -534,9 +586,11 @@ public struct HardwareReport: Sendable, Hashable {
 
     /// Whether this run saw everything it set out to see.
     ///
-    /// ⚠️ **Only `.notPermitted` makes a check incomplete.** See the table on `Unreadable`: a Mac
-    /// that does not report drive wear was fully checked, and marking every Apple Silicon Mac
-    /// permanently incomplete would put a caveat on Overview that no user could ever clear.
+    /// ⚠️ **Only `.notPermitted` makes a check incomplete** — a refusal the person can lift. See
+    /// the table on `Unreadable`: a Mac that does not report drive wear was fully checked, and a
+    /// standard account that cannot read the panic log saw everything that account was ever going
+    /// to see. Marking either one permanently incomplete would put a caveat on Overview that no
+    /// user could ever clear.
     public var complete: Bool { readings.allSatisfy(\.complete) }
 
     /// The line this run contributes to the app's audit trail.

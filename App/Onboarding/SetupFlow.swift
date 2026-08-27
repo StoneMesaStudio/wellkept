@@ -135,6 +135,20 @@ struct SetupFlow: View {
 /// into a list, and nothing tells you when it worked. So this screen does three things — says what
 /// the grant is for before asking, says exactly what to do, and detects the moment it is granted
 /// rather than asking whether you did it.
+///
+/// ## ⚠️ It leads with the camera, the microphone and the screen, and that was a correction
+///
+/// Until 2026-08-27 this screen sold the grant on storage. Then somebody measured what actually
+/// happens without it: **eleven of the twelve permissions read exactly zero**, so the screen that
+/// lists which apps can use your camera, your microphone and your screen is *empty*, not short.
+/// That is the strongest true reason to grant it, and it was the one being left out. Storage is
+/// second, because storage is merely incomplete without it.
+///
+/// The words themselves live in `FullDiskAccess.purpose`, shared with the standing notice and with
+/// Settings ▸ Permissions, so the app cannot make three different cases for the same switch.
+///
+/// **"Finish later" is untouched by that change.** It is still an answer, it still sits beside the
+/// primary button rather than hidden as a grey word, and it still ends setup outright.
 @MainActor
 private struct FullDiskAccessStep: View {
 

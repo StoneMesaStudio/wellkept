@@ -23,19 +23,26 @@ the Public folder shared with guest access · one XProtect Remediator plugin (Ke
 part-way this morning. None is a crisis. Two browser extensions he installed on purpose — Claude
 and iCloud Passwords — can both read every site he visits.
 
-## Two bugs found in code already shipped
+## Two bugs found in code already shipped — **both fixed 2026-08-27**
 
 1. **`BatteryReader.swift:555` compares Apple's English words.** `system_profiler` **localises its
    values** — and French collapses "Fair" and "Poor" both to *Réparation recommandée*, so normal
    wear and service-recommended become indistinguishable in both directions. The keys are safe;
    only the values are translated. Read keys, and where a value must be compared, reverse-map it
    through the reporter's own world-readable `Localizable.loctable`.
+   **Fixed:** `App/Support/AppleWords.swift` does the reverse map and is shared with the Security
+   readers. Where a language genuinely collapses two meanings, it returns the ambiguity; the
+   battery row takes the safer reading and says the doubt out loud.
 2. **`Unreadable.stillComplete` is true only for `.notReported`.** Every root-only Security fact
    is `.notPermitted`, which sets `CheckRecord.complete = false` — on 100% of Macs, including a
    flawless one. Overview would say "I could not see everything" for ever, with no way to clear
    it. **That is the warning-nobody-can-clear the whole app exists to avoid.** Needs a third
    state: refused-but-you-could-grant-it (incomplete, with a button) versus nothing-can-grant-this
    (complete, no button).
+   **Fixed:** `Unreadable` now has three cases — `.notReported`, `.notPermitted` (Full Disk
+   Access: incomplete, with a button) and `.notGrantable` (macOS reserves it for an administrator
+   or for nobody: complete, no button). Raw values were **added, not renumbered**. Kernel panics
+   and memory reports on a standard account moved to `.notGrantable`.
 
 ## Asked of John — answered 2026-08-27, all agreed
 

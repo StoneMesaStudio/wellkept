@@ -77,6 +77,18 @@ struct PermissionNoticeRow: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
 
+                    // ⚠️ The dead end, made honest. A grant given to an app that is already
+                    // running does not reach it — macOS offers "Quit & Reopen" and somebody who
+                    // declines is left with an app insisting it was not allowed. When there is
+                    // reason to think that is what happened, this says so and offers the restart.
+                    if center.needsReopenToSee {
+                        Text(center.reopenSentence)
+                            .font(.appCallout)
+                            .foregroundStyle(Theme.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+
                     HStack(spacing: Space.block) {
                         Button("Open System Settings…") {
                             center.openFullDiskAccessSettings()
@@ -110,9 +122,10 @@ struct PermissionNoticeRow: View {
     /// ⚠️ The second sentence is the load-bearing one. Overview may never say this Mac looks fine
     /// after a partial look, and this is where the user is told why a result might be short.
     private static let explanation = String(localized: """
-        Full Disk Access is off, so parts of this Mac are hidden from Wellkept — what macOS has \
-        already blocked, some of what is using your storage, and some of what is installed. \
-        Anything Wellkept reports is what it could see, not everything there is.
+        Full Disk Access is off, so parts of this Mac are hidden from Wellkept — which apps can use \
+        your camera, your microphone and your screen, some of what is using your storage, and what \
+        macOS has already blocked. Anything Wellkept reports is what it could see, not everything \
+        there is.
         """)
 }
 
@@ -138,26 +151,33 @@ struct PermissionNoticeLine: View {
 
     var body: some View {
         if !center.fullDiskAccessGranted, let shortfall = FullDiskAccess.shortfall(for: section) {
+            // The button sits UNDER the sentence, not beside it. Beside it, the button claims a
+            // column and the sentence wraps into a four-line ribbon three words wide — measured,
+            // not guessed: see the 2026-08-27 shots of the Security face.
             HStack(alignment: .firstTextBaseline, spacing: Space.row) {
                 Image(systemName: "eye.slash")
                     .font(.appCaption)
                     .foregroundStyle(palette.color(for: Severity.attention))
                     .accessibilityHidden(true)
 
+                VStack(alignment: .leading, spacing: Space.row) {
                 Text(shortfall)
                     .font(.appCallout)
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                // A link-styled button, not a bare coloured word: SwiftUI draws this one, so it
-                // keeps the app's font, and it still announces itself as a button.
+                // ⚠️ NOT `.buttonStyle(.link)`. That draws in the system accent, and since
+                // `AccentColor` ships empty (DESIGN §3.8) the accent is Apple's blue — which
+                // would be the only blue anywhere in Wellkept, sitting on the section a person
+                // is most likely to see first. Tinting it bronze is no better: bronze is spent
+                // in exactly three places and a link is not one of them. So it is the ordinary
+                // achromatic button, the same control this same notice uses in its card form.
                 Button("Open System Settings…") {
                     center.openFullDiskAccessSettings()
                 }
-                .buttonStyle(.link)
                 .font(.appCallout)
-
-                Spacer(minLength: 0)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityElement(children: .contain)

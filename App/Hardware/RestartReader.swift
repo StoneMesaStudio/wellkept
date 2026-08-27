@@ -38,10 +38,14 @@ import WellkeptCore
 //  no switch to offer and no button that would help, which is exactly the case `Unreadable`
 //  allows to carry no remedy.
 //
-//  A standard user therefore gets `.notPermitted`, which makes the Hardware check incomplete.
-//  That is accepted, and the alternative was never on the table: reporting "no unexpected
-//  restarts" because we were not allowed to look is the confident wrong answer this whole product
-//  exists to avoid.
+//  A standard user therefore gets **`.notGrantable`**: refused, no button, and the check stays
+//  complete — because no permission this app could ever ask for would have shown it more. The row
+//  still says plainly that we did not see it. What is deliberately *not* done is put a caveat on
+//  Overview that a standard account could never clear; that was the shape until 2026-08-27 and it
+//  is the warning-nobody-can-clear the product exists to avoid.
+//
+//  What was never on the table is the other direction: reporting "no unexpected restarts" because
+//  we were not allowed to look is the confident wrong answer this whole product exists to avoid.
 //
 //  ## What we still cannot see, and say so
 //
@@ -81,7 +85,10 @@ enum RestartReader {
                                reason: "macOS has not created the folder these reports live in.")
 
         case .refused:
-            return .unreadable(.restarts, .notPermitted,
+            // ⚠️ `.notGrantable`, never `.notPermitted`. Nothing the user can switch on changes
+            // this: it is the account type, not a privacy setting. A `.notPermitted` here would
+            // hang an unclearable caveat on Overview for every standard account on earth.
+            return .unreadable(.restarts, .notGrantable,
                                about: "Unexpected restarts",
                                reason: "Only an administrator account can read this Mac's restart "
                                      + "reports. That is decided by the kind of account you sign "

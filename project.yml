@@ -80,6 +80,10 @@ targets:
         excludes:
           - "WellkeptApp.swift"
       - path: Tools/ViewShots
+      # Tests of app-target logic that no view can reach: `AppleWords` reads a file on this Mac,
+      # and `WellkeptTests` links only `WellkeptCore`. This is the one bundle that compiles `App`,
+      # so it is where such a test can live at all.
+      - path: Tools/AppTests
     dependencies:
       - package: WellkeptCore
         product: WellkeptCore

@@ -171,6 +171,26 @@ final class AppState {
         publish(report.record, finding: report.overviewFinding)
     }
 
+    // MARK: The Security engine
+
+    /// Security's own model — six readers, one report.
+    ///
+    /// ⚠️ **Nothing starts this but a press.** There is no launch check here and there must not be
+    /// one: the log read alone is about six seconds, and a section that spent that on every launch
+    /// would make the app feel broken on the screen where that matters most.
+    let security = SecurityModel()
+
+    /// Run the Security check and file what it found.
+    ///
+    /// ⚠️ **Never in demo mode.** Demo mode's whole promise is that nothing on screen has been read
+    /// from this Mac, and a check running underneath the invented rows would break it silently.
+    func runSecurityCheck() async {
+        guard !demoMode else { return }
+        await security.check()
+        guard let report = security.answer?.report else { return }
+        publish(report.record, finding: report.overviewFinding)
+    }
+
     /// File one section's result: its line in the audit trail, and the single row it sends up to
     /// Overview.
     ///

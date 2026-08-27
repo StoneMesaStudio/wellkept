@@ -12,10 +12,19 @@ import AppKit
 //  broken and nobody reports it.
 //
 //  So: one list, one fallback, and one place to fix them all in September.
+//
+//  ## ⚠️ Not every pane is a corner of Privacy & Security
+//
+//  Added 2026-08-27, for the Security section. The first four cases are anchors *within* Privacy &
+//  Security; the four the Security section needs are separate panes with their own extension names —
+//  the firewall moved into Network in Ventura, and automatic login has always lived in Users &
+//  Groups. So each case names its own root, and the fallback walks outwards: the exact anchor, then
+//  that case's own pane, then Privacy & Security. A person who asked for the firewall and got the
+//  Network pane has been helped; one who got a dead button has not.
 
 enum SystemSettingsPane: String, CaseIterable, Sendable {
 
-    /// The Privacy & Security pane itself. Also the fallback for everything below.
+    /// The Privacy & Security pane itself. Also the last-resort fallback for everything below.
     case privacyAndSecurity
     /// Full Disk Access — the one that has to be granted by dragging the app into a list.
     case fullDiskAccess
@@ -24,33 +33,59 @@ enum SystemSettingsPane: String, CaseIterable, Sendable {
     /// Removable volumes — external drives, which is where a backup goes.
     case removableVolumes
 
+    /// FileVault. Lives in Privacy & Security, below Gatekeeper's "Allow applications from".
+    case fileVault
+    /// The firewall — **in Network settings since Ventura**, not in Security where it used to be.
+    case firewall
+    /// Software Update, which owns whether security fixes install by themselves.
+    case softwareUpdate
+    /// Users & Groups, which owns automatic login.
+    case usersAndGroups
+
     private static let privacyRoot = "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension"
 
-    /// The anchor within Privacy & Security, where there is one.
+    /// Which pane this case lives in.
+    private var root: String {
+        switch self {
+        case .privacyAndSecurity, .fullDiskAccess, .filesAndFolders, .removableVolumes, .fileVault:
+            Self.privacyRoot
+        case .firewall:
+            "x-apple.systempreferences:com.apple.Network-Settings.extension"
+        case .softwareUpdate:
+            "x-apple.systempreferences:com.apple.Software-Update-Settings.extension"
+        case .usersAndGroups:
+            "x-apple.systempreferences:com.apple.Users-Groups-Settings.extension"
+        }
+    }
+
+    /// The anchor within that pane, where there is one.
     private var anchor: String? {
         switch self {
-        case .privacyAndSecurity: nil
-        case .fullDiskAccess:     "Privacy_AllFiles"
-        case .filesAndFolders:    "Privacy_FilesAndFolders"
-        case .removableVolumes:   "Privacy_RemovableVolume"
+        case .privacyAndSecurity, .softwareUpdate, .usersAndGroups: nil
+        case .fullDiskAccess:   "Privacy_AllFiles"
+        case .filesAndFolders:  "Privacy_FilesAndFolders"
+        case .removableVolumes: "Privacy_RemovableVolume"
+        case .fileVault:        "FileVault"
+        case .firewall:         "Firewall"
         }
     }
 
     var url: URL? {
-        guard let anchor else { return URL(string: Self.privacyRoot) }
-        return URL(string: "\(Self.privacyRoot)?\(anchor)")
+        guard let anchor else { return URL(string: root) }
+        return URL(string: "\(root)?\(anchor)")
     }
 
-    /// Open it, falling back to the Privacy & Security pane when the anchor no longer resolves.
+    /// Open it, falling back outwards when the anchor no longer resolves.
     ///
-    /// The fallback is the whole point of routing every link through one function. A renamed
-    /// anchor leaves the user one scroll away from what they wanted instead of staring at a button
-    /// that did nothing — and "did nothing" is what an unrecognised anchor actually produces.
+    /// The fallback is the whole point of routing every link through one function. A renamed anchor
+    /// leaves the user one scroll away from what they wanted instead of staring at a button that
+    /// did nothing — and "did nothing" is what an unrecognised anchor actually produces.
     @discardableResult
     @MainActor
     func open() -> Bool {
         if let url, NSWorkspace.shared.open(url) { return true }
-        guard let root = URL(string: Self.privacyRoot) else { return false }
-        return NSWorkspace.shared.open(root)
+        if let pane = URL(string: root), NSWorkspace.shared.open(pane) { return true }
+        guard let privacy = URL(string: Self.privacyRoot) else { return false }
+        return NSWorkspace.shared.open(privacy)
     }
 }

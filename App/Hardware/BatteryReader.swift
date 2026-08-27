@@ -55,6 +55,17 @@ import WellkeptCore
 //  its scale rather than its name, and `chargePercent` works on both by asking whether the maximum
 //  is 100 or a four-figure milliamp-hour number.
 //
+//  ## ⚠️ `system_profiler` translates its values, and this file used to compare them in English
+//
+//  Fixed 2026-08-27. `condition(source:registry:appleWord:)` lowercased Apple's condition word and
+//  looked for "service", "replace" and "poor". A French Mac prints *Réparation recommandée*, which
+//  contains none of them, so a battery Apple itself says needs servicing came back normal — and
+//  French uses that same string for `Fair`, ordinary wear, so the two are not separable in either
+//  direction. The **keys** are stable and the values are not; `AppleWords` reverses the reporter's
+//  own `Localizable.loctable` to get back to the key, and where the language genuinely collapses
+//  two meanings the row takes the safer one and says so. The language cannot be forced:
+//  `system_profiler` rejects `-AppleLanguages` outright.
+//
 //  ## What is deliberately not here
 //
 //  - **No temperature.** The battery reports 30.00 °C in `Temperature`. Nobody publishes what is
@@ -130,6 +141,18 @@ enum BatteryReader {
         /// Set inside a virtual machine, where the whole battery may be an invention. See `row`.
         let isVirtualMachine: Bool
 
+        /// **Set when this Mac's language cannot tell ordinary wear from a service
+        /// recommendation.**
+        ///
+        /// `system_profiler` translates the condition word, and several languages — French among
+        /// them — print the same string for Apple's `Fair` (normal wear) and its `Poor` (service
+        /// recommended). `condition` then carries the safer of the two and this flag carries the
+        /// doubt, so the row can say it out loud instead of printing a verdict we did not earn.
+        ///
+        /// `var` with a default so the demo Macs, which state their condition outright, do not have
+        /// to mention it. See `AppleWords`.
+        var uncertain: Bool = false
+
         /// The percentage to print: Apple's if there is one, ours if there is not, `nil` if
         /// neither.
         var percent: Int? { applePercent ?? measuredPercent }
@@ -193,11 +216,12 @@ enum BatteryReader {
         let apple = appleHealth()
         let design = positive(registry?["DesignCapacity"]) ?? positive(source?[kIOPSDesignCapacityKey])
         let fullCharge = fullChargeCapacity(registry: registry, designCapacity: design)
+        let verdict = condition(source: source, registry: registry, appleWord: apple?.condition)
 
         return Facts(
             applePercent: apple?.percent,
             measuredPercent: percentage(of: fullCharge, against: design),
-            condition: condition(source: source, registry: registry, appleWord: apple?.condition),
+            condition: verdict.condition,
             failureModes: (source?[kIOPSBatteryFailureModesKey] as? [String]) ?? [],
             charge: chargePercent(source: source, registry: registry),
             cycles: apple?.cycles
@@ -214,7 +238,8 @@ enum BatteryReader {
             charging: (source?[kIOPSIsChargingKey] as? Bool)
                 ?? (registry?["IsCharging"] as? Bool) ?? false,
             fullyCharged: (registry?["FullyCharged"] as? Bool) ?? false,
-            isVirtualMachine: VirtualMachine.current.isVirtual
+            isVirtualMachine: VirtualMachine.current.isVirtual,
+            uncertain: verdict.uncertain
         )
     }
 
@@ -275,6 +300,26 @@ enum BatteryReader {
     /// battery is not a broken one. The second is the sentence that stops a 78% battery from
     /// reading as a fault on a machine that works perfectly well.
     private static func reason(_ facts: Facts) -> String? {
+        guard let plain = plainReason(facts) else { return uncertaintyClause(facts) }
+        guard let doubt = uncertaintyClause(facts) else { return plain }
+        return "\(plain) \(doubt)"
+    }
+
+    /// ⚠️ **The sentence that stops a translation from becoming a verdict.**
+    ///
+    /// macOS prints the battery's condition in the Mac's own language, and several languages —
+    /// French among them — use one string for Apple's `Fair`, which is ordinary wear, and its
+    /// `Poor`, which is Apple recommending service. When that happens the row shows the safer of
+    /// the two, and this says so. A person who reads it can open System Settings and see the same
+    /// word Apple printed, which is the only place the two can be told apart.
+    private static func uncertaintyClause(_ facts: Facts) -> String? {
+        guard facts.uncertain else { return nil }
+        return "One caveat: macOS reports this Mac's battery condition in a word that covers both "
+             + "ordinary wear and a service recommendation, and nothing in what it gives us "
+             + "separates the two. This row shows the more cautious of them."
+    }
+
+    private static func plainReason(_ facts: Facts) -> String? {
         switch facts.condition {
         case .failed:
             var text = "That is Apple's verdict, not ours. A battery in this state needs replacing "
@@ -325,7 +370,7 @@ enum BatteryReader {
             pairs.append(DetailPair("Charge now", "\(charge)%"))
         }
 
-        pairs.append(DetailPair("Condition", facts.condition.word))
+        pairs.append(DetailPair("Condition", conditionWords(facts)))
 
         if let cycles = facts.cycles {
             let value = facts.designCycles.map {
@@ -346,6 +391,14 @@ enum BatteryReader {
         return pairs
     }
 
+    /// The Options row's condition, with the doubt attached where there is one. See
+    /// `uncertaintyClause`.
+    private static func conditionWords(_ facts: Facts) -> String {
+        guard facts.uncertain else { return facts.condition.word }
+        return "\(facts.condition.word), or ordinary wear — macOS uses one word for both in this "
+             + "Mac's language"
+    }
+
     /// What the battery is doing right now — and the closest honest answer to "is Optimised
     /// Battery Charging on?", which has no public reading. See the header.
     private static func chargingWords(_ facts: Facts) -> String {
@@ -362,7 +415,9 @@ enum BatteryReader {
     struct AppleHealth: Sendable, Hashable {
         /// "95%" → 95. `nil` where the field is absent.
         let percent: Int?
-        /// Apple's own word: "Good", "Fair", "Poor", "Service Recommended".
+        /// Apple's own word for the condition — **and it is translated.** "Good" on this Mac,
+        /// *Réparation recommandée* on a French one. Never compared in English; it goes through
+        /// `AppleWords` and `appleConditionKeys`.
         let condition: String?
         let cycles: Int?
     }
@@ -535,35 +590,98 @@ enum BatteryReader {
         return clampPercent(Int(((Double(fullCharge) / Double(design)) * 100).rounded()))
     }
 
+    /// The English keys `SPPowerReporter` uses for the battery's condition, and what each one means
+    /// to us.
+    ///
+    /// ⚠️ **These are keys, not words on a screen.** Apple's own English table already collapses
+    /// three of them onto the single string "Service Recommended", and every other language
+    /// collapses them differently — French puts `Fair` and `Poor` together under *Réparation
+    /// recommandée*. Comparing the printed words is the bug this replaces; see `AppleWords`.
+    ///
+    /// `Fair` is `.normal` on purpose. It is Apple's word for ordinary wear, and wear is reported
+    /// as a number on this row, never as a condition — "worn but working is never a problem".
+    static let appleConditionKeys: [String: Condition] = [
+        "Good":          .normal,
+        "Fair":          .normal,
+        "Poor":          .serviceRecommended,
+        "Check Battery": .serviceRecommended,
+    ]
+
+    /// What we decided about the condition, and whether this Mac's language let us decide it.
+    struct ConditionReading: Sendable, Hashable {
+        let condition: Condition
+        /// **Set when the word Apple printed covers both ordinary wear and a service
+        /// recommendation**, and there is no way to tell which this Mac has. See `Facts.uncertain`.
+        let uncertain: Bool
+
+        static let unknown = ConditionReading(condition: .unknown, uncertain: false)
+    }
+
     /// Apple's three vocabularies, mapped into our three states. See `Condition`.
     ///
     /// The permanent-failure flag is checked first and on its own: it is the battery's own gauge
     /// reporting a hardware fault, and it is the one signal here that does not depend on Apple's
-    /// judgement of wear.
+    /// judgement of wear. The two IOKit strings after it are constants from `IOPSKeys.h` and are
+    /// **not** localized — those comparisons are safe as they stand.
+    ///
+    /// Only the last source, `system_profiler`'s own word, is translated, and that is the one that
+    /// goes through `AppleWords`.
     static func condition(source: [String: Any]?,
                           registry: [String: Any]?,
-                          appleWord: String?) -> Condition {
-        if let failure = registry?["PermanentFailureStatus"] as? Int, failure != 0 { return .failed }
+                          appleWord: String?) -> ConditionReading {
+        func settled(_ condition: Condition) -> ConditionReading {
+            ConditionReading(condition: condition, uncertain: false)
+        }
+
+        if let failure = registry?["PermanentFailureStatus"] as? Int, failure != 0 {
+            return settled(.failed)
+        }
 
         let health = source?[kIOPSBatteryHealthKey] as? String
         let state = source?[kIOPSBatteryHealthConditionKey] as? String
 
-        if state == kIOPSPermanentFailureValue { return .failed }
-        if state == kIOPSCheckBatteryValue { return .serviceRecommended }
-        if health == kIOPSPoorValue { return .serviceRecommended }
+        if state == kIOPSPermanentFailureValue { return settled(.failed) }
+        if state == kIOPSCheckBatteryValue { return settled(.serviceRecommended) }
+        if health == kIOPSPoorValue { return settled(.serviceRecommended) }
 
         // `system_profiler`'s word, for the macOS releases where System Settings says "Service
         // Recommended" and the power source still says "Good".
-        if let word = appleWord?.lowercased(),
-           word.contains("service") || word.contains("replace") || word == "poor" {
-            return .serviceRecommended
+        //
+        // ⚠️ This was `word.contains("service") || word.contains("replace") || word == "poor"`
+        // until 2026-08-27 — an English comparison against a value macOS translates. On a French
+        // Mac it matched nothing, so a battery Apple says needs servicing came back normal.
+        if let appleWord {
+            switch AppleWords.meaning(of: appleWord, from: .power, keys: appleConditionKeys) {
+            case let .certain(condition):
+                return settled(condition)
+
+            case let .ambiguous(possible):
+                // ⚠️ **Take the safer reading, and say so on the row.** French prints the same
+                // string for `Fair` (ordinary wear) and for `Poor` (Apple recommending service),
+                // and nothing in the output separates them. Reporting normal would hide Apple's own
+                // recommendation; reporting service recommended agrees with what this person's
+                // System Settings is already showing them, because Apple's English table collapses
+                // the two the same way. The uncertainty is stated in `reason`, never swallowed.
+                if possible.contains(.failed) {
+                    return ConditionReading(condition: .failed, uncertain: true)
+                }
+                if possible.contains(.serviceRecommended) {
+                    return ConditionReading(condition: .serviceRecommended, uncertain: true)
+                }
+                return ConditionReading(condition: possible.first ?? .unknown, uncertain: true)
+
+            case .unrecognised:
+                break
+            }
         }
 
-        // "Good" and "Fair" are both working batteries. Fair is Apple's word for normal wear, and
-        // wear is reported as a number on this row, never as a condition.
-        if health == kIOPSGoodValue || health == kIOPSFairValue { return .normal }
-        if state?.isEmpty == true && health != nil { return .normal }
-        if appleWord != nil { return .normal }
+        // "Good" and "Fair" are both working batteries.
+        if health == kIOPSGoodValue || health == kIOPSFairValue { return settled(.normal) }
+        if state?.isEmpty == true && health != nil { return settled(.normal) }
+
+        // A word we could not place at all. The machine did answer, so this is not "no battery
+        // information" — but we will not translate an unknown string into a verdict.
+        if appleWord != nil { return settled(.normal) }
 
         return .unknown
     }
