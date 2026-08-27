@@ -97,12 +97,13 @@ enum HelpLibrary {
             + sectionBullets
             + [
                 .heading("How it behaves"),
-                .paragraph("**Nothing happens until you press a button.** Wellkept has no schedule, no background scanning and no automatic tidying. Every section has one button, and one plain sentence above it saying what pressing it will do."),
+                .paragraph("**Nothing changes on your Mac unless you press a button.** Wellkept has no schedule, no background scanning and no automatic tidying, and it quits when you close its window. Every section has one button, and one plain sentence above it saying what pressing it will do."),
+                .paragraph("**Hardware is read once when the app opens**, because it is read-only — it asks the drive, the battery and the memory what they say about themselves and writes nothing. Every other section waits to be asked. There is no daily check and nothing runs while the app is closed."),
                 .paragraph("What it finds is remembered, with the date, so **Overview** can tell you what was checked and when. There is never a score — a number invites you to chase it, and a Mac with nothing wrong would end up graded on how little happened to be installed on it."),
-                // ⚠️ DELETE THIS NOTE when the first section actually runs a check. It is true of
-                // the shell and only of the shell, and a help page that still says this after
-                // Hardware ships is worse than no help page at all.
-                .note("This build is the shell. The seven sections are here and the app looks finished, but none of them check anything yet — every button is greyed out and says so."),
+                // ⚠️ DELETE THIS NOTE as each section lands. Hardware is done; the other five are
+                // not, and a help page that claims a working Storage scan before there is one is
+                // worse than no help page at all.
+                .note("**Hardware** is the only section that works in this build. The other five are here and the app looks finished, but they do not check anything yet — their buttons are greyed out and say so."),
             ]
             + (versionLine.map { [HelpBlock.paragraph($0)] } ?? [])),
 

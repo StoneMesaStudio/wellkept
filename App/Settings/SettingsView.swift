@@ -4,7 +4,7 @@ import SwiftUI
 //  SettingsView.swift
 //  Wellkept — App/Settings
 //
-//  **Four controls and a permissions page. Nothing else.**
+//  **Four controls, a permissions page, and the demo switch. Nothing else.**
 //
 //  Settings only ever grows, and this is the one moment it is short enough to design rather than
 //  organise. Everything here is either something the app must know without asking (how it should
@@ -18,22 +18,29 @@ import SwiftUI
 //  front of them. The five appearance keys are `AppearancePrefs`'; four of them have a control
 //  below and the fifth (`identityColor`) has exactly one legal value, so there is nothing to
 //  choose yet — when petrol and slate ship, they get a row here in the same pass.
+//
+//  **`demoMode` was that same bug, shipped.** It was read by `AppState` and by the bar across the
+//  top of the window, and the only control anywhere in the app was that bar's *Turn Off* — so it
+//  could be switched off and never on again. The Demo page fixes it, and carries the choice of
+//  which invented Mac to show.
 
 struct SettingsView: View {
 
     enum Page: String, Hashable, CaseIterable, Identifiable, Sendable {
-        case appearance, permissions
+        case appearance, permissions, demo
         var id: String { rawValue }
         var label: String {
             switch self {
             case .appearance:  "Appearance"
             case .permissions: "Permissions"
+            case .demo:        "Demo"
             }
         }
         var symbol: String {
             switch self {
             case .appearance:  "paintpalette"
             case .permissions: "lock"
+            case .demo:        "sparkles"
             }
         }
     }
@@ -63,6 +70,9 @@ struct SettingsView: View {
                 PermissionSettings()
                     .tabItem { Label(Page.permissions.label, systemImage: Page.permissions.symbol) }
                     .tag(Page.permissions)
+                DemoSettings()
+                    .tabItem { Label(Page.demo.label, systemImage: Page.demo.symbol) }
+                    .tag(Page.demo)
             }
         }
         // A floor, not a fixed size: the window may be dragged bigger, and it grows on its own as
@@ -353,5 +363,71 @@ private struct PermissionCard: View {
         .padding(Space.gutter)
         .frame(maxWidth: .infinity, alignment: .leading)
         .softCard()
+    }
+}
+
+// MARK: - Demo
+
+/// **The switch that fills the app with invented results, and which Mac it invents.**
+///
+/// ⚠️ It exists because the setting existed without it. `demoMode` was read by `AppState` and by
+/// the bar across the top of the window, and the only control anywhere in the app was that bar's
+/// *Turn Off* — so it could be switched off and never on again. That is Waypoint's bug in reverse
+/// and the reason this file's header rule is written the way it is: every setting read app-wide
+/// has a control on this screen.
+///
+/// **Two machines, not one.** John, 2026-08-27: *"I would give them both. The goal is a healthy
+/// mac."* The healthy one is the default because it is the product's own case; the unwell one is
+/// how the screens that have never run against a real fault get looked at.
+private struct DemoSettings: View {
+
+    @AppStorage(StorageManifest.Keys.demoMode) private var demoMode = false
+    @AppStorage(StorageManifest.Keys.demoMachine) private var machineRaw = DemoMachine.healthy.rawValue
+
+    private var machine: Binding<DemoMachine> {
+        Binding(get: { DemoMachine(rawValue: machineRaw) ?? .healthy },
+                set: { machineRaw = $0.rawValue })
+    }
+
+    var body: some View {
+        StableScrollView {
+            VStack(alignment: .leading, spacing: Space.card) {
+                Text("Sample results let you look at every screen without Wellkept looking at this "
+                     + "Mac. Nothing on this page reads anything, and no check runs while it is on.")
+                    .font(.appBody)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Toggle("Show sample results", isOn: $demoMode)
+                    .font(.appBody)
+
+                VStack(alignment: .leading, spacing: Space.row) {
+                    Text("Which Mac")
+                        .font(.appHeadline)
+                        .foregroundStyle(Theme.textSecondary)
+                    SegmentedControl(
+                        items: DemoMachine.allCases.map { (value: $0, label: $0.label) },
+                        selection: machine)
+                    // Says what the chosen option actually shows, so the two are not two words a
+                    // person has to click to tell apart.
+                    Text(machine.wrappedValue.blurb)
+                        .font(.appCaption)
+                        .foregroundStyle(Theme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                // Present and greyed rather than absent: a control that appears and disappears with
+                // a switch is a control nobody can find twice.
+                .disabled(!demoMode)
+
+                Text("Every path, size, app name and date in the sample results is made up. A demo "
+                     + "that read even one real value would make the invented rows beside it look "
+                     + "real too.")
+                    .font(.appCallout)
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(Space.page)
+            .readableColumn(Layout.readableColumn)
+        }
+        .pageGround()
     }
 }

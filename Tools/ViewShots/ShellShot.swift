@@ -38,9 +38,12 @@ struct ShellShot {
     /// ⚠️ `demoMode`'s setter writes to `UserDefaults.standard`, which under `xctest` is the test
     /// process's own domain and not the app's. Nothing this touches survives the run — but it is
     /// worth knowing before somebody adds a shot that flips it and wonders where the value went.
-    private func state(_ selection: SectionID, demo: Bool = false) -> AppState {
+    private func state(_ selection: SectionID,
+                       demo: Bool = false,
+                       machine: DemoMachine = .healthy) -> AppState {
         let app = AppState()
         app.demoMode = demo
+        app.demoMachine = machine
         app.selection = selection
         return app
     }
@@ -50,12 +53,26 @@ struct ShellShot {
     ///
     /// Assembled here rather than photographing `RootView` itself because `RootView` also carries
     /// the setup cover, which needs `SetupState` and would put the welcome page in every picture.
-    private func window(_ section: SectionID, demo: Bool = false) -> some View {
-        let app = state(section, demo: demo)
+    /// ⚠️ **Hardware is photographed as the REAL `HardwareView`, not as a generic face.** It is the
+    /// only section with an engine behind it, and a harness that kept showing the placeholder here
+    /// would certify a screen the app no longer draws.
+    ///
+    /// It reads nothing from this Mac. In demo mode `AppState` returns an invented machine by
+    /// construction, and outside demo mode `HardwareModel` has no report — the launch check is
+    /// started by `RootView`, which this harness does not render, and `checkOnLaunch` refuses under
+    /// `xctest` in any case.
+    private func window(_ section: SectionID,
+                        demo: Bool = false,
+                        machine: DemoMachine = .healthy) -> some View {
+        let app = state(section, demo: demo, machine: machine)
         return HStack(spacing: 0) {
             Sidebar()
             Group {
-                if section == .overview { AnyView(OverviewView()) } else { AnyView(SectionFace(section)) }
+                switch section {
+                case .overview: AnyView(OverviewView())
+                case .hardware: AnyView(HardwareView())
+                default:        AnyView(SectionFace(section))
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
@@ -102,6 +119,26 @@ struct ShellShot {
             ShotWriter.write(window(section, demo: true), width: size.width, height: size.height,
                              name: "\(index + 40)-demo-\(section.rawValue)")
         }
+    }
+
+    /// **Overview under each of the two demo Macs.**
+    ///
+    /// John, 2026-08-27: *"I would give them both. The goal is a healthy mac."* This is the pair of
+    /// pictures that decides whether that worked: Overview on the healthy Mac says "Everything
+    /// looks fine" with the audit trail open beneath it, and on the unwell one it carries **one**
+    /// row from Hardware — never five — beside whatever the other sections found.
+    ///
+    /// The Hardware face itself is photographed in `HardwareShot`, in both appearances, at 200%
+    /// text, and with the Options panel open. This test is only about what reaches the summary.
+    @Test("Overview, on a healthy Mac and on one with problems")
+    func overviewUnderBothDemoMachines() {
+        let size = Layout.windowDefault
+        ShotWriter.write(window(.overview, demo: true, machine: .healthy),
+                         width: size.width, height: size.height,
+                         name: "80-overview-healthy-mac")
+        ShotWriter.write(window(.overview, demo: true, machine: .problems),
+                         width: size.width, height: size.height,
+                         name: "81-overview-unwell-mac")
     }
 
     /// The sidebar on its own, large, because the selected row is one of only three places bronze
@@ -177,9 +214,15 @@ struct ShellShot {
     /// could only ever have passed. A test that cannot fail is worse than no test.
     @Test("On a wide window the content stays in the readable column")
     func theReadableColumnHoldsOnAWideDisplay() {
-        for section in SectionID.allCases {
+        // Every section on the healthy Mac, plus Hardware on the unwell one — which is the widest
+        // content in the app: a full-bleed alarm card, a machine block and an eight-column grid of
+        // details, any of which could spread if one of them forgot the column.
+        var cases: [(SectionID, DemoMachine)] = SectionID.allCases.map { ($0, .healthy) }
+        cases.append((.hardware, .problems))
+
+        for (section, machine) in cases {
             guard let rep = ShotWriter.render(
-                window(section, demo: true)
+                window(section, demo: true, machine: machine)
                     .frame(width: 2000, height: 760)
                     .environment(\.colorScheme, .light)
                     .environment(\.palette, Palette(level: .calm, scheme: .light)),

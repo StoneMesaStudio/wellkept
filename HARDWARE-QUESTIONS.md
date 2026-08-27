@@ -8,7 +8,7 @@ contradicted each other on it and the whole section hangs on the answer.
 
 | Thing | Verdict |
 |---|---|
-| **Drive wear** | ❌ **Not readable on Apple Silicon.** `IONVMeSMARTUserClient` returns `kIOReturnUnsupported` (0xe00002c7) against `AppleANS3CGv2Controller`. No wear keys anywhere in the IORegistry, none in `system_profiler`. One research agent claimed to have read 1% used / 42 TB written; that claim did not survive a hand-written C probe. **What we get is Apple's own verdict — `S.M.A.R.T. status: Verified` — and nothing else.** Intel Macs with real NVMe/SATA are a separate, untested case. |
+| **Drive wear** | ✅ **Readable, no permission — I got this wrong twice before getting it right.** The first probe opened the SMART plug-in against the NVMe *controller* (`AppleANS3CGv2Controller`) and got `kIOReturnUnsupported`, and I reported that as settled. The documented node is the block *device* advertising `NVMe SMART Capable` — here `IOEmbeddedNVMeBlockDevice`. Against that, the same API returns the full 512-byte SMART page unprivileged. **Measured on this M3: 1% of rated life used, spare 100 against a threshold of 99, 2,215 power-on hours, 197 power cycles, 10 unsafe shutdowns, 0 media errors, 42 TB written.** Verified in C by hand after the build agent challenged the earlier finding. |
 | **Battery** | ✅ Readable, no permission. But Apple's own percentage (95% here) cannot be recomputed from the readable numbers (90–93%). Apple's figure is smoothed and stored. |
 | **Temperature** | ⚠️ Readable without permission, through an undocumented route that can close in any macOS update. Moved 62 → 79 → 58 °C in three minutes on an idle-ish machine. **Nobody, Apple included, publishes what is too hot.** |
 | **Thermal pressure** | ✅ `ProcessInfo.thermalState` — public, cheap, honest. Never moved even with all cores pinned. |
@@ -27,10 +27,15 @@ contradicted each other on it and the whole section hangs on the answer.
 
 ## Decided without asking
 
-- **The August-approved drive line is dead.** "94% life remaining, roughly 3 years at your
-  current rate" cannot be built: the number does not exist on Apple Silicon, and the years half
-  was arithmetic on a manufacturer's guess. The drive row says what Apple says, plus capacity,
-  model and connection.
+- **Half the August-approved drive line lives; the forecast half is dead.** "94% life remaining"
+  is a real measured number and appears on the row, spelled **"1% worn"** rather than "used" —
+  the same Options panel carries "72% full" three lines away and two nearby percentages get
+  merged by whoever is reading them. **"Roughly 3 years at your current rate" stays dead**: no
+  manufacturer publishes what the drive is rated to survive, so the forecast was arithmetic on a
+  guess. Wear at 100% or more is information, never a problem — it means the drive has written
+  what its maker rated it for and is still working. **"Failing" is set only when the drive itself
+  declares it**, and the failing row carries no percentage at all: a number to puzzle over is not
+  what someone needs in that minute.
 - **No temperature in degrees.** Report only whether macOS itself says the Mac is running hot,
   and start keeping our own record so the app can eventually say "hotter than usual for this Mac".
   The section sentence drops the word temperature.

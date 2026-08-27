@@ -25,6 +25,12 @@ import WellkeptCore
 enum ShellPrefs {
     /// Fills all seven sections with invented sample results. Off by default.
     static let demoModeKey = "demoMode"
+
+    /// Which invented Mac demo mode shows — `healthy` or `problems`. See `DemoMachine`.
+    ///
+    /// Read only while `demoMode` is on, and stored separately from it so that turning the demo
+    /// off and on again does not silently move a person back to a machine they did not pick.
+    static let demoMachineKey = "demoMachine"
 }
 
 // MARK: - The three modal slots
@@ -121,9 +127,61 @@ final class AppState {
         }
     }
 
+    /// Which invented Mac the demo shows. John, 2026-08-27: *"I would give them both. The goal is
+    /// a healthy mac."* — so the default is the healthy one, and the unwell one is a choice.
+    var demoMachine: DemoMachine {
+        didSet {
+            guard demoMachine != oldValue else { return }
+            UserDefaults.standard.set(demoMachine.rawValue, forKey: ShellPrefs.demoMachineKey)
+        }
+    }
+
     /// What the faces draw.
-    var findings: [Finding] { demoMode ? DemoData.findings : realFindings }
-    var records: [SectionID: CheckRecord] { demoMode ? DemoData.records : realRecords }
+    var findings: [Finding] { demoMode ? DemoData.findings(demoMachine) : realFindings }
+    var records: [SectionID: CheckRecord] { demoMode ? DemoData.records(demoMachine) : realRecords }
+
+    // MARK: The Hardware engine
+
+    /// Hardware's own model — the first section with an engine behind it.
+    ///
+    /// Held here, above `AppearanceHost`, for the reason at the top of this file: a ⌘+ press
+    /// rebuilds every view, and a check whose result lived in a `@State` inside the face would be
+    /// thrown away and have to run again every time somebody nudged the text size.
+    let hardware = HardwareModel()
+
+    /// Run the Hardware check and file what it found.
+    ///
+    /// ⚠️ **Never in demo mode.** Demo mode's whole promise is that nothing here has been read
+    /// from this Mac, and a check that ran underneath the invented rows would break it silently.
+    func runHardwareCheck() async {
+        guard !demoMode else { return }
+        await hardware.check()
+        fileHardwareResult()
+    }
+
+    /// Measure the drive's speed — the one button in this app that writes anything.
+    func runSpeedTest() async {
+        guard !demoMode else { return }
+        await hardware.measureSpeed()
+        fileHardwareResult()
+    }
+
+    private func fileHardwareResult() {
+        guard let report = hardware.report else { return }
+        publish(report.record, finding: report.overviewFinding)
+    }
+
+    /// File one section's result: its line in the audit trail, and the single row it sends up to
+    /// Overview.
+    ///
+    /// ⚠️ **One row per section, replacing whatever that section filed last.** Appending would
+    /// leave yesterday's failing drive on Overview beside today's healthy one, and the two would
+    /// disagree with nobody to arbitrate.
+    func publish(_ record: CheckRecord, finding: Finding?) {
+        realRecords[record.section] = record
+        realFindings.removeAll { $0.section == record.section }
+        if let finding { realFindings.append(finding) }
+    }
 
     // MARK: Derived
 
@@ -193,6 +251,8 @@ final class AppState {
 
     init() {
         demoMode = UserDefaults.standard.bool(forKey: ShellPrefs.demoModeKey)
+        demoMachine = UserDefaults.standard.string(forKey: ShellPrefs.demoMachineKey)
+            .flatMap(DemoMachine.init(rawValue:)) ?? .healthy
 
         // Settings owns a switch for the same key, and it may well write it through `@AppStorage`
         // rather than through this object. Without this the window would keep showing sample
@@ -204,6 +264,9 @@ final class AppState {
                     guard let self else { return }
                     let stored = UserDefaults.standard.bool(forKey: ShellPrefs.demoModeKey)
                     if stored != self.demoMode { self.demoMode = stored }
+                    let machine = UserDefaults.standard.string(forKey: ShellPrefs.demoMachineKey)
+                        .flatMap(DemoMachine.init(rawValue:)) ?? .healthy
+                    if machine != self.demoMachine { self.demoMachine = machine }
                 }
             }
     }

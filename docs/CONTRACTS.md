@@ -29,6 +29,7 @@ must be one line in a `label` property, never a migration.
 | `textScale` | Double — 1.0 … 2.0 | `1.0` |
 | `setupFinished` | Bool | `false` |
 | `demoMode` | Bool | `false` |
+| `demoMachine` | String — `healthy` \| `problems` | `healthy` |
 | `fullDiskAccessAsked` | Bool | `false` |
 
 `setupFinished` is removed by the uninstaller, which is what makes setup run again after a

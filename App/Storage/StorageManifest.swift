@@ -50,6 +50,12 @@ enum StorageManifest {
         /// scan. Never on by default, and never a state a real check can leave the app in.
         static let demoMode = "demoMode"
 
+        /// Which invented Mac demo mode shows — `healthy` or `problems`. See `DemoMachine`.
+        ///
+        /// Kept separately from `demoMode` so that turning the demo off and on again does not
+        /// silently move somebody back to a machine they did not pick.
+        static let demoMachine = "demoMachine"
+
         /// Whether the setup flow has already asked for Full Disk Access once.
         ///
         /// Wellkept never raises a refused permission again on its own, so this exists to make
@@ -70,6 +76,7 @@ enum StorageManifest {
             AppearancePrefs.textScaleKey,
             setupFinished,
             demoMode,
+            demoMachine,
             fullDiskAccessAsked,
             backupDestination,
         ]
@@ -111,6 +118,27 @@ enum StorageManifest {
     /// The dated history of every check Wellkept has run.
     static func historyStore(home: URL = home()) -> URL {
         supportDirectory(home: home).appending(path: "History.json")
+    }
+
+    /// Every individual reading Wellkept has ever taken — a battery percentage, a disk speed —
+    /// one JSON object per line, appended from the first launch.
+    ///
+    /// Separate from `historyStore` because the two answer different questions and have different
+    /// shapes. That one is the audit trail: which section ran, when, and what it concluded. This
+    /// one is the numbers, kept so the app can eventually say "slower than it used to be" about a
+    /// machine whose own records go back eight days. See `ReadingHistory`.
+    static func readingHistory(home: URL = home()) -> URL {
+        supportDirectory(home: home).appending(path: "Readings.jsonl")
+    }
+
+    /// Every thermal-pressure reading Wellkept has taken — one JSON object per line.
+    ///
+    /// Separate from `readingHistory` because thermal pressure is not one of the five Hardware
+    /// rows, and `ReadingSample` is keyed by `HardwareTopic`. Filing it under a topic it does not
+    /// belong to would make `ReadingHistory.latest(_:)` hand a thermal reading to whichever reader
+    /// owns that topic. See `ThermalHistory`.
+    static func thermalHistory(home: URL = home()) -> URL {
+        supportDirectory(home: home).appending(path: "Thermal.jsonl")
     }
 
     /// Where the user pointed Backup, if they have. `nil` until they do.
@@ -182,6 +210,14 @@ enum StorageManifest {
         add("Check history",
             "The dated record of every check Wellkept has run on this Mac",
             historyStore(home: home), .delete)
+
+        add("Readings",
+            "The numbers Wellkept has read from this Mac over time — battery, drive speed and the rest",
+            readingHistory(home: home), .delete)
+
+        add("Thermal record",
+            "How often macOS has said this Mac was running hot",
+            thermalHistory(home: home), .delete)
 
         add("Settings",
             "Appearance, text size, and whether setup has run",

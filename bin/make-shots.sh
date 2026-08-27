@@ -55,6 +55,19 @@ mkdir -p "$ROOT/build"
 # stripping the prefix on the way in — so `WELLKEPT_SHOTS_DIR=… xcodebuild test` sets the variable
 # on xcodebuild and on nothing that runs the tests. The symptom is a green run that writes every
 # picture into a temp folder and an output folder that stays empty.
+#
+# ⚠️ **`-parallel-testing-enabled NO` is load-bearing, and the reason is not speed.**
+#
+# The Hardware shots photograph every screen at 200% text, and the text size is a `UserDefaults`
+# value that `AppFont` reads live — so setting it is a global change for as long as the render
+# takes. Rendering pumps a run loop, which lets another suite's test start on the main actor in the
+# middle of it, and that test's picture comes out with the type doubled. It was measured: the
+# sidebar shot came back 392 points wide instead of 196, and the harness could not tell, because a
+# wrong picture is not a blank one.
+#
+# Serial execution costs a few seconds and removes the whole class of problem. The gate
+# (`bin/preflight.sh`) runs the same suite in parallel and is unaffected — there the assertion is
+# that nothing renders blank, which is true at either text size.
 set +e
 TEST_RUNNER_WELLKEPT_SHOTS_DIR="$OUT" xcodebuild test \
     -project Wellkept.xcodeproj \
@@ -63,6 +76,7 @@ TEST_RUNNER_WELLKEPT_SHOTS_DIR="$OUT" xcodebuild test \
     -configuration Debug \
     -derivedDataPath build/shots-derived \
     -only-testing:ViewShots \
+    -parallel-testing-enabled NO \
     CODE_SIGNING_ALLOWED=NO \
     >"$LOG" 2>&1
 STATUS=$?

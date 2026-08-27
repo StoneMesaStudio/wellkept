@@ -51,6 +51,25 @@ struct RootView: View {
         }
         .appAnimation(Motion.selection, value: setup.isPresented)
 
+        // ⚠️ **The whole of Wellkept's automatic behaviour, in one line.**
+        //
+        // Hardware is read once when the window opens, and after that only when a button is
+        // pressed. There is no schedule and no background piece — the app quits when this window
+        // closes — so this is the only place anything starts by itself, which is what makes that
+        // promise checkable rather than a claim in the Help page.
+        //
+        // Keyed on setup: nothing reads the Mac while the welcome cover is up. A person who has
+        // not finished being told what this app does has not agreed to it doing anything.
+        // `HardwareModel.checkOnLaunch` runs at most once per launch, refuses in demo mode, and
+        // refuses under the test harness — see its own note.
+        .task(id: setup.isPresented) {
+            guard !setup.isPresented else { return }
+            await app.hardware.checkOnLaunch(demoMode: app.demoMode)
+            if let report = app.hardware.report {
+                app.publish(report.record, finding: report.overviewFinding)
+            }
+        }
+
         // ── The three modal slots ─────────────────────────────────────────────────────────
         //
         // ⚠️ **One of each, on this view, and nowhere else.** Two `.sheet` modifiers on one view

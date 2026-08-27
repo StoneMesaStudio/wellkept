@@ -62,7 +62,12 @@ public enum SectionID: String, CaseIterable, Sendable, Identifiable {
     public var sentence: String {
         switch self {
         case .overview: "Check everything, and say what needs you."
-        case .hardware: "Read the drive, battery, memory and temperature, and report what they say."
+        // ⚠️ **The word "temperature" was removed on 2026-08-27, and must not come back.** The
+        // section reports no temperature in degrees: the reading moved 62 → 79 → 58 °C in three
+        // minutes on an idle Mac, the route to it is undocumented, and nobody — Apple included —
+        // publishes what is too hot. A sentence promising a temperature above a screen that does
+        // not show one is a promise the section cannot keep.
+        case .hardware: "Read the drive, the battery, the memory and this Mac's restart history, and report what they say."
         case .storage:  "Look at what is using the space on this Mac, largest first."
         case .apps:     "List every app, where it came from, and whether a newer version exists."
         case .security: "Check this Mac's protections, what can watch you, and what macOS has already found."
