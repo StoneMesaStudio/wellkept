@@ -49,9 +49,9 @@ Applications folder" is not true and is not to be said anywhere in the app or it
 
 | # | Question | Answer |
 |---|---|---|
-| 1 | Does update checking ship this round, and is it on or off by default — and approve the replacement wording for "Nothing leaves your Mac"? | |
-| 2 | Ship a hardcoded list of ~15 app makers' version pages, and accept updating it as a chore on every release? | |
-| 3 | Abandoned apps: drop as a finding and show "last opened" / "last released" as plain facts instead? | |
+| 1 | Update checking, and the "Nothing leaves your Mac" wording | **The absolute promise was MY wording and it is wrong.** John, 2026-08-27: *"it is about not scraping user data, violating their privacy or collecting contact information for marketing. No data is collected and sold. Information leaving the computer to benefit their experience and app functionality is disclosed and optional, but just like not granting whole disc access, you lose functionality. **Inform and consent**."* So: update checking ships. The welcome page says what is never done — no collection, no selling, no account, no marketing — and names each thing that does leave, with a switch. |
+| 2 | A hardcoded list of ~15 makers' version pages | **No — skipped, and disclosed.** John: *"I don't know that I want that responsibility. They frequently release updates."* Coverage drops from 13 apps to about 9 on this Mac, and the section says so plainly rather than implying it looked everywhere. |
+| 3 | Abandoned apps as a finding | **Dropped.** Shown as plain facts on the app's own line, where a blank is harmless and nothing is being accused. |
 
 ## Decided without asking
 
@@ -69,6 +69,15 @@ Applications folder" is not true and is not to be said anywhere in the app or it
   old app is dangerous, and a version behind is not something wrong.
 - **The Overview line always carries its denominator**: "4 of the 13 apps we could check have a
   newer version", never a bare count that hides the 11 we could not check.
+- **The self-updating list survives John's "no" to the maker list, and the distinction is the
+  maintenance cost.** A vendor version endpoint breaks often — a changed URL or format means a
+  wrong answer or none — which is the responsibility he declined. A list of apps *known to update
+  themselves* changes rarely (an app seldom stops self-updating) and fails soft. Keep the second,
+  drop the first.
+- **Update checking is inform-and-consent, not silently on.** The first time Apps runs it says
+  what checking involves — asking Apple and a few makers whether a newer version exists — and
+  offers to do it or not. The answer is remembered and lives in Settings. Not a wall, not a
+  default nobody was told about.
 - **A short list of self-updating apps ships** (Chrome, Firefox, VS Code, Claude and the like) so
   their rows say "keeps itself up to date" rather than "cannot be checked". Opposite messages;
   collapsing them makes a working Mac look neglected.
