@@ -658,8 +658,8 @@ enum Ledger {
         let known = Set(read(home: home).records.map(\.id))
 
         for record in intent.records {
-            let atOriginal = fileManager.fileExists(atPath: record.originalPath)
-            let inStore = fileManager.fileExists(atPath: record.quarantinedPath)
+            let atOriginal = Movable.exists(record.originalPath)
+            let inStore = Movable.exists(record.quarantinedPath)
 
             // ── Contained in place ────────────────────────────────────────────────────────────
             // Containment moves nothing, so both paths are the same file and the five-state table
@@ -675,7 +675,7 @@ enum Ledger {
             // releasing is idempotent, so the person pressing Restore once more finishes the job,
             // and a row that is still there is a smaller harm than a file the app has forgotten.
             if record.wasContainedInPlace {
-                guard fileManager.fileExists(atPath: record.originalPath) else {
+                guard Movable.exists(record.originalPath) else {
                     if intent.verb == .delete {
                         toRemove.insert(record.id)
                         results.append(.init(id: record.id, name: record.originalName,

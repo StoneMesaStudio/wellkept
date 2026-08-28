@@ -417,7 +417,7 @@ enum Quarantine {
                            unaccountedFor: 0, trouble: trouble)
         }
         let records = reading.records
-        let missing = records.filter { !fileManager.fileExists(atPath: $0.quarantinedPath) }
+        let missing = records.filter { !Movable.exists($0.quarantinedPath) }
         return Summary(count: records.count,
                        bytes: records.reduce(0) { $0 + $1.bytes },
                        oldest: records.map(\.quarantinedOn).min(),
@@ -588,10 +588,10 @@ enum Quarantine {
             return release(record, fileManager: fileManager)
         }
 
-        guard fileManager.fileExists(atPath: record.storeRoot) else {
+        guard Movable.exists(record.storeRoot) else {
             return .volumeIsNotMounted(store: (record.storeRoot as NSString).lastPathComponent)
         }
-        guard fileManager.fileExists(atPath: record.quarantinedPath) else {
+        guard Movable.exists(record.quarantinedPath) else {
             return .itemIsGone(path: record.quarantinedPath)
         }
         // ⚠️ Identity, not name. Somebody may have put a different file in that folder by hand.
@@ -599,12 +599,12 @@ enum Quarantine {
             return .notTheSameFile
         }
         // ⚠️ The refusal that makes restore safe. Never an overwrite.
-        guard !fileManager.fileExists(atPath: record.originalPath) else {
+        guard !Movable.exists(record.originalPath) else {
             return .somethingIsAlreadyThere(path: record.originalPath)
         }
 
         let parent = record.originalURL.deletingLastPathComponent()
-        if !fileManager.fileExists(atPath: parent.path(percentEncoded: false)) {
+        if !Movable.exists(parent.path(percentEncoded: false)) {
             do {
                 // The permissions the folder had, recorded when the file was taken. Without them a
                 // recreated folder gets whatever the umask says, which is not what was there.
@@ -685,7 +685,7 @@ enum Quarantine {
             // file. Everything else is deleted with its holder folder.
             let target = record.wasContainedInPlace ? record.originalPath : record.quarantinedPath
 
-            guard fileManager.fileExists(atPath: target) else {
+            guard Movable.exists(target) else {
                 // Already gone. The record goes with it — a record of nothing helps nobody.
                 deleted.append(record)
                 continue
@@ -901,7 +901,7 @@ enum Quarantine {
         guard let containment = record.containment else { return nil }
         let path = record.originalPath
 
-        guard fileManager.fileExists(atPath: path) else { return .itemIsGone(path: path) }
+        guard Movable.exists(path) else { return .itemIsGone(path: path) }
         guard record.identity.stillDescribes(path) else { return .notTheSameFile }
 
         guard chmod(path, mode_t(containment.modeBefore)) == 0 else {
@@ -951,7 +951,7 @@ enum Quarantine {
             do {
                 try fileManager.createDirectory(at: folder, withIntermediateDirectories: true)
                 let source = record.wasContainedInPlace ? record.originalURL : record.quarantinedURL
-                guard fileManager.fileExists(atPath: source.path(percentEncoded: false)) else {
+                guard Movable.exists(source.path(percentEncoded: false)) else {
                     return true
                 }
                 try fileManager.moveItem(at: source,
@@ -971,7 +971,7 @@ enum Quarantine {
     static func freeName(in folder: URL, for name: String,
                          fileManager: FileManager = .default) -> URL {
         let candidate = folder.appending(path: name)
-        guard fileManager.fileExists(atPath: candidate.path(percentEncoded: false)) else {
+        guard Movable.exists(candidate.path(percentEncoded: false)) else {
             return candidate
         }
 
@@ -980,7 +980,7 @@ enum Quarantine {
         for n in 2...999 {
             let tried = ext.isEmpty ? "\(base) \(n)" : "\(base) \(n).\(ext)"
             let url = folder.appending(path: tried)
-            if !fileManager.fileExists(atPath: url.path(percentEncoded: false)) { return url }
+            if !Movable.exists(url.path(percentEncoded: false)) { return url }
         }
         // A thousand collisions on one name is not a real folder, but returning a colliding URL
         // would hand `moveItem` a destination it will refuse — a caught failure, not a lost file.

@@ -304,16 +304,22 @@ struct MovableVerdict: Sendable, Equatable {
 
 enum Movable {
 
-    // ⚠️ **These constants are declared here rather than taken from the SDK on purpose.** They are
-    // ABI, fixed since the flags were introduced, and spelling them out means this file compiles
-    // and behaves identically against any SDK — including one where a `#define` has moved behind a
-    // feature guard. Verified against `sys/stat.h` and `sys/mount.h`, 2026-08-28.
-    static let restrictedFlag: UInt32   = 0x0008_0000   // SF_RESTRICTED — SIP, on the file
-    static let userImmutable: UInt32    = 0x0000_0002   // UF_IMMUTABLE — Finder's "Locked"
-    static let systemImmutable: UInt32  = 0x0002_0000   // SF_IMMUTABLE
-    static let noUnlink: UInt32         = 0x0001_0000   // SF_NOUNLINK
-    static let dataVault: UInt32        = 0x0000_0080   // UF_DATAVAULT
-    static let dataless: UInt32         = 0x4000_0000   // SF_DATALESS
+    // ⚠️ **Taken from `sys/stat.h`, never typed out as hex.**
+    //
+    // They were typed out once, and one of them was wrong: `SF_NOUNLINK` is `0x00100000` and the
+    // number written here was `0x00010000`, which is `SF_ARCHIVED` — one nibble apart in a column
+    // of six. The effect was quiet in both directions. A file macOS genuinely refuses to unlink was
+    // *not* refused, so the row promised a move that would come back `EPERM`; and a file merely
+    // marked archived *was* refused, for a reason that is not a reason. Found 2026-08-28 by a test
+    // against a real `SF_NOUNLINK` folder on this Mac.
+    //
+    // Naming the constants costs nothing and removes the whole class of mistake.
+    static let restrictedFlag: UInt32   = UInt32(SF_RESTRICTED)   // SIP, expressed on the file
+    static let userImmutable: UInt32    = UInt32(UF_IMMUTABLE)    // Finder's "Locked"
+    static let systemImmutable: UInt32  = UInt32(SF_IMMUTABLE)
+    static let noUnlink: UInt32         = UInt32(SF_NOUNLINK)
+    static let dataVault: UInt32        = UInt32(UF_DATAVAULT)
+    static let dataless: UInt32         = UInt32(SF_DATALESS)
 
     // MARK: The one call everything else makes
 
@@ -347,7 +353,18 @@ enum Movable {
 
         // 1. Is this the file the caller means? Cheapest correctness check in the file, and the one
         //    that stops a restore recreating somebody's document under a misspelt name.
-        if let truePath = reading.truePath, truePath != path {
+        //
+        //    ⚠️ **Differing only by Unicode normalisation is not a misspelling here, and treating
+        //    it as one refused ordinary files.** `URL.path` hands back NFD whatever went in, while
+        //    APFS keeps whichever form it was given — so any file whose real name is NFC (anything
+        //    unzipped, downloaded, or copied off a Windows or Linux share) arrived as an NFD string
+        //    and was refused with "this Mac spells that file differently". The record already
+        //    stores `truePath`, so the restore uses the file's own spelling either way; the refusal
+        //    was costing the ordinary case and buying nothing. A difference in **case** is a real
+        //    difference and is still refused — precomposing both sides leaves that one visible.
+        if let truePath = reading.truePath, truePath != path,
+           truePath.precomposedStringWithCanonicalMapping
+               != path.precomposedStringWithCanonicalMapping {
             refusals.append(.notWhatWasAsked(actual: truePath))
         }
 
@@ -408,7 +425,18 @@ enum Movable {
         let path = url.path(percentEncoded: false)
         var status = stat()
         guard lstat(path, &status) == 0 else { return nil }
-        guard let volume = volume(of: path) else { return nil }
+
+        // ⚠️ **`statfs` follows a symbolic link, and there is no `lstatfs`.** A link pointing at
+        // nothing therefore has no readable volume, and without this fallback `read` returned nil
+        // for it — which `check` reported as `.missing`, "There is nothing there any more", about a
+        // link sitting right there on the disk. Broken shortcuts are among the commonest leftovers
+        // an uninstalled app leaves behind, so that was a refusal on the ordinary case.
+        //
+        // The parent is always the right answer: a symbolic link is an entry in its own directory,
+        // so it is on that directory's volume by definition.
+        guard let volume = volume(of: path)
+                ?? volume(of: (path as NSString).deletingLastPathComponent)
+        else { return nil }
 
         let isDirectory = (status.st_mode & S_IFMT) == S_IFDIR
         let isLink = (status.st_mode & S_IFMT) == S_IFLNK
@@ -552,6 +580,20 @@ enum Movable {
         // Drive, and a file whose ubiquity has not been established, still live in the one place the
         // path can prove.
         return url.path(percentEncoded: false).contains("/Library/Mobile Documents/")
+    }
+
+    // MARK: Is there anything there
+
+    /// Is there something at this path?
+    ///
+    /// ⚠️ **`lstat`, never `FileManager.fileExists`.** `fileExists` follows a symbolic link and
+    /// answers about the target, so a link pointing at nothing reads as absent while it is sitting
+    /// right there on the disk. Broken shortcuts are among the most ordinary leftovers an
+    /// uninstalled app leaves behind — the engine has to be able to hold one, put it back, and
+    /// really remove it, and every one of those needs this reading and not the other.
+    static func exists(_ path: String) -> Bool {
+        var status = stat()
+        return lstat(path, &status) == 0
     }
 
     /// The one line John approved. **Used verbatim, everywhere, or not at all.**
