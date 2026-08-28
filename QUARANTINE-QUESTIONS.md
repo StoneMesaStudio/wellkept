@@ -36,6 +36,6 @@ look" rule in the one place where zero means somebody's files are unaccounted fo
 
 | # | Question | Answer |
 |---|---|---|
-| 1 | At thirty days, what actually happens? | |
+| 1 | At thirty days, what actually happens? | **30 CALENDAR days**, not days-the-app-was-open (John, 2026-08-28), **and the user chooses**: *auto-delete at 30 days* or *manual delete at 30 days*, set in Settings. Manual is the default. Note the one wrinkle: with no background piece, "auto" can only act the next time Wellkept is opened, and it says what it removed. That is still the user's own standing instruction, not the app acting unbidden, which is why it does not break "nothing changes the Mac on a schedule". |
 | 2 | iCloud files — refuse outright, or allow with a warning? | |
-| 3 | What does Storage say when 40 GB is set aside and free space does not move? | |
+| 3 | What does Storage say when 40 GB is set aside and free space does not move? | **Never the word "freed".** Before: "Set aside 40 GB. Nothing is deleted and no space comes back until you empty the quarantine." After: a permanent row — "40 GB set aside — oldest is 12 days old" — with the Empty button on it. The real number is measured after the delete, never promised before. |
