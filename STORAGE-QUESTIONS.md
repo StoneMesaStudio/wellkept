@@ -54,6 +54,6 @@ pessimistic beside everyone else's.
 | # | Question | Answer |
 |---|---|---|
 | 1 | Lead with 111 GB (true, 68 GB below Finder) or 179 GB (agrees with Finder)? | |
-| 2 | Should setting aside machine junk and setting aside one of your own big files look and behave differently? | |
-| 3 | Cut "similar photos" from version one? | |
-| 4 | Does Storage say the Time Machine snapshot problem out loud, even though Backup does not exist yet? | |
+| 2 | Should setting aside machine junk and setting aside one of your own big files look and behave differently? | **Yes — two ceremonies, same four verbs.** Junk: tick a batch, one press, done, and the row afterwards says "13 GB set aside". A person's own file: one at a time, **never pre-ticked**, with a sheet stating the arithmetic before the press — "this will not make your Mac emptier today; to get the 12 GB back you also have to empty the quarantine" — and both buttons on that sheet. |
+| 3 | Cut "similar photos" from version one? | **Cut.** The metric cannot separate two useful frames from two near-identical ones; Apple already ships duplicate detection inside Photos and it merges rather than deletes; and touching a Photos library from outside is how libraries get corrupted. Byte-identical photos are still found by the ordinary duplicate finder. |
+| 4 | Does Storage say the Time Machine snapshot problem out loud, even though Backup does not exist yet? | **Yes** — one flat line on the face, no button. It is the reason almost nothing here frees space, so leaving it out would make our own numbers look broken. |
