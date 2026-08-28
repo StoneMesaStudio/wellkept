@@ -880,10 +880,16 @@ public struct UnreadablePlaces: Sendable, Hashable, Codable {
     public var stillComplete: Bool { isEmpty || why.stillComplete }
 
     /// The line on the face. Never a zero, never a shrug.
-    public var sentence: String? {
+    ///
+    /// - Parameter namingThem: whether to list the notable folders. **The names belong to whichever
+    ///   place on the screen says this FIRST, and to nothing below it.** Rendered with both, the
+    ///   free-space card and the row beneath it printed the same sentence and the same five folder
+    ///   names an inch apart — caught in the 2026-08-28 pictures, not by a test. The house rule is
+    ///   that the container is the answer and what sits inside it does not repeat it.
+    public func sentence(namingThem: Bool = true) -> String? {
         guard !isEmpty else { return nil }
         let places = count == 1 ? "one folder" : "\(count.formatted()) folders"
-        let named = notable.isEmpty ? "" : " Among them: \(Self.list(notable))."
+        let named = (notable.isEmpty || !namingThem) ? "" : " Among them: \(Self.list(notable))."
         switch why {
         case .notPermitted:
             return "\(places.capitalizedFirst) could not be read, so this total is smaller than the truth. Full Disk Access would let us see them.\(named)"
@@ -891,6 +897,12 @@ public struct UnreadablePlaces: Sendable, Hashable, Codable {
             return "\(places.capitalizedFirst) could not be read, so this total is smaller than the truth. \(why.sentence)\(named)"
         }
     }
+
+    /// The full form, naming the folders. Use this where the caveat is said for the first time.
+    public var sentence: String? { sentence(namingThem: true) }
+
+    /// The short form for anywhere the names have already been given above.
+    public var sentenceWithoutNames: String? { sentence(namingThem: false) }
 
     /// The button, on the one refusal a person can lift.
     public var remedy: Remedy? {

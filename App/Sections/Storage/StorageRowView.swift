@@ -73,7 +73,9 @@ struct StorageTopicCard<Content: View>: View {
 
                 // ⚠️ Never swallowed. A row that read most of the disk and was refused the Trash is
                 // not a row that failed — but it is not a row that saw everything either.
-                if let refusal = row.refused.sentence {
+                // ⚠️ The SHORT form. The free-space card above has already named the folders;
+                // printing them again an inch below is the same paragraph twice on one screen.
+                if let refusal = row.refused.sentenceWithoutNames {
                     Text(refusal)
                         .font(.appCallout)
                         .foregroundStyle(Theme.textSecondary)
