@@ -23,9 +23,6 @@ struct RootView: View {
     @Environment(AppState.self) private var app
     @Environment(SetupState.self) private var setup
 
-    /// For the launch bar's *Show Quarantine*, which opens the window that lists what was set aside.
-    @Environment(\.openWindow) private var openWindow
-
     var body: some View {
         @Bindable var app = app
 
@@ -138,9 +135,13 @@ struct RootView: View {
                     // person had asked for — and it is dismissible, because it reports rather than
                     // asks.
                     if !app.quarantineLaunch.notices.isEmpty {
+                        // ⚠️ It goes to **Storage**, not to the separate window: the quarantine's
+                        // list moved onto that face the day it existed to hold it, and a bar that
+                        // opened a second window showing the same list would be two answers to one
+                        // question.
                         QuarantineLaunchBar(
                             notices: app.quarantineLaunch.notices,
-                            onOpen: { openWindow(id: QuarantineWindowID.value) },
+                            onOpen: { app.selection = .storage },
                             onDismiss: { app.quarantineLaunch.dismiss() })
                     }
 

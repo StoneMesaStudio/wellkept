@@ -112,14 +112,14 @@ enum DemoData {
         let found = findings(machine)
         var out: [SectionID: CheckRecord] = [:]
 
-        let ownRecord: Set<SectionID> = [.hardware, .security, .apps]
+        let ownRecord: Set<SectionID> = [.hardware, .security, .apps, .storage]
         for section in SectionID.checkable where !ownRecord.contains(section) {
             let mine = found.filter { $0.section == section }
             out[section] = CheckRecord(
                 section: section,
                 ranAt: minutesAgo(ranMinutesAgo[section] ?? 12),
                 status: mine.contains(where: { $0.severity >= .attention }) ? .needsAttention : .good,
-                complete: machine == .healthy || section != .storage)
+                complete: true)
         }
 
         // Hardware's line comes from the report itself rather than being written twice. The chip
@@ -135,6 +135,12 @@ enum DemoData {
         // `.needsAttention`, so the chip in the sidebar's audit trail and the chip on the Apps
         // screen are one fact that cannot drift.
         out[.apps] = apps(machine).report.record
+
+        // Storage's line, for the same reason — and it is the one that carries `complete: false`.
+        // On the unwell Mac 54 folders could not be read, so `StorageReport.complete` is false and
+        // Overview may not report a healthy Mac on the strength of that look. It comes out of the
+        // report rather than being asserted here, which is what makes the branch a real one.
+        out[.storage] = storage(machine).report.record
 
         // Overview's own line is the whole sweep: the oldest of the six, because that is when the
         // sweep began, and honest about any partial look inside it.
@@ -160,15 +166,20 @@ enum DemoData {
     /// into a second copy of itself, and the section a person should actually open gets lost among
     /// its own details.
     static func findings(_ machine: DemoMachine) -> [Finding] {
-        let others = storage + backup + changes
+        let others = backup + changes
         let kept = machine == .healthy ? others.filter { $0.severity < .attention } : others
         // ⚠️ Apps contributes exactly one row, `.information`, on both Macs — and it is **not**
         // filtered out of the healthy one, because `.information` is what it always is. Apps cannot
         // turn Overview amber this round: without vulnerability data a version behind is not
         // something wrong, so the row is there for the audit trail and never in "what needs you".
+        // ⚠️ Storage contributes **at most one** row, and only ever about how full the disk is —
+        // never about how large somebody's folders are. `StorageReport.overviewFinding` is `nil` on
+        // the healthy Mac, which is the whole point: revealing a person's own files is not a thing
+        // that needs them.
         return [hardware(machine).overviewFinding,
                 security(machine).report.overviewFinding,
-                apps(machine).report.overviewFinding]
+                apps(machine).report.overviewFinding,
+                storage(machine).report.overviewFinding]
             .compactMap { $0 } + kept
     }
 
@@ -350,40 +361,388 @@ enum DemoData {
         ],
         ranAt: minutesAgo(14))
 
-    // MARK: Storage
+    // MARK: - Storage
 
-    private static let storage: [Finding] = [
-        Finding(section: .storage,
-                title: "61 GB of deleted files has not been released",
-                reason: "A Time Machine local snapshot from 3 August is holding it. macOS frees this on its own when it needs the room, but not before.",
-                severity: .attention,
-                measure: "61 GB",
-                verb: "Reveal in Finder"),
-        Finding(section: .storage,
-                title: "iPhone backups in MobileSync",
-                reason: "Two backups, the newer one from March 2024. ~/Library/Application Support/MobileSync/Backup",
-                severity: .information,
-                measure: "84.3 GB",
-                verb: "Reveal in Finder"),
-        Finding(section: .storage,
-                title: "Xcode DerivedData",
-                reason: "Build output. Xcode writes it again whenever it needs it, so nothing here is yours.",
-                severity: .information,
-                measure: "41.7 GB",
-                verb: "Quarantine"),
-        Finding(section: .storage,
-                title: "Downloads — 1,340 files, oldest from 2019",
-                reason: "Your own files, so nothing is selected. Sorted largest first inside.",
-                severity: .information,
-                measure: "22.9 GB",
-                verb: "Reveal in Finder"),
-        Finding(section: .storage,
-                title: "Docker.raw",
-                reason: "One disk image holding every container. It grows and does not shrink on its own.",
-                severity: .information,
-                measure: "18.2 GB",
-                verb: "Reveal in Finder"),
-    ]
+    /// The whole Storage answer for one machine, built once so its `Finding` keeps a stable `id`.
+    ///
+    /// ⚠️ Computed once and cached, not rebuilt per call. `StorageReport` mints a fresh `UUID` for
+    /// its Overview row, and a `Finding` with a new identity on every draw is how a list animates
+    /// itself to pieces.
+    ///
+    /// ## ⚠️ Built out of the real row builders, exactly as Hardware, Security and Apps are
+    ///
+    /// Every row comes from `StorageScan.assemble` — the same pure function the real scan ends in —
+    /// and from `JunkSweep.row`, `BigFiles.row`, `Duplicates.row` and `StorageScan.setAsideRow`
+    /// inside it. Only the *facts* are invented.
+    ///
+    /// **Neither Mac shows anything the real readers could not produce.** Three specific things
+    /// make that true rather than merely intended:
+    ///
+    /// - Every second figure is `SnapshotStanding.recoverable(onDisk:modifiedOn:)` — the four lines
+    ///   of arithmetic the disk gets — so the rows of zeroes on the unwell Mac are a consequence of
+    ///   its stuck snapshot rather than something typed in.
+    /// - Every machine-junk reason is `JunkClassifier.Category.reason`, which is the sentence that
+    ///   names the program that writes the thing again. Nothing here invents grounds for a tick.
+    /// - No `Origin` is set by hand. It comes from `JunkClassifier.Category.origin`, or it is the
+    ///   `.yours` default — which is why the four biggest things on the unwell Mac have no ticks.
+    static func storage(_ machine: DemoMachine) -> StorageAnswer {
+        switch machine {
+        case .healthy:  healthyStorage
+        case .problems: unwellStorage
+        }
+    }
+
+    // MARK: One invented thing on a disk
+
+    /// An identity that is stable per path and belongs to no real file.
+    ///
+    /// The inode comes from the path rather than a counter, so two calls describing the same
+    /// invented file agree — `Item.id` is `<device>#<inode>`, and a list whose ids move between
+    /// draws animates itself to pieces.
+    private static func madeUpIdentity(_ path: String) -> ItemIdentity {
+        var hash: UInt64 = 1_469_598_103
+        for byte in path.utf8 { hash = (hash &* 1_099_511) ^ UInt64(byte) }
+        return ItemIdentity(volumeUUID: "00000000-0000-0000-0000-00000DE30DA7",
+                            volumeDevice: "/dev/disk-demo",
+                            inode: hash % 8_000_000 + 1_000)
+    }
+
+    /// An aggregate's two numbers, using only the arithmetic the real scan can do.
+    ///
+    /// A folder total is the sum of its files' own answers: the ones written after the oldest
+    /// snapshot come back whole, the ones written before it come back not at all. Expressed here as
+    /// exactly that sum, so there is no figure on either demo Mac that a disk could not produce.
+    private static func measured(_ onDisk: Int64, comesBack: Int64) -> Bytes {
+        let back = min(max(0, comesBack), max(0, onDisk))
+        return Bytes.allOfIt(SizeOnDisk(back))
+             + Bytes.heldBackBySnapshot(SizeOnDisk(max(0, onDisk) - back))
+    }
+
+    /// One invented file or folder.
+    ///
+    /// ⚠️ `origin` defaults to `.yours` here exactly as it does on `Item` itself, so a row added to
+    /// this file in a hurry is a row nobody may pre-tick and nobody may sweep.
+    ///
+    /// ⚠️ The second figure is **not** an argument. It is computed from the snapshot standing and
+    /// the file's own date, which is the whole point of the two-number design: on the unwell Mac
+    /// anything older than 4 August returns nothing, and that falls out rather than being typed.
+    private static func thing(_ path: String,
+                              onDisk: Int64,
+                              kind: ItemKind = .file,
+                              origin: Origin = .yours,
+                              cloud: CloudStanding = .onThisMac,
+                              handling: Handling = .notCheckedYet,
+                              changedDaysAgo: Int,
+                              openedDaysAgo: Int? = nil,
+                              under snapshots: SnapshotStanding,
+                              reason: String) -> Item {
+        let changed = daysAgo(changedDaysAgo)
+        return Item(identity: madeUpIdentity(path),
+                    path: path,
+                    bytes: snapshots.bytes(onDisk: SizeOnDisk(onDisk), modifiedOn: changed),
+                    kind: kind,
+                    origin: origin,
+                    cloudStanding: cloud,
+                    handling: handling,
+                    modifiedOn: changed,
+                    lastOpenedOn: openedDaysAgo.map(daysAgo),
+                    reason: reason)
+    }
+
+    /// One piece of invented machine junk, in a category, with the classifier's own words.
+    ///
+    /// ⚠️ The reason is `JunkClassifier.Category.reason`, never typed here. That string is what
+    /// makes a tick defensible — it names the program that writes the thing again — and a demo that
+    /// wrote its own version would photograph a sentence the app cannot produce.
+    private static func junk(_ path: String,
+                             _ category: JunkClassifier.Category,
+                             onDisk: Int64,
+                             changedDaysAgo: Int = 3,
+                             kind: ItemKind = .folder,
+                             ticked: Bool = true,
+                             notTickedBecause: String? = nil,
+                             under snapshots: SnapshotStanding) -> JunkClassifier.Classified {
+        let movable = category.mayBeTicked
+        let item = thing(path,
+                         onDisk: onDisk,
+                         kind: kind,
+                         origin: category.origin,
+                         handling: movable
+                            ? .notCheckedYet
+                            : .cannot(JunkClassifier.whyARuntimeHasNoButton),
+                         changedDaysAgo: changedDaysAgo,
+                         under: snapshots,
+                         reason: movable
+                            ? category.reason
+                            : "\(category.whatItIs) \(JunkClassifier.whyARuntimeHasNoButton)")
+        let verdict: JunkClassifier.Verdict = movable
+            ? .junk(category)
+            : .nothingCanMoveIt(category, why: JunkClassifier.whyARuntimeHasNoButton)
+        return JunkClassifier.Classified(
+            item: item,
+            judgement: JunkClassifier.Judgement(
+                verdict: verdict,
+                // ⭐ The same intersection the real classifier performs: what it decided, and what
+                // `Item` itself permits. Nothing here can tick something of the person's own.
+                arrivesTicked: movable && ticked && item.mayBePreSelected,
+                notTickedBecause: notTickedBecause))
+    }
+
+    /// A `BigFiles.Answer` whose row is the one the real builder writes.
+    private static func bigFiles(items: [Item],
+                                 places: [BigFiles.Place],
+                                 total: Bytes,
+                                 filesSeen: Int,
+                                 cloud: CloudHolding,
+                                 refused: UnreadablePlaces) -> BigFiles.Answer {
+        BigFiles.Answer(items: items, places: places, total: total, filesSeen: filesSeen,
+                        cloudHolding: cloud, refused: refused,
+                        row: BigFiles.row(items: items, places: places, total: total,
+                                          filesSeen: filesSeen, cloudHolding: cloud,
+                                          refused: refused))
+    }
+
+    /// A `Duplicates.Answer` whose row is the one the real builder writes.
+    private static func duplicates(groups: [Duplicates.Group],
+                                   insideProjects: Int,
+                                   sharedBlocks: Int,
+                                   hardLinksFolded: Int,
+                                   filesCompared: Int,
+                                   bytesRead: Int64,
+                                   stoppedEarly: Bool) -> Duplicates.Answer {
+        let tidiness = Bytes.sum(groups.map(\.extra))
+        let calls = groups.reduce(0) { $0 + $1.judgementCalls }
+        return Duplicates.Answer(groups: groups,
+                                 tidiness: tidiness,
+                                 judgementCalls: calls,
+                                 insideProjects: insideProjects,
+                                 sharedBlocks: sharedBlocks,
+                                 hardLinksFolded: hardLinksFolded,
+                                 filesCompared: filesCompared,
+                                 bytesRead: bytesRead,
+                                 stoppedEarly: stoppedEarly,
+                                 refused: .sawEverything,
+                                 row: Duplicates.row(groups: groups,
+                                                     tidiness: tidiness,
+                                                     judgementCalls: calls,
+                                                     insideProjects: insideProjects,
+                                                     sharedBlocks: sharedBlocks,
+                                                     hardLinksFolded: hardLinksFolded,
+                                                     stoppedEarly: stoppedEarly,
+                                                     refused: .sawEverything))
+    }
+
+    // MARK: Storage — a healthy Mac
+
+    /// **Modest junk, a couple of big files, nothing alarming.**
+    ///
+    /// The disk is comfortable, so `StorageReport.overviewFinding` is `nil` and Storage contributes
+    /// nothing at all to "what needs you". That is correct, and it is the case the product exists to
+    /// be able to show: a person opens Storage, sees where their room went, and there is nothing to
+    /// do about any of it.
+    ///
+    /// The snapshot here is two days old and doing its job rather than being stuck, so most of what
+    /// is offered really would come back — which is what makes the unwell Mac's rows of zeroes
+    /// legible as the exception they are.
+    private static let healthyStorage: StorageAnswer = {
+        let snapshots = SnapshotStanding(snapshots: [
+            LocalSnapshot(name: "com.apple.TimeMachine.2026-08-26-030114.local", takenOn: daysAgo(2)),
+        ])
+
+        let found = JunkSweep.Found(
+            junk: [
+                junk("/Users/sample/Library/Developer/Xcode/DerivedData",
+                     .xcodeBuildOutput, onDisk: 8_400_000_000, changedDaysAgo: 0,
+                     under: snapshots),
+                junk("/Users/sample/Library/Caches/Firefox/Profiles/default/cache2/entries",
+                     .contentAddressedCache, onDisk: 642_000_000, changedDaysAgo: 0,
+                     under: snapshots),
+            ],
+            refused: .sawEverything,
+            considered: 4_186)
+
+        let mine = [
+            thing("/Users/sample/Movies/Family Reunion 2025.mov",
+                  onDisk: 6_240_000_000, changedDaysAgo: 140, openedDaysAgo: 61,
+                  under: snapshots,
+                  reason: BigFiles.Says.because(SizeOnDisk(6_240_000_000))),
+            thing("/Users/sample/Documents/Thesis Archive.zip",
+                  onDisk: 2_100_000_000, changedDaysAgo: 1, under: snapshots,
+                  reason: BigFiles.Says.because(SizeOnDisk(2_100_000_000))),
+        ]
+
+        let big = bigFiles(
+            items: mine,
+            places: [
+                BigFiles.Place(path: "/Users/sample/Movies", name: "Movies",
+                               bytes: measured(41_300_000_000, comesBack: 12_100_000_000),
+                               files: 214),
+                BigFiles.Place(path: "/Users/sample/Library/Developer", name: "Library/Developer",
+                               bytes: measured(22_800_000_000, comesBack: 21_400_000_000),
+                               files: 96_431),
+                BigFiles.Place(path: "/Users/sample/Documents", name: "Documents",
+                               bytes: measured(9_600_000_000, comesBack: 1_200_000_000),
+                               files: 3_882),
+            ],
+            total: measured(214_000_000_000, comesBack: 58_000_000_000),
+            filesSeen: 412_006,
+            cloud: CloudHolding(files: 1_204, apparentBytes: 9_400_000_000),
+            refused: .sawEverything)
+
+        return StorageScan.assemble(
+            freeSpace: FreeSpacePicture(capacity: SizeOnDisk(494_384_795_648),
+                                        actuallyFree: SizeOnDisk(268_100_000_000),
+                                        finderShows: FinderFigure(281_600_000_000),
+                                        snapshots: snapshots,
+                                        volumeName: "this Mac's disk"),
+            junk: found,
+            big: big,
+            dupes: duplicates(groups: [], insideProjects: 96, sharedBlocks: 14,
+                              hardLinksFolded: 31, filesCompared: 2_144,
+                              bytesRead: 640_000_000, stoppedEarly: false),
+            summary: Quarantine.Summary(count: 0, bytes: 0, oldest: nil,
+                                        readyCount: 0, unaccountedFor: 0, trouble: nil),
+            snapshots: snapshots,
+            now: minutesAgo(13))
+    }()
+
+    // MARK: Storage — a Mac with problems
+
+    /// **A lot of junk, a stuck snapshot, duplicates we decline to offer, and runtimes we cannot
+    /// touch.**
+    ///
+    /// Four things this Mac exercises that the healthy one cannot:
+    ///
+    /// 1. **The disk is nearly full** — 3.6% left — so `DiskPressure.nearlyFull` fires. It is the
+    ///    one thing Storage may ever raise on Overview, and it raises it as a `.problem`.
+    /// 2. **A local snapshot from 24 days ago is stuck**, so almost every figure's second number is
+    ///    nothing at all. That column of zeroes is what the whole two-number design exists for, and
+    ///    it is arithmetic here rather than assertion.
+    /// 3. **1,204 duplicate sets are inside project folders and are not offered** — 94% of them, on
+    ///    the real Mac this was measured on, where deleting one half of a pair breaks a build.
+    /// 4. **11.6 GB of simulator runtimes are reported with no button**, because they are
+    ///    root-owned read-only images and no thirty-day undo could exist for them.
+    ///
+    /// It is also the Mac where 54 folders could not be read — including the Trash and the Photos
+    /// library, usually the two biggest wins — which is what makes its record `complete: false`.
+    /// That is the one state Overview must never get wrong, and a branch nobody can see is a branch
+    /// nobody checks.
+    private static let unwellStorage: StorageAnswer = {
+        let snapshots = SnapshotStanding(snapshots: [
+            LocalSnapshot(name: "com.apple.TimeMachine.2026-08-04-062503.local", takenOn: daysAgo(24)),
+        ])
+
+        let found = JunkSweep.Found(
+            junk: [
+                junk("/Users/sample/Library/Developer/Xcode/DerivedData",
+                     .xcodeBuildOutput, onDisk: 41_700_000_000, changedDaysAgo: 0,
+                     under: snapshots),
+                junk("/Users/sample/Library/Developer/CoreSimulator/Caches/dyld",
+                     .contentAddressedCache, onDisk: 3_120_000_000, changedDaysAgo: 0,
+                     under: snapshots),
+                junk("/Users/sample/Library/Caches/Homebrew/downloads",
+                     .contentAddressedCache, onDisk: 1_480_000_000, changedDaysAgo: 61,
+                     under: snapshots),
+                // ⚠️ The annoyance filter doing the one job it survives for: do not make me
+                // download this again this week. It can only ever take a tick away.
+                junk("/Users/sample/Downloads/Xcode_26.1.xip.download",
+                     .halfFinishedDownload, onDisk: 1_240_000_000, changedDaysAgo: 4,
+                     kind: .file, ticked: false,
+                     notTickedBecause: JunkClassifier.usedThisMonth,
+                     under: snapshots),
+                // ⛔ Reported, never offered. No walk in this section can even reach these — they
+                // mount as sealed read-only volumes, and the images behind them are root-owned.
+                junk("/System/Library/AssetsV2/com_apple_MobileAsset_iOSSimulatorRuntime/iOS 26.0.dmg",
+                     .simulatorRuntime, onDisk: 7_900_000_000, changedDaysAgo: 200,
+                     kind: .diskImage, under: snapshots),
+                junk("/System/Library/AssetsV2/com_apple_MobileAsset_iOSSimulatorRuntime/iOS 18.6.dmg",
+                     .simulatorRuntime, onDisk: 3_700_000_000, changedDaysAgo: 320,
+                     kind: .diskImage, under: snapshots),
+            ],
+            refused: .sawEverything,
+            considered: 12_904)
+
+        let mine = [
+            thing("/Users/sample/Library/Application Support/MobileSync/Backup",
+                  onDisk: 84_300_000_000, kind: .folder, changedDaysAgo: 380, under: snapshots,
+                  reason: BigFiles.Says.because(SizeOnDisk(84_300_000_000))),
+            // A place we will never offer to touch: sized, and the reason sits where a button would
+            // have been.
+            thing("/Users/sample/Pictures/Photos Library.photoslibrary",
+                  onDisk: 61_800_000_000, kind: .bundle,
+                  handling: .cannot(ScanPolicy.whyAPhotoLibraryIsNeverTouched),
+                  changedDaysAgo: 2, under: snapshots,
+                  reason: ScanPolicy.whyAPhotoLibraryIsNeverTouched),
+            thing("/Users/sample/Documents/Virtual Machines/Docker.raw",
+                  onDisk: 18_200_000_000, kind: .diskImage, changedDaysAgo: 40, under: snapshots,
+                  reason: BigFiles.Says.because(SizeOnDisk(18_200_000_000))),
+            // John's one line lives on this row, because this one is genuinely synced.
+            thing("/Users/sample/Library/Mobile Documents/com~apple~CloudDocs/Wedding Video.mov",
+                  onDisk: 12_400_000_000, cloud: .bothPlaces,
+                  changedDaysAgo: 210, openedDaysAgo: 190, under: snapshots,
+                  reason: BigFiles.Says.because(SizeOnDisk(12_400_000_000))),
+        ]
+
+        let big = bigFiles(
+            items: mine,
+            places: [
+                BigFiles.Place(path: "/Users/sample/Library", name: "Library",
+                               bytes: measured(148_000_000_000, comesBack: 41_100_000_000),
+                               files: 641_902),
+                BigFiles.Place(path: "/Users/sample/Pictures", name: "Pictures",
+                               bytes: measured(61_800_000_000, comesBack: 0),
+                               files: 48_211),
+                BigFiles.Place(path: "/Users/sample/Documents/Media", name: "Documents/Media",
+                               // The measured pair from the worksheet: 14.8 GB on disk, 0.5 GB back.
+                               bytes: measured(14_800_000_000, comesBack: 500_000_000),
+                               files: 1_006),
+            ],
+            total: measured(302_000_000_000, comesBack: 22_400_000_000),
+            filesSeen: 983_868,
+            cloud: CloudHolding(files: 15_593, apparentBytes: 72_000_000_000),
+            // ⚠️ Named rather than counted as empty. This is what makes this Mac incomplete.
+            refused: UnreadablePlaces(count: 54,
+                                      notable: ["your Trash", "your Photos library", "Mail",
+                                                "Messages", "your Desktop"],
+                                      why: .notPermitted))
+
+        let copies = [
+            thing("/Users/sample/Documents/Scans/Invoice 2024-11.pdf",
+                  onDisk: 3_100_000, changedDaysAgo: 300, under: snapshots,
+                  reason: Duplicates.Says.copyReason(of: 2)),
+            thing("/Users/sample/Desktop/Invoice 2024-11 copy.pdf",
+                  onDisk: 3_100_000, changedDaysAgo: 290, under: snapshots,
+                  reason: Duplicates.Says.copyReason(of: 2)),
+        ]
+
+        return StorageScan.assemble(
+            freeSpace: FreeSpacePicture(capacity: SizeOnDisk(494_384_795_648),
+                                        actuallyFree: SizeOnDisk(17_900_000_000),
+                                        finderShows: FinderFigure(96_400_000_000),
+                                        snapshots: snapshots,
+                                        volumeName: "this Mac's disk"),
+            junk: found,
+            big: big,
+            dupes: duplicates(groups: [Duplicates.Group(copies: copies,
+                                                        sharing: .separateCopies,
+                                                        sharedNamesFolded: 0,
+                                                        insideAProject: false)],
+                              insideProjects: 1_204,
+                              sharedBlocks: 96,
+                              hardLinksFolded: 256,
+                              filesCompared: 12_021,
+                              bytesRead: 8_000_000_000,
+                              stoppedEarly: true),
+            summary: Quarantine.Summary(count: 3,
+                                        bytes: 12_600_000_000,
+                                        oldest: daysAgo(34),
+                                        readyCount: 1,
+                                        unaccountedFor: 0,
+                                        trouble: nil),
+            snapshots: snapshots,
+            now: minutesAgo(13))
+    }()
+
 
     // MARK: - Apps
 

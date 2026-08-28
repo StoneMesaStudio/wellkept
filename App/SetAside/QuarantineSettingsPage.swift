@@ -28,10 +28,8 @@ import WellkeptCore
 struct QuarantineSettings: View {
 
     /// Held by `SettingsView`, above `AppearanceHost`, so a ⌘+ press does not throw away a reading
-    /// of the ledger — or the sentence describing something that was just removed for good.
+    /// of the ledger.
     let model: QuarantineModel
-
-    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         StableScrollView {
@@ -40,20 +38,15 @@ struct QuarantineSettings: View {
                     .font(.appBody)
                     .fixedSize(horizontal: false, vertical: true)
 
-                if let summary = model.summary {
-                    QuarantineSummaryRow(
-                        summary: summary,
-                        onOpen: { openWindow(id: QuarantineWindowID.value) },
-                        onEmpty: { Task { await model.empty() } })
-                }
-
-                if let word = model.lastWord {
-                    Text(word)
-                        .font(.appCallout)
-                        .foregroundStyle(Theme.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .textSelection(.enabled)
-                }
+                // ⚠️ **The list itself is not here any more.** It lived in Settings only because
+                // Storage did not exist to hold it, and a quarantine with no page listing it would
+                // have meant moving files out of somebody's home folder with nowhere to see them.
+                // Storage exists now, and a list in two places is two lists as far as anybody
+                // reading is concerned.
+                Text(Says.theListLivesInStorage)
+                    .font(.appCallout)
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 ExpiryModeControl()
 
@@ -64,9 +57,14 @@ struct QuarantineSettings: View {
         }
         .pageGround()
         .task {
-            await model.load()
             await model.loadIgnored()
         }
+    }
+
+    enum Says {
+        static let theListLivesInStorage =
+            "Everything Wellkept has set aside is listed on the Storage screen, with Restore and "
+            + "Delete on each row and one button that empties the whole thing."
     }
 }
 

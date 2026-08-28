@@ -180,6 +180,31 @@ final class AppState {
     /// change — and because it must run **once per launch**, not once per rebuild of a view.
     let quarantineLaunch = QuarantineLaunch()
 
+    // MARK: The Storage engine
+
+    /// Storage's own model — five readers, one report, and the two ceremonies.
+    ///
+    /// ⚠️ **Nothing starts this but a press.** A full sweep took 56.7 seconds on this Mac for
+    /// 983,868 files, and Full Disk Access makes it slower rather than faster — the folders it was
+    /// refused are folders it would then walk. A section that spent a minute of every launch on that
+    /// would make the app feel broken.
+    ///
+    /// It also owns the quarantine's list, which moved here from Settings the day this section
+    /// existed to hold it.
+    let storage = StorageModel()
+
+    /// Run the Storage scan and file what it found.
+    ///
+    /// ⚠️ **Never in demo mode.** Demo mode's whole promise is that nothing on screen has been read
+    /// from this Mac — and this is the one section that also offers to move files, so a real scan
+    /// running underneath the invented rows would put real paths behind invented buttons.
+    func runStorageCheck() async {
+        guard !demoMode else { return }
+        await storage.scan()
+        guard let report = storage.answer?.report else { return }
+        publish(report.record, finding: report.overviewFinding)
+    }
+
     // MARK: The Security engine
 
     /// Security's own model — six readers, one report.
