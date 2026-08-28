@@ -70,19 +70,30 @@ enum Uninstaller {
             case .cancelled:
                 return
             case .restore:
+                // ⚠️ **The engine's own sentence, not a reason invented here.** The first version of
+                // this branch told every person that anything left behind was left behind "because
+                // something is already at the place they came from" — one of seven possible reasons,
+                // asserted as though it had been checked. A file on a disk that is not plugged in,
+                // or one whose folder could not be made again, got a confident wrong explanation and
+                // no way to act on it.
                 let report = Quarantine.restore(quarantined)
-                let stuck = report.stuck.count
-                handoverNote = stuck == 0
-                    ? "Your \(quarantined.count) quarantined items are back where they came from."
-                    : "\(quarantined.count - stuck) went back. \(stuck) could not, because "
-                      + "something is already at the place they came from. They are in "
-                      + StorageManifest.quarantineDirectory().path(percentEncoded: false)
+                var note = report.sentence
+                if !report.stuck.isEmpty {
+                    note += " They are still in "
+                        + StorageManifest.quarantineDirectory().path(percentEncoded: false) + "."
+                }
+                handoverNote = note
             case .moveTo(let folder):
                 let stuck = Quarantine.handOver(quarantined, to: folder)
+                let moved = quarantined.count - stuck.count
+                let there = folder.path(percentEncoded: false)
                 handoverNote = stuck.isEmpty
-                    ? "Your quarantined items are in \(folder.path(percentEncoded: false))."
-                    : "\(quarantined.count - stuck.count) moved to "
-                      + "\(folder.path(percentEncoded: false)). \(stuck.count) could not be moved."
+                    ? (quarantined.count == 1
+                       ? "Your quarantined item is in \(there)."
+                       : "Your \(quarantined.count) quarantined items are in \(there).")
+                    : "\(moved) of \(quarantined.count) moved to \(there). The other "
+                      + "\(stuck.count) could not be moved and are still in "
+                      + StorageManifest.quarantineDirectory().path(percentEncoded: false) + "."
             }
         }
 

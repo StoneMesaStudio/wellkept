@@ -23,6 +23,9 @@ struct RootView: View {
     @Environment(AppState.self) private var app
     @Environment(SetupState.self) private var setup
 
+    /// For the launch bar's *Show Quarantine*, which opens the window that lists what was set aside.
+    @Environment(\.openWindow) private var openWindow
+
     var body: some View {
         @Bindable var app = app
 
@@ -68,6 +71,12 @@ struct RootView: View {
             if let report = app.hardware.report {
                 app.publish(report.record, finding: report.overviewFinding)
             }
+            // ⚠️ **The one automatic thing in this app that can remove a file**, and only because
+            // the person asked for it by name in Settings. It finishes any bookkeeping a crash
+            // interrupted, and in `auto` it removes what is past thirty days — and then says so, in
+            // the bar above, which is what makes it their instruction rather than the app acting
+            // behind their back. In `manual`, the default, it removes nothing and only counts.
+            await app.quarantineLaunch.runOnOpening(demoMode: app.demoMode)
         }
 
         // ── The three modal slots ─────────────────────────────────────────────────────────
@@ -123,6 +132,17 @@ struct RootView: View {
 
                 VStack(spacing: 0) {
                     if app.demoMode { DemoBar() }
+
+                    // Empty on an ordinary Mac. It appears only when the quarantine had something
+                    // to report on opening — an interrupted move, or a thirty-day removal the
+                    // person had asked for — and it is dismissible, because it reports rather than
+                    // asks.
+                    if !app.quarantineLaunch.notices.isEmpty {
+                        QuarantineLaunchBar(
+                            notices: app.quarantineLaunch.notices,
+                            onOpen: { openWindow(id: QuarantineWindowID.value) },
+                            onDismiss: { app.quarantineLaunch.dismiss() })
+                    }
 
                     // ⚠️ **The animation lives on the view, not on the writers.** The sidebar,
                     // ⌘1–⌘7 and an Overview row all assign `selection`; wrapping each in a

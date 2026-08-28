@@ -153,6 +153,36 @@ enum HelpLibrary {
             ]),
 
         HelpArticle(
+            id: "quarantine",
+            title: "Quarantine",
+            summary: "Where things Wellkept sets aside wait, and how to get them back.",
+            blocks: [
+                .paragraph("Wellkept deletes nothing on its own. Anything it sets aside is **moved**, on the same disk, into a folder it keeps for you — with a record of where every item came from kept beside it. Open it from **Help ▸ Quarantine…**, or from **Settings ▸ Quarantine**."),
+
+                .heading("Setting something aside does not make your Mac emptier"),
+                .paragraph("This is the part worth knowing before you press anything. Moving a file on the same disk moves no bytes at all: the file is in a different place and the disk is exactly as full as it was. **The space comes back when you empty the quarantine**, and not before."),
+                .paragraph("So if you need the room today, the job is two steps in one sitting: set the files aside, look at what you are about to lose, then empty the quarantine."),
+
+                .heading("What a row tells you"),
+                .bullet("What it was, and the folder it came from."),
+                .bullet("Which section set it aside, and the reason it gave at the time."),
+                .bullet("How big it is, and how long it has been waiting."),
+                .paragraph("**Restore** puts an item back where it came from. If something else has since taken that name, Wellkept refuses rather than writing over it, and says so on the row. **Delete** removes one item for good, and asks first."),
+
+                .heading("After \(Expiry.days) days"),
+                .paragraph("An item that has been in quarantine \(Expiry.days) days rises to the top of the list and is marked ready to remove. What happens then is your choice, in **Settings ▸ Quarantine**:"),
+                .bullet("**Tell me** — the default. It waits there until you remove it. Wellkept never removes anything on its own."),
+                .bullet("**Remove them** — the next time you open Wellkept, anything older than \(Expiry.days) days is removed, and Wellkept tells you what it removed."),
+                .note("Nothing happens while Wellkept is closed. It has no part that runs in the background, so even the automatic setting can only act the next time you open the app — in front of you, and it says so."),
+
+                .heading("Files that are in iCloud"),
+                .paragraph("Setting aside a file from iCloud Drive, or from a Desktop or Documents folder that syncs, takes it off your other devices for as long as it is in quarantine — while it still takes up the same room on this Mac. Wellkept says so on the row rather than refusing to do it."),
+
+                .heading("Things it will not move"),
+                .paragraph("Some files cannot be set aside, and Wellkept works that out before it touches anything: a locked file, part of macOS itself, something on a read-only disk, or a file a running program still has open. The row says which, in words, instead of failing silently."),
+            ]),
+
+        HelpArticle(
             id: "remove",
             title: "Removing Wellkept",
             summary: "How to take it off, and what survives.",

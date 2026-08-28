@@ -5,13 +5,19 @@ import SwiftUI
 //
 //  The Help menu, which is also where the uninstaller lives — DESIGN §10 asks for that by name.
 //
-//  Four items, in this order:
+//  Five items, in this order:
 //
 //      Wellkept Help                ⌘?
+//      Quarantine…
 //      Report an Issue…
 //      Support this project    ▸
 //      ──────────────────
 //      Uninstall Wellkept…
+//
+//  **Quarantine sits second because it is the only item here that is about the user's own files.**
+//  It has no section of its own yet — Storage will own it — and until then this menu and the
+//  Settings page are the only two doors to a list of files Wellkept has moved out of somebody's
+//  home folder. A holding pen nobody can open is not a holding pen.
 //
 //  The separator is doing real work: it puts the one item that removes the app on its own, away
 //  from the three that open a web page. An interface should not make it easy to perform a
@@ -42,6 +48,8 @@ struct HelpCommands: Commands {
         CommandGroup(replacing: .help) {
             Button("Wellkept Help") { openWindow(id: HelpWindowID.value) }
                 .keyboardShortcut("?", modifiers: .command)
+
+            Button("Quarantine…") { openWindow(id: QuarantineWindowID.value) }
 
             Button("Report an Issue…") { openURL(WellkeptLinks.reportIssue) }
 

@@ -5,7 +5,12 @@ import WellkeptCore
 //  SettingsView.swift
 //  Wellkept — App/Settings
 //
-//  **Four controls, a permissions page, and the demo switch. Nothing else.**
+//  **Four controls, a permissions page, a quarantine page, and the demo switch. Nothing else.**
+//
+//  The quarantine page arrived on 2026-08-28 with the engine that fills it. It carries the one
+//  question John settled — what happens to a set-aside item at thirty days, and manual is the
+//  default — and the ignore list, which is the only decision in this app that leaves no trace on
+//  screen and so had nowhere to be taken back from.
 //
 //  Settings only ever grows, and this is the one moment it is short enough to design rather than
 //  organise. Everything here is either something the app must know without asking (how it should
@@ -28,12 +33,13 @@ import WellkeptCore
 struct SettingsView: View {
 
     enum Page: String, Hashable, CaseIterable, Identifiable, Sendable {
-        case appearance, permissions, demo
+        case appearance, permissions, quarantine, demo
         var id: String { rawValue }
         var label: String {
             switch self {
             case .appearance:  "Appearance"
             case .permissions: "Permissions"
+            case .quarantine:  "Quarantine"
             case .demo:        "Demo"
             }
         }
@@ -41,6 +47,7 @@ struct SettingsView: View {
             switch self {
             case .appearance:  "paintpalette"
             case .permissions: "lock"
+            case .quarantine:  "archivebox"
             case .demo:        "sparkles"
             }
         }
@@ -57,6 +64,11 @@ struct SettingsView: View {
     /// the slider.
     @State private var page: Page = .appearance
 
+    /// ⚠️ **Held here, above `AppearanceHost`, for the reason the paragraph above gives.** It holds
+    /// a reading of the quarantine ledger and the sentence describing an action that cannot be
+    /// undone; both would be thrown away by a ⌘+ if they lived inside the page.
+    @State private var quarantine = QuarantineModel()
+
     /// Read only so this view rebuilds when the type changes, which is what lets the window grow
     /// with it. `AppFont.scale` is a plain `UserDefaults` read: SwiftUI cannot see it, so a frame
     /// computed from it never updates unless something observable changes alongside.
@@ -71,6 +83,12 @@ struct SettingsView: View {
                 PermissionSettings()
                     .tabItem { Label(Page.permissions.label, systemImage: Page.permissions.symbol) }
                     .tag(Page.permissions)
+                // What happens to a set-aside item at thirty days, and what you told Wellkept to
+                // ignore. Both are settings the app acts on without asking, which is what earns
+                // them a page (DESIGN §1.2).
+                QuarantineSettings(model: quarantine)
+                    .tabItem { Label(Page.quarantine.label, systemImage: Page.quarantine.symbol) }
+                    .tag(Page.quarantine)
                 DemoSettings()
                     .tabItem { Label(Page.demo.label, systemImage: Page.demo.symbol) }
                     .tag(Page.demo)

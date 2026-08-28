@@ -171,6 +171,15 @@ final class AppState {
         publish(report.record, finding: report.overviewFinding)
     }
 
+    // MARK: The quarantine
+
+    /// The two things the quarantine has to say when the window opens: anything a crash interrupted,
+    /// and the thirty-day sweep.
+    ///
+    /// ⚠️ Held here, above `AppearanceHost`, like everything else that must survive a text-size
+    /// change — and because it must run **once per launch**, not once per rebuild of a view.
+    let quarantineLaunch = QuarantineLaunch()
+
     // MARK: The Security engine
 
     /// Security's own model — six readers, one report.

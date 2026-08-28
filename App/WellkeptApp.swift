@@ -72,6 +72,14 @@ struct WellkeptApp: App {
         // ⌘? and Help ▸ Wellkept Help. A window rather than a website, so the answer to "how does
         // this work" is inside the app.
         HelpScene()
+
+        // Help ▸ Quarantine…, Settings ▸ Quarantine, and the launch bar's *Show Quarantine*.
+        //
+        // ⚠️ **A window rather than a sheet on the main window, and that is deliberate.** It lists
+        // the user's own files, and somebody deciding whether to put one back wants to keep looking
+        // at the section that set it aside while they decide. It moves into the Storage face when
+        // that face is built; nothing in it assumes a window.
+        QuarantineScene()
     }
 
     // MARK: Menus
