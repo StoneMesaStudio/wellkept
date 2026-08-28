@@ -79,6 +79,13 @@ enum StorageManifest {
         /// Whether Wellkept may check for a newer Wellkept. Same shape, same register.
         static let checkWellkeptUpdates = Privacy.Departure.wellkeptUpdateCheck.settingsKey
 
+        /// What happens to a quarantined item at thirty days — `manual` or `auto`.
+        ///
+        /// ⚠️ **Absent means manual, and manual is what John chose as the default.** A missing key
+        /// must never read as `auto`: that would opt somebody into automatic removal of their own
+        /// files by a value nobody set. `Expiry.mode` is the only reader; see `Expiry.swift`.
+        static let quarantineExpiry = "quarantineExpiry"
+
         /// Every key the app writes, appearance included.
         static let all: [String] = [
             AppearancePrefs.modeKey,
@@ -93,6 +100,7 @@ enum StorageManifest {
             backupDestination,
             checkAppUpdates,
             checkWellkeptUpdates,
+            quarantineExpiry,
         ]
     }
 
@@ -127,6 +135,24 @@ enum StorageManifest {
     /// they belong is exactly the "buried" outcome John ruled out.
     static func quarantineLedger(home: URL = home()) -> URL {
         supportDirectory(home: home).appending(path: "Quarantine.json")
+    }
+
+    /// What Wellkept was in the middle of doing when it last stopped.
+    ///
+    /// Written before a batch of moves and removed after the ledger is up to date, so that a crash
+    /// in that window can be finished rather than guessed at. Present only while something is
+    /// actually in flight, which on an ordinary Mac is never. See `Ledger.reconcile`.
+    static func quarantineIntent(home: URL = home()) -> URL {
+        supportDirectory(home: home).appending(path: "Quarantine-intent.json")
+    }
+
+    /// The things the user told Wellkept to stop raising.
+    ///
+    /// ⚠️ **Not the user's files** — a list of paths and what each finding said, nothing more.
+    /// Deleted with the app: it is a statement about Wellkept's behaviour, and there is no Wellkept
+    /// left for it to be about.
+    static func ignoreList(home: URL = home()) -> URL {
+        supportDirectory(home: home).appending(path: "Ignored.json")
     }
 
     /// The dated history of every check Wellkept has run.
@@ -220,6 +246,14 @@ enum StorageManifest {
         add("Quarantine",
             "Items Wellkept set aside for you, and the record of where each one came from",
             quarantineDirectory(home: home), .ask)
+
+        add("Ignored items",
+            "The list of findings you told Wellkept to stop raising",
+            ignoreList(home: home), .delete)
+
+        add("Unfinished work",
+            "A note of what Wellkept was in the middle of doing when it last stopped",
+            quarantineIntent(home: home), .delete)
 
         add("Check history",
             "The dated record of every check Wellkept has run on this Mac",
@@ -371,133 +405,5 @@ enum StorageManifest {
     /// was just deleted.
     static func forgetPreferences(defaults: UserDefaults = .standard) {
         for key in Keys.all { defaults.removeObject(forKey: key) }
-    }
-}
-
-// MARK: - Quarantine
-
-/// One item Wellkept set aside, and where it came from.
-///
-/// Written by whichever section quarantines something; read by the uninstaller and by the
-/// quarantine browser. Nothing else may define a second shape for this — the record IS the undo,
-/// and a file whose origin was recorded in two formats is a file that cannot be put back.
-struct QuarantineRecord: Codable, Sendable, Identifiable, Equatable {
-    let id: UUID
-    /// Where it was when Wellkept took it.
-    let originalPath: String
-    /// Where it is now, inside `StorageManifest.quarantineDirectory()`.
-    let quarantinedPath: String
-    let quarantinedOn: Date
-    /// Why it was set aside, in the user's words. Shown on the row.
-    let reason: String
-
-    init(id: UUID = UUID(), originalPath: String, quarantinedPath: String,
-         quarantinedOn: Date = Date(), reason: String) {
-        self.id = id
-        self.originalPath = originalPath
-        self.quarantinedPath = quarantinedPath
-        self.quarantinedOn = quarantinedOn
-        self.reason = reason
-    }
-
-    var originalURL: URL { URL(filePath: originalPath) }
-    var quarantinedURL: URL { URL(filePath: quarantinedPath) }
-}
-
-/// Reading, restoring and handing over the quarantine.
-///
-/// ⚠️ **Nothing in here deletes anything, and nothing in here overwrites anything.** Both are
-/// deliberate and both are load-bearing. Quarantine exists so that a mistake costs thirty days of
-/// patience instead of a file; a "restore" that clobbered whatever now sits at the original path
-/// would turn the undo into a second, worse deletion.
-enum Quarantine {
-
-    /// What is in quarantine right now. An unreadable or absent ledger reads as empty, which is
-    /// the honest answer — it is also what a fresh install looks like.
-    static func records(home: URL = StorageManifest.home()) -> [QuarantineRecord] {
-        let ledger = StorageManifest.quarantineLedger(home: home)
-        guard let data = try? Data(contentsOf: ledger),
-              let records = try? JSONDecoder().decode([QuarantineRecord].self, from: data)
-        else { return [] }
-        // A record whose file is already gone is a record of nothing. Listing it would offer to
-        // restore something that cannot be restored.
-        return records.filter { FileManager.default.fileExists(atPath: $0.quarantinedPath) }
-    }
-
-    static func write(_ records: [QuarantineRecord], home: URL = StorageManifest.home()) throws {
-        let support = StorageManifest.supportDirectory(home: home)
-        try FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        // ⚠️ `.atomic` is not tidiness — it is the difference between a crash costing nothing and a
-        // crash costing somebody every quarantined file they own. A plain `write(to:)` truncates
-        // the ledger in place and then fills it: a badly-timed loss of power leaves half a JSON
-        // array, `records()` decodes nothing, and every quarantined file becomes an orphan with no
-        // record of where it came from — while every screen in the app says the quarantine is
-        // empty. That is precisely the "buried" outcome this file exists to prevent.
-        try encoder.encode(records).write(to: StorageManifest.quarantineLedger(home: home),
-                                          options: .atomic)
-    }
-
-    /// Put each item back where it came from, and report the ones that could not go back.
-    ///
-    /// ⚠️ **An occupied original path is a refusal, not an overwrite.** Between quarantining and
-    /// restoring, the user may have made a new file with the same name — re-downloaded the
-    /// installer, saved the document again. Moving over it would destroy the newer one, and the
-    /// person would have asked for the opposite of that.
-    @discardableResult
-    static func restore(_ records: [QuarantineRecord],
-                        fileManager: FileManager = .default) -> [QuarantineRecord] {
-        records.filter { record in
-            let destination = record.originalURL
-            guard !fileManager.fileExists(atPath: destination.path) else { return true }
-            do {
-                try fileManager.createDirectory(at: destination.deletingLastPathComponent(),
-                                                withIntermediateDirectories: true)
-                try fileManager.moveItem(at: record.quarantinedURL, to: destination)
-                return false
-            } catch {
-                return true
-            }
-        }
-    }
-
-    /// Move every quarantined item into a folder the user picked, and report what would not move.
-    ///
-    /// A name already taken in the destination gets a numbered suffix rather than replacing what
-    /// is there — same reason as `restore`.
-    @discardableResult
-    static func handOver(_ records: [QuarantineRecord], to folder: URL,
-                         fileManager: FileManager = .default) -> [QuarantineRecord] {
-        records.filter { record in
-            do {
-                try fileManager.createDirectory(at: folder, withIntermediateDirectories: true)
-                try fileManager.moveItem(at: record.quarantinedURL,
-                                         to: freeName(in: folder,
-                                                      for: record.quarantinedURL.lastPathComponent,
-                                                      fileManager: fileManager))
-                return false
-            } catch {
-                return true
-            }
-        }
-    }
-
-    /// A URL in `folder` that nothing occupies: "report.pdf", then "report 2.pdf", and so on.
-    static func freeName(in folder: URL, for name: String,
-                         fileManager: FileManager = .default) -> URL {
-        let candidate = folder.appending(path: name)
-        guard fileManager.fileExists(atPath: candidate.path) else { return candidate }
-
-        let base = (name as NSString).deletingPathExtension
-        let ext = (name as NSString).pathExtension
-        for n in 2...999 {
-            let tried = ext.isEmpty ? "\(base) \(n)" : "\(base) \(n).\(ext)"
-            let url = folder.appending(path: tried)
-            if !fileManager.fileExists(atPath: url.path) { return url }
-        }
-        // A thousand collisions on one name is not a real folder, but returning a colliding URL
-        // would hand `moveItem` a destination it will refuse — a caught failure, not a lost file.
-        return folder.appending(path: "\(base) \(UUID().uuidString)")
     }
 }

@@ -50,23 +50,32 @@ enum Uninstaller {
         NSApp.activate(ignoringOtherApps: true)
 
         let entries = StorageManifest.entries()
-        let quarantined = Quarantine.records()
+        let reading = Quarantine.reading()
+
+        // ⚠️ **An unreadable ledger stops the uninstall before it starts.** Wellkept cannot say what
+        // is in quarantine, so it cannot get the person's own files out — and removing the app now
+        // would leave them in a folder belonging to something that no longer exists. Saying nothing
+        // and reporting an empty quarantine is exactly the "never report zero because we could not
+        // look" failure, in the one place where zero means somebody's files are unaccounted for.
+        if let trouble = reading.trouble, !warnAboutTheRecord(trouble) { return }
+
+        let quarantined = reading.records
 
         // The quarantine question comes FIRST, before the confirmation — a person deciding whether
         // to remove the app is entitled to know their own files are getting out safely before they
-        // agree to anything. Skipped entirely when there is nothing in quarantine, which is every
-        // run until the Storage section ships.
+        // agree to anything. Skipped entirely when there is nothing in quarantine.
         var handoverNote: String?
         if !quarantined.isEmpty {
             switch askAboutQuarantine(quarantined) {
             case .cancelled:
                 return
             case .restore:
-                let stuck = Quarantine.restore(quarantined)
-                handoverNote = stuck.isEmpty
+                let report = Quarantine.restore(quarantined)
+                let stuck = report.stuck.count
+                handoverNote = stuck == 0
                     ? "Your \(quarantined.count) quarantined items are back where they came from."
-                    : "\(quarantined.count - stuck.count) went back. \(stuck.count) could not, "
-                      + "because something is already at the place they came from. They are in "
+                    : "\(quarantined.count - stuck) went back. \(stuck) could not, because "
+                      + "something is already at the place they came from. They are in "
                       + StorageManifest.quarantineDirectory().path(percentEncoded: false)
             case .moveTo(let folder):
                 let stuck = Quarantine.handOver(quarantined, to: folder)
@@ -196,6 +205,28 @@ enum Uninstaller {
 
     // MARK: - Putting them on screen
 
+    /// ⚠️ Told before anything is agreed to, and the destructive button is not the default.
+    ///
+    /// Returns whether to carry on. Carrying on is allowed — the person may not care, and an app
+    /// that refuses to uninstall itself is worse than one that warns — but it is never the quiet
+    /// path, and the folder is named so they can go and get their files by hand.
+    private static func warnAboutTheRecord(_ trouble: LedgerTrouble) -> Bool {
+        let alert = NSAlert()
+        alert.alertStyle = .critical
+        alert.messageText = "Wellkept cannot read its record of your set-aside files"
+        alert.informativeText = trouble.sentence + "\n\nIf you remove Wellkept now, those files "
+            + "stay where they are and nothing will be able to put them back for you. You can open "
+            + "that folder and move them yourself first."
+
+        let carryOn = alert.addButton(withTitle: "Remove Wellkept Anyway")
+        carryOn.hasDestructiveAction = true
+        let stop = alert.addButton(withTitle: "Stop")
+        carryOn.keyEquivalent = ""
+        stop.keyEquivalent = "\r"
+
+        return alert.runModal() == .alertFirstButtonReturn
+    }
+
     private static func askAboutQuarantine(_ records: [QuarantineRecord]) -> QuarantineChoice {
         let words = quarantineQuestion(records)
         let alert = NSAlert()
@@ -275,7 +306,8 @@ enum Uninstaller {
     /// the same three functions above.
     static func preview() -> String {
         let entries = StorageManifest.entries()
-        let quarantined = Quarantine.records()
+        let reading = Quarantine.reading()
+        let quarantined = reading.records
         let ask = confirmation(entries)
         let done = closing(trashed: true, at: Bundle.main.bundleURL, survived: [],
                            left: entries.filter { $0.disposition == .leave },
@@ -301,7 +333,10 @@ enum Uninstaller {
         }
 
         report += "\nWOULD ASK ABOUT\n---------------\n"
-        if quarantined.isEmpty {
+        if let trouble = reading.trouble {
+            report += "THE RECORD CANNOT BE READ — the uninstall stops here.\n\n"
+            report += "\(trouble.sentence)\n"
+        } else if quarantined.isEmpty {
             report += "(quarantine is empty — the question is skipped)\n"
         } else {
             let words = quarantineQuestion(quarantined)
