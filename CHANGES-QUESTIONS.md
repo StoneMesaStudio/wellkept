@@ -55,7 +55,7 @@ categories he approved into one:
 
 | # | Question | Answer |
 |---|---|---|
-| 1 | Does Changes ever write a setting back, or only show and open the right pane? | |
-| 2 | How far do we go on SetShot before anyone has written to Adam Engst? | |
+| 1 | Does Changes ever write a setting back, or only show and open the right pane? | **Show what changed and open the correct pane** (John, 2026-08-28). **Wellkept writes no setting at all** — I am dropping the default-browser exception I recommended, because one lone writable row is an inconsistency a person has to learn, and the section is cleaner without it. Changes reads and explains; System Settings does the changing. |
+| 2 | How far do we go on SetShot before anyone has written to Adam Engst? | **None of his material. Ours, and better** (John, 2026-08-28: *"Let's show him up and do it better."*). No code, no descriptions, no data, no fetching. Credit him as prior art in the Help page as a courtesy, not as a licence obligation — with nothing of his in the app, we owe none. **Scope: only the settings Wellkept already reads across Hardware, Security, Apps and Storage.** A few dozen sentences we can stand behind, not 787 we cannot maintain. **What "better" means concretely**, since his are half AI-generated one-liners: each description says what the setting does, **what turning it off actually costs you**, and **why it might have changed** — three things his knowledge base does not attempt. |
 | 3 | On uninstall, do the settings snapshots go quietly, or does it stop and ask? | |
-| 4 | Without Full Disk Access we can see THAT privacy permissions changed but not what. Show that row, or say nothing? | |
+| 4 | Without Full Disk Access we can see THAT privacy permissions changed but not what. Show that row, or say nothing? | **Show it**, once, as a single line with the button that grants access, and never repeated per permission. Saying nothing would be reporting zero because we could not look, which the app has banned everywhere else. |
