@@ -429,7 +429,14 @@ enum Quarantine {
         try FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        try encoder.encode(records).write(to: StorageManifest.quarantineLedger(home: home))
+        // ⚠️ `.atomic` is not tidiness — it is the difference between a crash costing nothing and a
+        // crash costing somebody every quarantined file they own. A plain `write(to:)` truncates
+        // the ledger in place and then fills it: a badly-timed loss of power leaves half a JSON
+        // array, `records()` decodes nothing, and every quarantined file becomes an orphan with no
+        // record of where it came from — while every screen in the app says the quarantine is
+        // empty. That is precisely the "buried" outcome this file exists to prevent.
+        try encoder.encode(records).write(to: StorageManifest.quarantineLedger(home: home),
+                                          options: .atomic)
     }
 
     /// Put each item back where it came from, and report the ones that could not go back.
