@@ -37,5 +37,26 @@ look" rule in the one place where zero means somebody's files are unaccounted fo
 | # | Question | Answer |
 |---|---|---|
 | 1 | At thirty days, what actually happens? | **30 CALENDAR days**, not days-the-app-was-open (John, 2026-08-28), **and the user chooses**: *auto-delete at 30 days* or *manual delete at 30 days*, set in Settings. Manual is the default. Note the one wrinkle: with no background piece, "auto" can only act the next time Wellkept is opened, and it says what it removed. That is still the user's own standing instruction, not the app acting unbidden, which is why it does not break "nothing changes the Mac on a schedule". |
-| 2 | iCloud files — refuse outright, or allow with a warning? | |
+| 2 | iCloud files — refuse outright, or allow with a warning? | **Allow, with the warning** (John, 2026-08-28): one line, *"This also removes it from your iPhone and iPad."* Refusing would block the most ordinary finding in the product on any Mac with Desktop & Documents sync on. |
 | 3 | What does Storage say when 40 GB is set aside and free space does not move? | **Never the word "freed".** Before: "Set aside 40 GB. Nothing is deleted and no space comes back until you empty the quarantine." After: a permanent row — "40 GB set aside — oldest is 12 days old" — with the Empty button on it. The real number is measured after the delete, never promised before. |
+
+## What quarantine actually is, settled 2026-08-28
+
+John asked the question that reframes the feature: *"why would I do that? What is the context?"*
+
+**Quarantine is not "free up space". It frees nothing.** It is the first half of deleting
+something, with a month to change your mind. The sequence is: set it aside → nothing on the Mac
+changes size → empty the quarantine → the space comes back.
+
+Two consequences the screens must carry:
+- **If the disk is full today, quarantine is the wrong button.** Wanting the space back now means
+  quarantine and then empty, deliberately, in one sitting. Storage has to say that rather than let
+  somebody quarantine 40 GB and watch nothing happen.
+- **The iCloud warning is really about the gap.** For those thirty days the file is off the
+  person's other devices while still occupying space on the Mac. That is the fact worth knowing
+  before pressing the button, and it is what the one line is for.
+
+**Open, deliberately deferred to the Storage section:** machine junk and a person's own files are
+not the same act. Junk is a genuine set-it-aside-and-forget-it. A 12 GB video the person picked is
+a deliberate two-step delete. The two should probably not read identically on the Storage face,
+and that is settled there rather than guessed here.
