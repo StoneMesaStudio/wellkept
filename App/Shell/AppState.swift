@@ -140,6 +140,19 @@ final class AppState {
     var findings: [Finding] { demoMode ? DemoData.findings(demoMachine) : realFindings }
     var records: [SectionID: CheckRecord] { demoMode ? DemoData.records(demoMachine) : realRecords }
 
+    // MARK: The sweep
+
+    /// **"Check my Mac" — the state of the one press that runs all six sections.**
+    ///
+    /// The loop itself is in `RunEverything.swift`, together with the running order and the reason
+    /// for it. This holds only where that loop has got to; the results go where every section's own
+    /// button puts them, which is what stops the sweep becoming a second copy of the audit trail.
+    ///
+    /// ⚠️ Held here, above `AppearanceHost`, like everything else that must survive a text-size
+    /// change: a ⌘+ press rebuilds every view, and a half-minute sweep whose progress lived in a
+    /// `@State` inside Overview would appear to restart every time somebody nudged the text size.
+    let sweep = Sweep()
+
     // MARK: The Hardware engine
 
     /// Hardware's own model — the first section with an engine behind it.
@@ -371,6 +384,20 @@ final class AppState {
     /// failures where there was one.
     var incompleteSections: [SectionID] {
         SectionID.checkable.filter { records[$0]?.complete == false }
+    }
+
+    /// The sections with no result at all — never run, or skipped by the last sweep.
+    ///
+    /// ⚠️ This is the other half of Overview's honesty rule, and it is a different fact from
+    /// `incompleteSections`. That one is "we looked and a permission stopped us"; this one is "we
+    /// never looked". Both have to keep the headline from saying the Mac looks fine, and merging
+    /// them would put the wrong sentence on one of the two.
+    ///
+    /// `checkable` and not `allCases` for the same reason as above: Overview's own record is the
+    /// sweep, and naming Overview in a list of things Overview did not check is a sentence nobody
+    /// can act on.
+    var uncheckedSections: [SectionID] {
+        SectionID.checkable.filter { records[$0] == nil }
     }
 
     /// Whether everything that ran, ran in full. Computed rather than stored so it cannot drift

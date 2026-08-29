@@ -656,7 +656,17 @@ import WellkeptCore
 
         let single = try #require(Quarantine.freeBytes(onVolumeAt: store))
         let summed = try #require(Quarantine.freeBytes(across: volumes))
-        #expect(summed == single, "counting the same volume twice would double the free space")
+
+        // ⚠️ **Not equality.** Both figures are live readings of a real disk taken microseconds
+        // apart, and this Mac's free space genuinely moves between them — the run that caught this
+        // differed by 4,096 bytes, which is one block, written by some daemon minding its own
+        // business. The defect this test exists to catch is counting one volume three times, which
+        // would make `summed` roughly triple, not one block larger. Asserting equality made a real
+        // test intermittently red for a reason that has nothing to do with the thing it checks —
+        // and an intermittently red gate is one nobody reads.
+        let drift = abs(Int64(summed) - Int64(single))
+        #expect(drift < 64 * 1_024 * 1_024,
+                "free space moved by \(drift) bytes between two readings — that is not drift, that is the same volume counted more than once")
     }
 
     /// ⚠️ `nil`, never zero. Zero free bytes is a full disk; the sentence for that is nothing like

@@ -129,13 +129,23 @@ struct WellkeptApp: App {
             // to have found something first. A command that appears once the app grows a feature is
             // a command nobody knows to look for; a greyed one is a promise you can read today.
             // `.help` carries the reason, since a menu has nowhere to say it.
-            Button("Save as PDF…") { }
-                .disabled(true)
-                .help("There is nothing to save until a check has run.")
-            Button("Print…") { }
+            //
+            // ⚠️ **Neither one prints or writes anything.** Both open `HealthReportSheet`, which
+            // shows the whole page before any of it leaves the app — the page carries the Mac's
+            // name and, unless the person switches it off, its serial number. ⌘P straight to a
+            // printer with a serial number on the paper and no chance to look first is exactly the
+            // thing this app exists to catch other software doing. See `HealthReportSheet`.
+            Button(HealthReportSheet.Intent.save.title) { app.presentHealthReport(.save) }
+                .disabled(!app.canMakeHealthReport)
+                .help(app.canMakeHealthReport
+                      ? "Show the report, then save it as a PDF."
+                      : "There is nothing to save until a check has run.")
+            Button(HealthReportSheet.Intent.print.title) { app.presentHealthReport(.print) }
                 .keyboardShortcut("p", modifiers: .command)
-                .disabled(true)
-                .help("There is nothing to print until a check has run.")
+                .disabled(!app.canMakeHealthReport)
+                .help(app.canMakeHealthReport
+                      ? "Show the report, then print it."
+                      : "There is nothing to print until a check has run.")
         }
 
         // View ▸ Text Size. Written by whoever owns the slider it shares a key with, so the menu

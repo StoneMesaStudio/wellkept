@@ -43,13 +43,23 @@ struct PermissionNoticeRow: View {
     /// reaching it.
     @AppStorage(SetupPrefs.fullDiskAccessAskedKey) private var asked = false
 
+    /// ⚠️ **A seam for the shot harness, and for nothing else.** `nil` — the only value the app ever
+    /// passes — reads this Mac's real answer.
+    ///
+    /// The identical seam `PermissionNoticeLine` already carries, and for the identical reason: this
+    /// row draws only while the grant is OFF, which makes it the one piece of Overview that cannot
+    /// be photographed on a machine where it is on. Without it, whether the refused Overview gets a
+    /// picture at all depends on the permissions of whoever ran the shots — and the refused screen
+    /// is precisely the one nobody sees by accident.
+    private let grantedOverride: Bool?
+
     @Environment(\.palette) private var palette
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiate
 
-    init() {}
+    init(granted: Bool? = nil) { self.grantedOverride = granted }
 
     var body: some View {
-        if !center.fullDiskAccessGranted {
+        if !(grantedOverride ?? center.fullDiskAccessGranted) {
             let tint = palette.color(for: Severity.attention)
 
             HStack(alignment: .top, spacing: Space.block) {
