@@ -1275,7 +1275,7 @@ public struct BackupReport: Sendable, Hashable {
         self.timeMachine = timeMachine
 
         var seen = Set<BackupTopic>()
-        self.rows = rows
+        self.rows = Self.normalised(rows, timeMachine: timeMachine, ranAt: ranAt)
             .filter { seen.insert($0.topic).inserted }
             .sorted { $0.topic.order < $1.topic.order }
 
@@ -1308,9 +1308,39 @@ public struct BackupReport: Sendable, Hashable {
     public var gaps: [Coverage] { rows.flatMap(\.gaps) }
 
     /// The section's own sentence at the top of its face.
+    ///
+    /// ⚠️ **Every day-count in one report is measured from `ranAt`, and that is not fussiness.**
+    /// The face rendered "it last backed up 25 days ago" in this sentence and "26 days ago" on the
+    /// row an inch below, because the row was built from the instant the reader ran and this was
+    /// built from the instant the report was stamped. A last backup sitting near a 24-hour boundary
+    /// only needs those two to differ by a moment. A person reading two different numbers for one
+    /// fact stops believing both — see `normalised(_:)`, which is what stops it happening again.
     public var summary: String {
         guard !rows.isEmpty else { return "Nothing has been checked yet." }
         return timeMachine.headline(now: ranAt)
+    }
+
+    /// Rewrite the Time Machine row's sentences from this report's own instant.
+    ///
+    /// The reader builds that row before a report exists, so it has to use an instant of its own.
+    /// This is where the two are reconciled: whatever the reader said, the report says it again
+    /// from `ranAt`, so nothing on the face can disagree with anything else on the face.
+    private static func normalised(_ rows: [BackupRow],
+                                   timeMachine: TimeMachineState,
+                                   ranAt: Date) -> [BackupRow] {
+        rows.map { row in
+            guard row.topic == .appleBackup, row.unreadable == nil else { return row }
+            return BackupRow(topic: row.topic,
+                             headline: timeMachine.headline(now: ranAt),
+                             measure: row.measure,
+                             reason: row.reason,
+                             severity: timeMachine.severity(now: ranAt),
+                             coverage: row.coverage,
+                             details: row.details,
+                             unreadable: row.unreadable,
+                             remedy: row.remedy,
+                             withheld: row.withheld)
+        }
     }
 
     /// What the section says under its headline, in order, with nothing optional missing.

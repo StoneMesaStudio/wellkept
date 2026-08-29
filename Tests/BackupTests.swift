@@ -406,7 +406,13 @@ struct BackupReportTests {
                    BackupRow(topic: .notCovered, headline: "b")],
             ranAt: now)
         #expect(report.rows.map(\.topic) == [.appleBackup, .notCovered, .recoveryPlan])
-        #expect(report.row(.appleBackup)?.headline == "a", "first one wins")
+        #expect(report.rows.filter { $0.topic == .appleBackup }.count == 1, "first one wins")
+        // ⚠️ Not "a". The Time Machine row's sentence is authored by the report from its own
+        // `ranAt`, deliberately — see `OneReportOneClockTests` for the face that said 25 days in
+        // one sentence and 26 in another. What this test still proves is the ordering and the
+        // dropping of the duplicate; the headline is no longer the reader's to keep.
+        #expect(report.row(.appleBackup)?.headline == report.summary)
+        #expect(report.row(.recoveryPlan)?.headline == "c", "other rows are passed through untouched")
     }
 
     @Test("The face says the gate is shut, unprompted")
@@ -597,5 +603,61 @@ struct RecoveryPlanTests {
         #expect(MacArchitecture.appleSilicon.howToReachRecovery.contains("Command and R") == false)
         #expect(MacArchitecture.intel.howToReachRecovery.contains("Command and R"))
         #expect(MacArchitecture.howToReachRecoveryWhenWeDoNotKnow.contains("2021 or later"))
+    }
+}
+
+// MARK: - One report, one clock
+
+/// ⚠️ **The face said "25 days ago" in its summary and "26 days ago" on the row an inch below.**
+///
+/// Both sentences were right about their own instant and wrong about each other: the row is built
+/// by the reader when it runs, and the summary is written when the report is stamped. A last
+/// backup sitting near a 24-hour boundary needs only a moment between them. A person who reads two
+/// different numbers for one fact stops believing both, and this section's whole value is being
+/// believed about a backup.
+///
+/// `BackupReport.init` now rewrites the Time Machine row's sentences from its own `ranAt`. These
+/// are the tests that keep it that way.
+@Suite("One report never disagrees with itself about the day")
+struct OneReportOneClockTests {
+
+    private static func state(lastSuccess: Date) -> TimeMachineState {
+        TimeMachineState(isConfigured: true,
+                         automaticBackupsOn: false,
+                         destination: nil,
+                         lastSuccess: lastSuccess,
+                         unreadable: nil)
+    }
+
+    @Test("A row built a moment earlier is re-stated from the report's own clock")
+    func theRowIsNormalised() {
+        // Exactly on the boundary, which is where the two instants disagree.
+        let stamped = Date()
+        let lastSuccess = stamped.addingTimeInterval(-26 * 86_400)
+        let machine = Self.state(lastSuccess: lastSuccess)
+
+        // The reader's instant: a second earlier, which floors to 25 rather than 26.
+        let readerRow = BackupRow(topic: .appleBackup,
+                                  headline: machine.headline(now: stamped.addingTimeInterval(-1)))
+
+        let report = BackupReport(timeMachine: machine, rows: [readerRow], ranAt: stamped)
+        let row = report.rows.first { $0.topic == .appleBackup }
+
+        #expect(row?.headline == report.summary,
+                "the row and the summary are describing the same backup with different numbers")
+    }
+
+    @Test("Whatever the reader said, the report says it once")
+    func noTwoSentencesDisagree() {
+        let stamped = Date()
+        for daysBack in [0, 1, 9, 26, 88] {
+            let machine = Self.state(lastSuccess: stamped.addingTimeInterval(-Double(daysBack) * 86_400))
+            let stale = BackupRow(topic: .appleBackup,
+                                  headline: "Time Machine last backed up 999 days ago.")
+            let report = BackupReport(timeMachine: machine, rows: [stale], ranAt: stamped)
+            let row = report.rows.first { $0.topic == .appleBackup }
+            #expect(row?.headline != stale.headline, "the stale sentence survived into the report")
+            #expect(row?.headline == report.summary)
+        }
     }
 }
