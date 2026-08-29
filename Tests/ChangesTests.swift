@@ -367,3 +367,218 @@ struct ChangesReportTests {
                     .contains("asleep or switched off"))
     }
 }
+
+// MARK: - ⛔ The type itself cannot hold an app's name
+
+/// ⭐ **Asserted structurally, because a screen is the wrong place to check this.**
+///
+/// `ChangesCauseGuardTests` above reads the source and fails on a case whose *name* mentions
+/// software. That is worth having, and it is not enough on its own: a case called `.attributed`
+/// carrying a bundle identifier would sail past it. So this suite proves the shape of the thing —
+/// four cases, exactly one of which carries anything at all, and that one carries a version, an
+/// instant and an outage. **There is nowhere in `Cause` to put an app's name**, which is a
+/// stronger statement than "no code currently puts one there".
+///
+/// The measurement behind all of it: nothing an unprivileged app can read on macOS records which
+/// process wrote a setting, and the one log that might forgets within a day. Every attribution to
+/// an app would therefore be a guess printed beside a security warning.
+@Suite("The cause type has nowhere to put an app")
+struct ChangesCauseShapeTests {
+
+    /// ⚠️ **This function is the test.** It switches over `Cause` with no `default`, so the day
+    /// somebody adds a fifth case the build stops here and they have to come and read the comment
+    /// above before they can carry on. A runtime assertion could not do that.
+    private func shape(of cause: Cause) -> String {
+        switch cause {
+        case .duringMacOSUpdate: "an update was recorded in the same window"
+        case .whileYouWereUsingTheMac: "the Mac was awake throughout"
+        case .setByAnOrganisation: "a profile forces it"
+        case .unknown: "nothing we can read says anything"
+        }
+    }
+
+    @Test("There are four causes and the switch over them is exhaustive")
+    func fourCausesAndNoMore() {
+        let update = MacOSUpdate(version: "26.6.2", installedAt: Date())
+        let all: [Cause] = [.duringMacOSUpdate(update), .whileYouWereUsingTheMac,
+                            .setByAnOrganisation, .unknown]
+        #expect(Set(all.map(shape(of:))).count == 4)
+    }
+
+    /// ⛔ **The only thing a cause carries, field by field.** A `bundleID`, a `process` or an
+    /// `app` added to `MacOSUpdate` would be a way to name software without touching `Cause` at
+    /// all, and the source scan would not see it.
+    @Test("The one cause that carries anything carries three facts, and none of them is an app")
+    func theUpdatePayloadCannotNameSoftware() throws {
+        let update = MacOSUpdate(version: "26.6.2",
+                                 installedAt: Date(timeIntervalSince1970: 1_787_623_732),
+                                 outage: Outage(wentDown: Date(timeIntervalSince1970: 1_787_623_440),
+                                                cameBack: Date(timeIntervalSince1970: 1_787_623_732),
+                                                precision: .toTheSecond))
+        let encoded = try JSONEncoder().encode(update)
+        let fields = try #require(try JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+
+        #expect(Set(fields.keys) == ["version", "installedAt", "outage"],
+                "MacOSUpdate gained a field: \(fields.keys.sorted())")
+
+        let forbidden = ["app", "bundle", "process", "name", "by", "author", "culprit"]
+        for key in fields.keys {
+            let lowered = key.lowercased()
+            for word in forbidden {
+                #expect(lowered != word && !lowered.hasPrefix(word),
+                        "\(key) is a place to put an app's identity")
+            }
+        }
+    }
+
+    /// ⚠️ **A privacy grant row names an app, and that is not an accusation.** "Zoom — Screen
+    /// recording" says which permission moved; the *cause* beside it still says we cannot tell what
+    /// did it. The two halves of the row are allowed to be different, and this is the test that
+    /// keeps the app's name out of the half that assigns blame.
+    @Test("An app's name appears in what changed and never in why")
+    func theAppNameStaysOutOfTheCause() {
+        let window = Window(after: Date(timeIntervalSince1970: 1_000),
+                            before: Date(timeIntervalSince1970: 2_000))
+        let change = Change(key: WatchedKey(.whoCanWatch, "screenRecording"),
+                            what: "Zoom — Screen recording",
+                            from: "Not allowed", to: "Allowed",
+                            window: window, cause: .unknown)
+
+        #expect(change.what.contains("Zoom"))
+        #expect(!change.cause.clause.contains("Zoom"))
+        #expect(change.cause.clause == "we cannot tell what changed it")
+
+        // The whole row's sentence mentions the app once, as the subject of the change, and never
+        // as the agent of it.
+        let sentence = change.sentence(now: Date(timeIntervalSince1970: 2_000))
+        #expect(sentence.hasPrefix("Zoom — Screen recording went from"))
+        #expect(sentence.hasSuffix("we cannot tell what changed it."))
+    }
+
+    /// The same row on a Mac that updated in the window. The update is named; the app is not
+    /// implicated, and the update is not implicated either.
+    @Test("Even with an update in the window, nothing is accused")
+    func anUpdateInTheWindowAccusesNobody() {
+        let update = MacOSUpdate(version: "26.6.2", installedAt: Date(timeIntervalSince1970: 1_500))
+        let change = Change(key: WatchedKey(.whoCanWatch, "camera"),
+                            what: "Zoom — Camera", from: "Not allowed", to: "Allowed",
+                            window: Window(after: Date(timeIntervalSince1970: 1_000),
+                                           before: Date(timeIntervalSince1970: 2_000)),
+                            cause: .duringMacOSUpdate(update))
+        let sentence = change.sentence(now: Date(timeIntervalSince1970: 2_000)).lowercased()
+        #expect(sentence.contains("in the same period as the macos 26.6.2 update"))
+        #expect(!sentence.contains("zoom changed"))
+        #expect(!sentence.contains("caused"))
+        #expect(change.confidence == .consistent, "a coincidence was upgraded to a certainty")
+    }
+}
+
+// MARK: - Counted, never listed — at any count
+
+/// ⚠️ **The number is allowed to be enormous and it still never becomes rows.**
+///
+/// This is the version-one scope decision, expressed as an invariant rather than as a note in a
+/// document. The general settings journal — a curated description for every key on the Mac — waits
+/// for version two. Until then a difference nobody can explain adds one to a sentence, because a
+/// row nobody can explain is a row that worries somebody for no reason.
+@Suite("Undescribed changes never become rows")
+struct UndescribedCountTests {
+
+    private static func report(_ count: Int) -> ChangesReport {
+        ChangesReport(ranAt: Date(timeIntervalSince1970: 2_000),
+                      previous: Date(timeIntervalSince1970: 1_000),
+                      changes: [], undescribed: count)
+    }
+
+    @Test("No count produces a row", arguments: [0, 1, 2, 41, 1_000, 100_000])
+    func noCountEverProducesARow(count: Int) {
+        let report = Self.report(count)
+        #expect(report.changes.isEmpty)
+        #expect(report.ordered.isEmpty)
+        for topic in ChangesTopic.allCases { #expect(report.changes(in: topic).isEmpty) }
+        #expect(report.undescribed == count)
+    }
+
+    /// And a huge number does not make the section amber. Whether a value we cannot describe
+    /// matters is not something we know, and colouring it would be inventing an opinion.
+    @Test("A great many unexplained values is still not a fault")
+    func aLargeCountIsNotAProblem() {
+        let report = Self.report(11_224)
+        #expect(report.worst == .information)
+        #expect(report.status == .good)
+        #expect(report.summary.contains("11224 other values also changed")
+                || report.summary.contains("11,224 other values also changed"))
+    }
+
+    /// One is written as a word, because "1 other values" is a machine talking.
+    @Test("One is a word, and the plural agrees with itself")
+    func theSentenceAgreesWithItself() {
+        #expect(Self.report(1).summary.contains("One other value also changed"))
+        #expect(Self.report(2).summary.contains("2 other values also changed"))
+        #expect(!Self.report(0).summary.contains("other value"))
+    }
+
+    /// A negative count is a bug upstream, and it must not print "-3 other values".
+    @Test("A nonsense count is clamped rather than printed")
+    func aNegativeCountIsClamped() {
+        #expect(Self.report(-3).undescribed == 0)
+        #expect(!Self.report(-3).summary.contains("-3"))
+    }
+}
+
+// MARK: - A Mac that was off says so
+
+/// ⚠️ **"Nothing changed since Tuesday" reads as five days of use.** If the Mac was shut for four
+/// of them, that sentence has quietly overstated how much happened while anybody was watching —
+/// and it is the sentence a person uses to decide whether the report means anything.
+@Suite("A Mac that was off between snapshots says so rather than reporting a quiet week")
+struct MacWasOffTests {
+
+    @Test("A quiet report still says the Mac was off")
+    func aQuietReportStillSaysIt() {
+        let report = ChangesReport(ranAt: Date(timeIntervalSince1970: 500_000),
+                                   previous: Date(timeIntervalSince1970: 1_000),
+                                   changes: [], macWasOffOrAsleep: true)
+        #expect(report.changes.isEmpty)
+        #expect(report.summary.contains("Nothing Wellkept watches has changed"))
+        #expect(report.summary.contains("asleep or switched off for part of that time"),
+                "a report over a period the Mac spent switched off read as a quiet week")
+    }
+
+    /// The same fact on the row, not only in the summary. A person reading one row has not read the
+    /// summary, and the caveat belongs to the window rather than to the section.
+    @Test("The row's own window carries it too")
+    func theRowCarriesItAsWell() {
+        let window = Window(after: Date(timeIntervalSince1970: 1_000),
+                            before: Date(timeIntervalSince1970: 500_000),
+                            macWasOffOrAsleep: true)
+        let change = Change(key: WatchedKey(.protections, "firewall"), what: "Firewall",
+                            from: "On", to: "Off", window: window)
+        #expect(change.sentence(now: Date(timeIntervalSince1970: 500_000))
+                    .contains("this Mac was asleep or switched off for part of it"))
+    }
+
+    /// ⚠️ **"Off" is provable and "asleep" is not.** Nothing unprivileged distinguishes a sleeping
+    /// Mac from an idle one after the fact, so the sentence says both and claims neither.
+    @Test("It never claims to know which of the two it was")
+    func itNeverClaimsToKnowWhich() {
+        let window = Window(after: Date(timeIntervalSince1970: 1_000),
+                            before: Date(timeIntervalSince1970: 500_000),
+                            macWasOffOrAsleep: true)
+        let said = window.sentence(now: Date(timeIntervalSince1970: 500_000))
+        #expect(said.contains("asleep or switched off"))
+        #expect(!said.contains("was asleep for"))
+        #expect(!said.contains("was switched off for"))
+    }
+
+    /// A window with the flag clear says nothing at all about sleep, rather than saying it was
+    /// awake — which we also cannot prove.
+    @Test("A window with nothing to say about sleep says nothing")
+    func silenceWhereThereIsNoEvidence() {
+        let window = Window(after: Date(timeIntervalSince1970: 1_000),
+                            before: Date(timeIntervalSince1970: 500_000))
+        let said = window.sentence(now: Date(timeIntervalSince1970: 500_000))
+        #expect(!said.lowercased().contains("asleep"))
+        #expect(!said.lowercased().contains("awake"))
+    }
+}

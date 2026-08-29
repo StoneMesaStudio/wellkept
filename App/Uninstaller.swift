@@ -43,6 +43,25 @@ enum Uninstaller {
         case cancelled
     }
 
+    /// ⭐ **John's three buttons for the settings record, 2026-08-28** — plus backing out, which is
+    /// not one of them.
+    ///
+    /// The three are `SnapshotStore.Farewell`, and they are its cases rather than a second copy of
+    /// them: the wording lives in `SnapshotStore` so it can be tested without putting a dialog on
+    /// anybody's screen, and the buttons live here because only this file has a screen.
+    enum RecordChoice {
+        case decided(SnapshotStore.Farewell)
+        case cancelled
+    }
+
+    /// The three buttons, in the order they are drawn, and the order matters.
+    ///
+    /// ⚠️ **"Leave Them" is first and is the default.** Somebody who reinstalls next month gets
+    /// their history back only if the record survives, and a record of a person's own Mac cannot be
+    /// back-filled — so the quiet path is the one that keeps it. Delete is last and destructive, the
+    /// same shape as every other dialog in this file.
+    static let recordButtons = ["Leave Them", "Save Them…", "Delete Them"]
+
     // MARK: - Running it
 
     /// Ask, then do it.
@@ -97,6 +116,24 @@ enum Uninstaller {
             }
         }
 
+        // ⭐ **John's answer 3, 2026-08-28.** The settings record is a record of the person's Mac,
+        // not Wellkept's own bookkeeping, so removing the app does not get to decide its fate. Asked
+        // after the quarantine and before the confirmation, for the same reason the quarantine
+        // question comes first: somebody agreeing to remove an app is entitled to know what happens
+        // to their own things before they agree to anything.
+        //
+        // Skipped when there is nothing recorded. A dialog about a file that does not exist is a
+        // dialog that teaches people to click through dialogs.
+        var recordNote: String?
+        if !SnapshotStore.isEmpty() {
+            switch askAboutSettingsRecord() {
+            case .cancelled:
+                return
+            case let .decided(farewell):
+                recordNote = carryOutAndSay(farewell)
+            }
+        }
+
         guard confirm(entries) else { return }
 
         unregisterBackgroundItems()
@@ -121,7 +158,8 @@ enum Uninstaller {
         }
 
         finish(trashed: trashed, at: app, survived: survived,
-               left: entries.filter { $0.disposition == .leave }, handoverNote: handoverNote)
+               left: entries.filter { $0.disposition == .leave },
+               handoverNote: notes([handoverNote, recordNote]))
     }
 
     /// Step 1, and it is deliberately empty.
@@ -153,6 +191,34 @@ enum Uninstaller {
 
             Move Them… puts them all in a folder you choose.
             """)
+    }
+
+    /// Two notes about the user's own things, as one block, or nothing.
+    static func notes(_ parts: [String?]) -> String? {
+        let kept = parts.compactMap { $0 }.filter { !$0.isEmpty }
+        return kept.isEmpty ? nil : kept.joined(separator: "\n\n")
+    }
+
+    /// What the closing dialog says about the settings record, given what the person chose.
+    ///
+    /// ⚠️ **"Leave them" gets a sentence too.** Silence there would read as "it went with the app",
+    /// which is the opposite of what happened, and the whole reason John made this a question is
+    /// that somebody reinstalling next month gets their history back.
+    static func recordOutcome(_ farewell: SnapshotStore.Farewell, written: [URL]) -> String {
+        switch farewell {
+        case .leave:
+            return "Your settings record is still in "
+                 + StorageManifest.supportDirectory().path(percentEncoded: false)
+                 + ". Reinstall Wellkept and it picks up where this left off."
+        case let .save(folder):
+            let names = written.map(\.lastPathComponent).formatted(.list(type: .and))
+            return written.isEmpty
+                ? "Wellkept could not write your settings record to "
+                  + folder.path(percentEncoded: false) + "."
+                : "Your settings record is in \(folder.path(percentEncoded: false)) — \(names)."
+        case .delete:
+            return "Your settings record has been deleted."
+        }
     }
 
     static func confirmation(_ entries: [StorageManifest.Entry]) -> (title: String, body: String) {
@@ -270,6 +336,56 @@ enum Uninstaller {
         }
     }
 
+    /// ⭐ **John's three buttons, on screen.**
+    ///
+    /// The words come from `SnapshotStore.farewellQuestion` so the question can be reviewed and
+    /// tested without a dialog; the buttons come from `recordButtons` for the same reason.
+    ///
+    /// Backing out of the folder chooser is not consent to either of the other two, and it is not
+    /// consent to uninstall — it asks again from the top, exactly as the quarantine question does.
+    private static func askAboutSettingsRecord() -> RecordChoice {
+        let words = SnapshotStore.farewellQuestion()
+        let alert = NSAlert()
+        alert.messageText = words.title
+        alert.informativeText = words.body
+        for title in recordButtons { alert.addButton(withTitle: title) }
+        alert.addButton(withTitle: "Cancel")
+        // Deleting a record of somebody's own Mac is not the button Return should press.
+        alert.buttons.last(where: { $0.title == "Delete Them" })?.hasDestructiveAction = true
+
+        switch alert.runModal() {
+        case .alertFirstButtonReturn:
+            return .decided(.leave)
+        case .alertSecondButtonReturn:
+            let panel = NSOpenPanel()
+            panel.canChooseFiles = false
+            panel.canChooseDirectories = true
+            panel.canCreateDirectories = true
+            panel.prompt = "Save Here"
+            panel.message = "Where should Wellkept put your settings record?"
+            panel.directoryURL = FileManager.default.homeDirectoryForCurrentUser
+                .appending(path: "Desktop")
+            guard panel.runModal() == .OK, let folder = panel.url else {
+                return askAboutSettingsRecord()
+            }
+            return .decided(.save(to: folder))
+        case .alertThirdButtonReturn:
+            return .decided(.delete)
+        default:
+            return .cancelled
+        }
+    }
+
+    /// Do what they chose, and say what happened.
+    ///
+    /// ⚠️ A failure here never stops the uninstall. Somebody who asked for the app to be removed
+    /// does not want it to stay because a text file could not be written to a folder they picked —
+    /// they want to be told, which is what the returned sentence is for.
+    private static func carryOutAndSay(_ farewell: SnapshotStore.Farewell) -> String {
+        let written = (try? SnapshotStore.carryOut(farewell)) ?? []
+        return recordOutcome(farewell, written: written)
+    }
+
     private static func confirm(_ entries: [StorageManifest.Entry]) -> Bool {
         let words = confirmation(entries)
         let alert = NSAlert()
@@ -353,6 +469,16 @@ enum Uninstaller {
             let words = quarantineQuestion(quarantined)
             report += "\(words.title)\n\n\(words.body)\n"
             report += "\n[ Put Them Back ]   [ Move Them… ]   [ Cancel ]\n"
+        }
+
+        // ⭐ John's answer 3. Reviewable in the same place as everything else the uninstaller says.
+        report += "\nWOULD ALSO ASK ABOUT\n--------------------\n"
+        if SnapshotStore.isEmpty() {
+            report += "(no settings record — the question is skipped)\n"
+        } else {
+            let words = SnapshotStore.farewellQuestion()
+            report += "\(words.title)\n\n\(words.body)\n"
+            report += "\n[ " + recordButtons.joined(separator: " ]   [ ") + " ]   [ Cancel ]\n"
         }
 
         report += "\nCONFIRMATION\n------------\n\(ask.title)\n\n\(ask.body)\n"
