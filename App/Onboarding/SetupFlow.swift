@@ -189,18 +189,31 @@ private struct FullDiskAccessStep: View {
             HStack(spacing: Space.block) {
                 Spacer(minLength: 0)
 
-                // ⚠️ "Finish later" is a real answer and sits beside the primary, not hidden in a
-                // corner as a grey word. A skip the user cannot find is not a skip.
-                Button("Finish later", action: onFinish)
-                    .buttonStyle(.app)
-                    .controlSize(.large)
+                // ⚠️ **Once the grant is held there is nothing left to ask, so there is nothing
+                // left to skip.** The screen used to offer "Finish later" and "Open System
+                // Settings…" directly under a green line saying Full Disk Access was already on —
+                // three controls arguing with each other, and one of them inviting the person to
+                // postpone something they had already done. Reported from a real screenshot,
+                // 2026-08-29.
+                if center.fullDiskAccessGranted {
+                    Button("Continue", action: onFinish)
+                        .buttonStyle(.appProminent)
+                        .controlSize(.large)
+                        .keyboardShortcut(.defaultAction)
+                } else {
+                    // ⚠️ "Finish later" is a real answer and sits beside the primary, not hidden in
+                    // a corner as a grey word. A skip the user cannot find is not a skip.
+                    Button("Finish later", action: onFinish)
+                        .buttonStyle(.app)
+                        .controlSize(.large)
 
-                Button("Open System Settings…") {
-                    center.openFullDiskAccessSettings()
+                    Button("Open System Settings…") {
+                        center.openFullDiskAccessSettings()
+                    }
+                    .buttonStyle(.appProminent)
+                    .controlSize(.large)
+                    .keyboardShortcut(.defaultAction)
                 }
-                .buttonStyle(.appProminent)
-                .controlSize(.large)
-                .keyboardShortcut(.defaultAction)
             }
         }
         .fillsPane()
