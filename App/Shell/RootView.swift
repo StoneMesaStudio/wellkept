@@ -65,6 +65,14 @@ struct RootView: View {
         .task(id: setup.isPresented) {
             guard !setup.isPresented else { return }
             await app.hardware.checkOnLaunch(demoMode: app.demoMode)
+
+            // ⚠️ **The settings snapshot, and it has to happen here or it never happens.**
+            // A record cannot be back-filled: every launch that skips this is a day the Changes
+            // journal will never be able to show. It captures and writes about a second's worth of
+            // work, so it goes off the main actor and nothing waits for it. It refuses in demo mode
+            // and under the test harness on its own.
+            let demo = app.demoMode
+            Task.detached(priority: .utility) { SnapshotStore.takeOnLaunch(demoMode: demo) }
             if let report = app.hardware.report {
                 app.publish(report.record, finding: report.overviewFinding)
             }

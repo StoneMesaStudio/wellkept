@@ -715,3 +715,30 @@ enum SnapshotStore {
         return text
     }
 }
+
+// MARK: - The one that runs by itself
+
+extension SnapshotStore {
+
+    /// Take the launch snapshot, or refuse and say nothing.
+    ///
+    /// ⚠️ **This is the only reason the snapshots ship in version one at all.** The described half
+    /// of this section is small on purpose, and the general settings journal is a version-two
+    /// feature — but **a record cannot be back-filled.** Every launch that does not capture is a
+    /// day version two will never be able to show. So the capture is full from the first launch and
+    /// the describing catches up later.
+    ///
+    /// It captures **settings only**, with no watched values. Those come from the Security readers,
+    /// and Security deliberately does not run at launch — its log query alone is about six seconds.
+    /// So launch establishes the settings baseline, and the first time somebody presses the button
+    /// in Changes establishes the described one.
+    ///
+    /// Refuses in demo mode (an invented Mac must never be written into the real record) and under
+    /// the test harness (a test run is not a launch, and 888 of them would be 888 snapshots).
+    /// Same guards, and the same reasons, as `HardwareModel.checkOnLaunch`.
+    static func takeOnLaunch(demoMode: Bool, home: URL = StorageManifest.home()) {
+        guard !demoMode else { return }
+        guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
+        _ = take(home: home)
+    }
+}
