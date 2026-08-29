@@ -283,6 +283,31 @@ final class AppState {
         publish(report.record, finding: report.overviewFinding)
     }
 
+    // MARK: The Changes engine
+
+    /// Changes' own model — one read, one comparison, one report.
+    ///
+    /// ⚠️ **Nothing starts this but a press.** The read is Security's read, about eight seconds,
+    /// and a section that spent that on every launch would make the app feel broken.
+    ///
+    /// ⚠️ Taking a *snapshot* is the other half and it is not this. It costs under a second and
+    /// belongs on every launch, because a record of what your settings were cannot be back-filled.
+    /// Whoever wires that must not reach for `runChangesCheck()` to do it.
+    let changes = ChangesModel()
+
+    /// Run the Changes check and file what it found.
+    ///
+    /// ⚠️ **Never in demo mode.** Demo mode's whole promise is that nothing on screen has been read
+    /// from this Mac — and this section writes a snapshot of the real machine as part of running,
+    /// so a check underneath the invented rows would put this Mac's settings into the record while
+    /// the screen said it was looking at somebody else's.
+    func runChangesCheck() async {
+        guard !demoMode else { return }
+        await changes.check()
+        guard let report = changes.report else { return }
+        publish(report.record, finding: report.overviewFinding)
+    }
+
     /// File one section's result: its line in the audit trail, and the single row it sends up to
     /// Overview.
     ///

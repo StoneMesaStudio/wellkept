@@ -112,7 +112,7 @@ enum DemoData {
         let found = findings(machine)
         var out: [SectionID: CheckRecord] = [:]
 
-        let ownRecord: Set<SectionID> = [.hardware, .security, .apps, .storage]
+        let ownRecord: Set<SectionID> = [.hardware, .security, .apps, .storage, .changes]
         for section in SectionID.checkable where !ownRecord.contains(section) {
             let mine = found.filter { $0.section == section }
             out[section] = CheckRecord(
@@ -142,6 +142,11 @@ enum DemoData {
         // report rather than being asserted here, which is what makes the branch a real one.
         out[.storage] = storage(machine).report.record
 
+        // Changes' line, for the same reason — and it is the one that can say "Not checked" on a
+        // Mac where nothing is wrong at all, because the very first look has nothing to compare
+        // against and "nothing changed" would be a lie on that run.
+        out[.changes] = changes(machine).record
+
         // Overview's own line is the whole sweep: the oldest of the six, because that is when the
         // sweep began, and honest about any partial look inside it.
         let all = Array(out.values)
@@ -154,7 +159,7 @@ enum DemoData {
     }
 
     private static let ranMinutesAgo: [SectionID: Int] = [
-        .hardware: 14, .storage: 13, .apps: 11, .security: 11, .backup: 10, .changes: 9,
+        .hardware: 14, .storage: 13, .apps: 11, .security: 11, .backup: 10,
     ]
 
     // MARK: - What it "found"
@@ -166,8 +171,7 @@ enum DemoData {
     /// into a second copy of itself, and the section a person should actually open gets lost among
     /// its own details.
     static func findings(_ machine: DemoMachine) -> [Finding] {
-        let others = backup + changes
-        let kept = machine == .healthy ? others.filter { $0.severity < .attention } : others
+        let kept = machine == .healthy ? backup.filter { $0.severity < .attention } : backup
         // ⚠️ Apps contributes exactly one row, `.information`, on both Macs — and it is **not**
         // filtered out of the healthy one, because `.information` is what it always is. Apps cannot
         // turn Overview amber this round: without vulnerability data a version behind is not
@@ -176,10 +180,14 @@ enum DemoData {
         // never about how large somebody's folders are. `StorageReport.overviewFinding` is `nil` on
         // the healthy Mac, which is the whole point: revealing a person's own files is not a thing
         // that needs them.
+        // ⚠️ Changes contributes **at most one** row, and none at all on a first look or a quiet
+        // one — the audit trail already says both, and a row reporting that nothing changed is a
+        // row somebody has to read to learn nothing.
         return [hardware(machine).overviewFinding,
                 security(machine).report.overviewFinding,
                 apps(machine).report.overviewFinding,
-                storage(machine).report.overviewFinding]
+                storage(machine).report.overviewFinding,
+                changes(machine).overviewFinding]
             .compactMap { $0 } + kept
     }
 
@@ -1713,27 +1721,216 @@ enum DemoData {
                 severity: .information),
     ]
 
-    // MARK: Changes
+    // MARK: - Changes
 
-    private static let changes: [Finding] = [
-        Finding(section: .changes,
-                title: "The firewall was turned off",
-                reason: "On 22 August, four days ago. Wellkept records that it changed; it cannot tell you who changed it or why.",
-                severity: .information,
-                measure: "4 days ago"),
-        Finding(section: .changes,
-                title: "Remote Login (SSH) was turned on",
-                reason: "On 19 August, during the Docker Desktop update that ran the same afternoon.",
-                severity: .information,
-                measure: "7 days ago"),
-        Finding(section: .changes,
-                title: "Docker Desktop was added to your login items",
-                reason: "On 19 August. It did not ask.",
-                severity: .information,
-                measure: "7 days ago"),
-        Finding(section: .changes,
-                title: "Two settings were compared and had not moved",
-                reason: "FileVault and automatic macOS updates are where they were on 12 August.",
-                severity: .information),
+    /// The whole Changes answer for one machine, built once so its `Finding` keeps a stable `id`.
+    ///
+    /// ## ⚠️ Built by the real diff, out of two real snapshots
+    ///
+    /// Both reports below come out of `Diff.report`, the same function the real check calls, fed
+    /// two `Snapshot`s of an invented Mac. Nothing here hand-writes a finished sentence: every line
+    /// on the screen is composed by `Change.sentence`, `MacOSUpdate.sentence` and
+    /// `ChangesReport.summary` from the facts underneath it. A demo that typed the sentences would
+    /// photograph a screen the app is no longer capable of drawing.
+    ///
+    /// ⛔ **The verdict is injected, and it has to be.** `Diff.report` otherwise asks
+    /// `Attribution.verdict(for:)`, which reads *this* Mac's install record and boot log — and demo
+    /// mode's whole promise is that nothing on screen came from this machine.
+    ///
+    /// ⛔ **Neither Mac names an app as the cause of anything.** `Cause` has no case that could, and
+    /// `ChangesSectionTests` checks the demo text for it anyway. "Sample Remote" appears as the app
+    /// that *holds* a permission, which is what the reader actually knows, never as the thing that
+    /// granted it.
+    static func changes(_ machine: DemoMachine) -> ChangesReport {
+        switch machine {
+        case .healthy:  healthyChanges
+        case .problems: unwellChanges
+        }
+    }
+
+    // MARK: Changes — the shape of one invented snapshot
+
+    /// The invented machine both snapshots are taken on. Identical across the pair, because
+    /// `Snapshot.comparable(with:)` refuses to compare two different Macs — and rightly.
+    private static let demoMachineIdentifier = "Mac15,3"
+
+    private static func snapshot(takenAt: Date,
+                                 systemVersion: String,
+                                 watched: [String: String],
+                                 settings: [String: String]) -> Snapshot {
+        Snapshot(takenAt: takenAt,
+                 bootedAt: takenAt.addingTimeInterval(-3_600 * 30),
+                 systemVersion: systemVersion,
+                 machine: demoMachineIdentifier,
+                 appVersion: "0.1.0",
+                 watched: watched,
+                 // Lockdown Mode is unreadable on every Mac Apple has ever shipped, so it is
+                 // recorded as unread rather than silently missing — and `Diff.unread` drops it
+                 // from the face, because a caveat nobody can ever clear teaches people to stop
+                 // reading caveats.
+                 unreadable: [WatchedKey(.protections, "lockdownMode").storageKey:
+                                Unreadable.notReported.rawValue],
+                 settings: settings,
+                 excludedDomains: SnapshotStore.churnDomains.map(\.domain))
+    }
+
+    /// A quiet Mac's watched values: everything on, nothing listening, a couple of dozen things
+    /// starting at login, and four apps holding a permission each.
+    private static func settledValues(systemVersion: String,
+                                      loginItems: Int,
+                                      profiles: Int = 0,
+                                      firewall: String = "On",
+                                      automaticSecurityUpdates: String = "On",
+                                      extraGrants: [(String, WellkeptCore.Permission)] = []) -> [String: String] {
+        var out: [String: String] = [:]
+
+        for (kind, state) in [(ProtectionKind.fileVault, "On"),
+                              (.systemProtection, "On"),
+                              (.gatekeeper, "On"),
+                              (.secureBoot, "On"),
+                              (.firewall, firewall),
+                              (.automaticSecurityUpdates, automaticSecurityUpdates),
+                              (.automaticLogin, "Off")] {
+            out[WatchedKey(.protections, kind.rawValue).storageKey] = state
+        }
+
+        // ⚠️ "Not seen listening", never "Off". macOS gives no reading that proves a sharing
+        // service is switched off, and a snapshot that recorded one as off would make a later
+        // build report a change that never happened. `Diff.values` spells it exactly this way.
+        for service in ReachableReader.Service.allCases {
+            out[WatchedKey(.reachableFrom, service.rawValue).storageKey] = "Not seen listening"
+        }
+
+        out[WatchedKey(.startsOnItsOwn, "userAgent").storageKey] = String(loginItems)
+        out[WatchedKey(.startsOnItsOwn, "globalDaemon").storageKey] = "9"
+        out[WatchedKey(.startsOnItsOwn, "cron").storageKey] = "0"
+        out[WatchedKey(.startsOnItsOwn, "configurationProfile").storageKey] = String(profiles)
+
+        let grants: [(String, WellkeptCore.Permission)] = [
+            ("us.zoom.xos", .camera),
+            ("us.zoom.xos", .microphone),
+            ("com.knollsoft.Rectangle", .accessibility),
+            ("com.example.weather", .location),
+        ] + extraGrants
+        for (bundleID, permission) in grants {
+            out[Diff.instanceKey(WatchedKey(.whoCanWatch, permission.rawValue), instance: bundleID)] = "Allowed"
+        }
+
+        out[WatchedKey(.macOSItself, "systemVersion").storageKey] = systemVersion
+        return out
+    }
+
+    /// The full capture, in miniature.
+    ///
+    /// Real snapshots hold about eleven thousand values; a dozen is enough to make the one number
+    /// the face actually prints — *"6 other values also changed"* — come out of the same arithmetic
+    /// the real one uses rather than being typed in.
+    private static func capturedSettings(_ moved: Int) -> [String: String] {
+        var out: [String: String] = [:]
+        for index in 0..<60 {
+            out[SnapshotStore.settingKey(domain: "com.apple.dock", key: "demo-\(index)")] = "steady"
+        }
+        for index in 0..<moved {
+            out[SnapshotStore.settingKey(domain: "com.apple.finder", key: "demo-\(index)")] = "moved-\(index)"
+        }
+        return out
+    }
+
+    /// The names behind the bundle identifiers in the grant keys, so a row can say "Sample Remote"
+    /// rather than "com.example.remote".
+    private static let changeNames = [
+        "us.zoom.xos": "Zoom",
+        "com.knollsoft.Rectangle": "Rectangle",
+        "com.example.weather": "Sample Weather",
+        "com.example.remote": "Sample Remote",
     ]
+
+    // MARK: Changes — a healthy Mac
+
+    /// **A quiet journal.** One macOS update, two harmless things that moved during it, and a
+    /// handful of values Wellkept keeps but does not describe.
+    ///
+    /// ⚠️ This is the case the product exists to be able to show, and it is the one worth reading
+    /// hardest. Nothing is amber. The macOS version going up is never a fault and three more login
+    /// items is a fact about a Mac somebody installed software on — neither carries a `safeValue`,
+    /// so neither can reach `.attention` however the screen is drawn.
+    private static let healthyChanges: ChangesReport = {
+        let update = MacOSUpdate(
+            version: "26.6.2",
+            installedAt: daysAgo(2),
+            // ⭐ The strongest sentence this section has, and the wording is the whole point:
+            // *changed during*, never *the update changed it*.
+            outage: Outage(wentDown: daysAgo(2),
+                           cameBack: daysAgo(2).addingTimeInterval(292),
+                           precision: .toTheSecond))
+
+        let earlier = snapshot(takenAt: daysAgo(4),
+                               systemVersion: "26.6.1",
+                               watched: settledValues(systemVersion: "26.6.1", loginItems: 14),
+                               settings: capturedSettings(0))
+        let later = snapshot(takenAt: minutesAgo(9),
+                             systemVersion: "26.6.2",
+                             watched: settledValues(systemVersion: "26.6.2", loginItems: 15),
+                             settings: capturedSettings(6))
+
+        return Diff.report(earlier: earlier,
+                           latest: later,
+                           now: minutesAgo(9),
+                           names: changeNames,
+                           verdict: Attribution.Verdict(cause: .duringMacOSUpdate(update),
+                                                        confidence: .consistent,
+                                                        macWasOffOrAsleep: true,
+                                                        outageUnreadable: nil))
+    }()
+
+    // MARK: Changes — a Mac with problems
+
+    /// **The four paths nobody will otherwise see**, in one window: the firewall off, a
+    /// configuration profile that appeared, an app that gained the screen, and a switch an
+    /// organisation now holds.
+    ///
+    /// ⚠️ **The organisation's switch is stated and never raised.** A Mac configured by an employer
+    /// is not a Mac with something wrong with it, and the person reading the screen cannot act on
+    /// it — so `Cause.mayRaiseSeverity` drops it to `.information` while the row still says plainly
+    /// what happened. That branch has no other way of getting looked at.
+    ///
+    /// ⚠️ The outage here is measured **to the minute**, not to the second, so the weaker sentence —
+    /// *"about six minutes"* — gets photographed too. The shutdown record has minute resolution and
+    /// the boot instant does not; claiming seconds from two minute-resolution readings would be
+    /// inventing them.
+    private static let unwellChanges: ChangesReport = {
+        let update = MacOSUpdate(
+            version: "26.6.2",
+            installedAt: daysAgo(3),
+            outage: Outage(wentDown: daysAgo(3),
+                           cameBack: daysAgo(3).addingTimeInterval(370),
+                           precision: .toTheMinute))
+
+        let earlier = snapshot(takenAt: daysAgo(6),
+                               systemVersion: "26.6.1",
+                               watched: settledValues(systemVersion: "26.6.1", loginItems: 21),
+                               settings: capturedSettings(0))
+        let later = snapshot(
+            takenAt: minutesAgo(9),
+            systemVersion: "26.6.2",
+            watched: settledValues(systemVersion: "26.6.2",
+                                   loginItems: 21,
+                                   profiles: 1,
+                                   firewall: "Off",
+                                   automaticSecurityUpdates: "Off",
+                                   extraGrants: [("com.example.remote", .screenRecording)]),
+            settings: capturedSettings(41))
+
+        return Diff.report(earlier: earlier,
+                           latest: later,
+                           now: minutesAgo(9),
+                           // The one cause this app can state outright, because the profile is a
+                           // readable file that names the setting it forces.
+                           organisationSets: [WatchedKey(.protections, "automaticSecurityUpdates")],
+                           names: changeNames,
+                           verdict: Attribution.Verdict(cause: .duringMacOSUpdate(update),
+                                                        confidence: .consistent,
+                                                        macWasOffOrAsleep: true,
+                                                        outageUnreadable: nil))
+    }()
 }
