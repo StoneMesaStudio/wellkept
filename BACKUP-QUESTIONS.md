@@ -3,10 +3,15 @@
 2026-08-29. Six agents. **Nothing was written to any drive**, no volume was created or modified,
 and Time Machine was not touched.
 
-## The verdict: not as designed
+## The verdict, and how John changed it
 
-**A backup engine cannot honestly ship in version one**, and the reason is not the privileged
-helper.
+**The research verdict was: a backup engine cannot honestly ship in version one.** The reason was
+never effort and never the privileged helper — it was that **no restore has ever been performed**,
+and there was no hardware to perform one on.
+
+⭐ **John removed that blocker on 2026-08-29 by agreeing to buy a spare drive and rehearse a real
+restore. So the engine IS built** — with the rehearsal as the gate before it is offered to anybody.
+Everything below stands as the reason that gate exists.
 
 - **No restore has ever been performed**, and the claim the whole design rests on — that Migration
   Assistant accepts a data-only APFS volume — is **unverified, with evidence against it**: Apple's
@@ -20,10 +25,11 @@ helper.
 - **Half a backup is worse than none.** It converts a risk somebody knows about into a belief they
   never check.
 
-**What Backup should be in version one** is what the shell already said it was, written before any
-of this research: *"Check whether your files are backed up, and what is not covered."* Read Time
-Machine's real state, name what is not covered, and print the Recovery Plan. All measured, none of
-it untested, and it is the only part that helps John today.
+**What ships regardless, and what the section leads with**: the shell already said it, written
+before any of this research — *"Check whether your files are backed up, and what is not covered."*
+Time Machine's real state, what is not covered, and the printed Recovery Plan are all measured and
+none of it is untested. **They are also the only part that helps John today**, so they are built
+first and the engine is built behind them.
 
 ## Decided without asking: the privileged helper stays closed
 
@@ -68,6 +74,6 @@ broken."** It is also exactly the finding this section exists to produce.
 
 | # | Question | Answer |
 |---|---|---|
-| 1 | Backup version one = the health check, coverage and Recovery Plan, with the copier deferred to phase two? | |
-| 2 | Take a Login Item, so Wellkept can notice a stale backup while its window is closed? | |
-| 3 | Will you commit a spare external drive and an afternoon to a real erase-and-restore rehearsal before any engine is offered to anyone? | |
+| 1 | Defer the copier to phase two? | **No — build it** (John, 2026-08-29). The deferral was conditional on never being able to test a restore, and he removed that condition by answering 3. **The gate is a real erase-and-restore rehearsal on real hardware, not a green test suite.** Nothing in the engine is offered to anybody until that rehearsal has been walked. |
+| 2 | Take a Login Item? | **Yes** (John, 2026-08-29). A small part of Wellkept that keeps running quietly — `SMAppService.agent`, **no password, no root**, listed in System Settings ▸ Login Items where it can be switched off, and off is still a complete app. It does three things: back up hourly while the drive is connected, start a backup the moment the drive is plugged in, and notice when it has been nine days. **This ends "the app quits when its window closes"** — that sentence must come out of the Help page and anywhere else it appears. ⚠️ **Untested and load-bearing:** if that piece does not inherit the app's Full Disk Access, anything it does on a schedule would silently skip mail, messages and photos. **Prove it before it copies anything.** |
+| 3 | A spare drive and an afternoon for a real erase-and-restore rehearsal? | **Yes** (John, 2026-08-29). **This is the gate**, in writing. Not a passing test suite — a real drive, a real backup, a real Migration Assistant restore. His existing drive is not usable: it holds 489 GB of Time Machine backups and is the only backup he has. |
