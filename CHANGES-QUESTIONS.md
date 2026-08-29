@@ -57,5 +57,23 @@ categories he approved into one:
 |---|---|---|
 | 1 | Does Changes ever write a setting back, or only show and open the right pane? | **Show what changed and open the correct pane** (John, 2026-08-28). **Wellkept writes no setting at all** — I am dropping the default-browser exception I recommended, because one lone writable row is an inconsistency a person has to learn, and the section is cleaner without it. Changes reads and explains; System Settings does the changing. |
 | 2 | How far do we go on SetShot before anyone has written to Adam Engst? | **None of his material. Ours, and better** (John, 2026-08-28: *"Let's show him up and do it better."*). No code, no descriptions, no data, no fetching. Credit him as prior art in the Help page as a courtesy, not as a licence obligation — with nothing of his in the app, we owe none. **Scope: only the settings Wellkept already reads across Hardware, Security, Apps and Storage.** A few dozen sentences we can stand behind, not 787 we cannot maintain. **What "better" means concretely**, since his are half AI-generated one-liners: each description says what the setting does, **what turning it off actually costs you**, and **why it might have changed** — three things his knowledge base does not attempt. |
-| 3 | On uninstall, do the settings snapshots go quietly, or does it stop and ask? | |
+| 3 | On uninstall, do the settings snapshots go quietly, or does it stop and ask? | **Ask, with three buttons** (John, 2026-08-28): leave them where they are · save them to a folder you pick · delete them. Saved copies are a readable summary **and** the raw file, so they are useful without Wellkept. "Leave them" matters because somebody reinstalling next month gets their history back. |
 | 4 | Without Full Disk Access we can see THAT privacy permissions changed but not what. Show that row, or say nothing? | **Show it**, once, as a single line with the button that grants access, and never repeated per permission. Saying nothing would be reporting zero because we could not look, which the app has banned everywhere else. |
+
+## Scope, settled 2026-08-28 — and it is smaller than the plan
+
+**John:** *"I wonder if we should hold on the settings change part of the package? Sounds like it
+would be a ton of work to implement meaningfully. Maybe consider next version/release, perhaps
+after talking to Engst and getting his consent to roll it into the package with his curated list."*
+
+**Agreed, and split in two:**
+
+| Ships in version one | Deferred to version two |
+|---|---|
+| Diffing **what Wellkept already understands** — FileVault, firewall, Gatekeeper, sharing services, login items, configuration profiles, privacy grants — because those readers already exist in `App/Security/`. This is the malware-adjacent half the plan was excited about: *a configuration profile appeared on Thursday; Zoom gained Screen Recording on Tuesday.* No knowledge base needed. | The **general settings journal** across hundreds of domains. That is the part that needs a curated description for every key, which is the MacUpdater trap — a database somebody feeds forever. It is also the part worth talking to Adam Engst about, because his curated list is exactly what it needs. |
+| **macOS update attribution** — "this changed while your Mac was off for the macOS 26.6.2 update, and it was off for four minutes and 52 seconds." | |
+| **The snapshots themselves, in full, from first launch.** They cost 0.77 seconds and 63 KB. **A record cannot be back-filled** — the same argument as Hardware's reading history. Capture everything now, describe only what we understand, and version two arrives with a year of history in hand rather than starting empty. | |
+
+**Consequence for the seven sections:** Changes still ships, and still answers its question. It
+answers it about the things Wellkept watches rather than about every preference on the Mac, and the
+face says so plainly rather than implying it watched everything.
