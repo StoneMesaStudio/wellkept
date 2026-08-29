@@ -153,12 +153,18 @@ if [ "$DRY" = 0 ]; then
   # would not fail to build and would not fail to launch. It would ship an app that quietly sees
   # a container instead of a Mac and reports it as healthy. Checked here because there is no
   # later moment where anybody would notice.
-  case "$ENTITLEMENTS" in
-    *"com.apple.security.app-sandbox"*)
-      die "This build carries the app-sandbox entitlement.
+  #
+  # ⚠️ **The KEY set to false is the correct configuration, and this check used to reject it.**
+  # `App/Support/Wellkept.entitlements` declares `app-sandbox` as `<false/>` on purpose — saying so
+  # out loud is better than an absence somebody later reads as an oversight, and Scout ships the
+  # same pair. Matching the key name alone failed the first real release on the very line that
+  # documents the decision. What must fail is the key set to TRUE.
+  SANDBOXED=$(/usr/bin/plutil -extract com.apple.security.app-sandbox raw -o - - <<<"$ENTITLEMENTS" 2>/dev/null || echo false)
+  if [ "$SANDBOXED" = "true" ] || [ "$SANDBOXED" = "1" ]; then
+      die "This build carries the app-sandbox entitlement, set to true.
   Wellkept is unsandboxed on purpose: sandboxed, it can see almost none of the disk and would
-  report an empty machine as a healthy one. Check App/Support/Wellkept.entitlements." ;;
-  esac
+  report an empty machine as a healthy one. Check App/Support/Wellkept.entitlements."
+  fi
 fi
 ok "signed with a timestamp and the hardened runtime, unsandboxed, no debug entitlement"
 
