@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# make-launcher.sh — build the double-clickable "Rebuild Wellkept" app and put it on the Desktop.
+# make-launcher.sh — build the double-clickable "Rebuild Wellkept" app and put it where John keeps
+# the others.
 #
 #   ./bin/make-launcher.sh
 #
@@ -16,7 +17,9 @@ cd "$(dirname "$0")/.."
 PROJECT_ROOT="$PWD"
 
 APP_NAME="Wellkept"
-DEST="$HOME/Desktop/Rebuild $APP_NAME.app"
+# ~/Library/Scripts, beside Rebuild Scout, Rebuild Lode, Rebuild Waypoint and the rest. That is
+# where John keeps them; the Desktop was Scout's choice and copying it would have scattered them.
+DEST="$HOME/Library/Scripts/Rebuild $APP_NAME.app"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
@@ -66,7 +69,10 @@ osacompile -o "$DEST" "$WORK/launcher.applescript"
 # Until the stethoscope master lands in the asset catalog, the launcher keeps the generic applet
 # face. When `icon_1024.png` is there, this block gives the launcher the same face — built from the
 # app's own master, so the two cannot drift apart.
-SRC="$PROJECT_ROOT/App/Assets.xcassets/AppIcon.appiconset/icon_1024.png"
+# `bin/make-icon.sh` names the largest file for its point size and scale, so the 1024-pixel master
+# is `icon_512x512@2x.png`. Looking for `icon_1024.png` silently found nothing and left the applet
+# with the generic face.
+SRC="$PROJECT_ROOT/App/Assets.xcassets/AppIcon.appiconset/icon_512x512@2x.png"
 if [[ -f "$SRC" ]]; then
     ICONSET="$WORK/wellkept.iconset"
     mkdir -p "$ICONSET"
