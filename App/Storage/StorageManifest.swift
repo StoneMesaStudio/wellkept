@@ -181,6 +181,17 @@ enum StorageManifest {
         supportDirectory(home: home).appending(path: "Thermal.jsonl")
     }
 
+    /// Every snapshot of this Mac's settings Wellkept has taken — one JSON object per line,
+    /// appended from the first launch.
+    ///
+    /// ⚠️ **It is a record of the owner's machine, not Wellkept's bookkeeping**, which is why its
+    /// entry below is `.ask` rather than `.delete`. John's answer, 2026-08-28: uninstall stops and
+    /// offers three buttons — leave it, save it to a folder you pick, or delete it. See
+    /// `SnapshotStore.Farewell`.
+    static func snapshotStore(home: URL = home()) -> URL {
+        supportDirectory(home: home).appending(path: "Snapshots.jsonl")
+    }
+
     /// Where the user pointed Backup, if they have. `nil` until they do.
     ///
     /// A path string rather than a security-scoped bookmark because Wellkept is unsandboxed and
@@ -262,6 +273,14 @@ enum StorageManifest {
         add("Readings",
             "The numbers Wellkept has read from this Mac over time — battery, drive speed and the rest",
             readingHistory(home: home), .delete)
+
+        // ⚠️ `.ask`, not `.delete`. This is a record of the person's own Mac — what their settings
+        // were, going back to the first launch — and it cannot be back-filled. Somebody who
+        // reinstalls next month gets their history back only if this survives, which is exactly
+        // why John made it a question rather than a policy.
+        add("Settings record",
+            "What this Mac's settings were, at every launch, going back to the first one",
+            snapshotStore(home: home), .ask)
 
         add("Thermal record",
             "How often macOS has said this Mac was running hot",

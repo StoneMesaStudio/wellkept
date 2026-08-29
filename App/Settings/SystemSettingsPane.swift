@@ -42,13 +42,51 @@ enum SystemSettingsPane: String, CaseIterable, Sendable {
     /// Users & Groups, which owns automatic login.
     case usersAndGroups
 
+    // ── Added 2026-08-28 for the Changes section ────────────────────────────────────────────────
+    //
+    //  ⚠️ **These are destinations, not verbs.** John, 2026-08-28: Wellkept writes no setting,
+    //  ever. Changes shows what changed and opens the pane where a person can change it back
+    //  themselves. There is no fifth verb; "Open Settings" is where the row goes, not something the
+    //  app does to the Mac.
+    //
+    //  The eleven privacy anchors are one line each and worth it: pointing somebody at Privacy &
+    //  Security when what moved was Screen Recording leaves them scrolling a list of twelve
+    //  headings. A renamed anchor falls back to the pane and then to Privacy & Security, which is
+    //  no worse than where they would have started.
+
+    /// Sharing — Screen Sharing, Remote Login, File Sharing, Remote Management, AirPlay Receiver.
+    case sharing
+    /// General ▸ Login Items & Extensions.
+    case loginItems
+    /// General ▸ Device Management, where configuration profiles are listed.
+    case profiles
+
+    case camera
+    case microphone
+    case screenRecording
+    case accessibility
+    case inputMonitoring
+    case locationServices
+    case contacts
+    case calendars
+    case reminders
+    case photos
+    /// "Automation" in Apple's words — one app driving another.
+    case automation
+
     private static let privacyRoot = "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension"
 
     /// Which pane this case lives in.
     private var root: String {
         switch self {
-        case .privacyAndSecurity, .fullDiskAccess, .filesAndFolders, .removableVolumes, .fileVault:
+        case .privacyAndSecurity, .fullDiskAccess, .filesAndFolders, .removableVolumes, .fileVault,
+             .camera, .microphone, .screenRecording, .accessibility, .inputMonitoring,
+             .locationServices, .contacts, .calendars, .reminders, .photos, .automation:
             Self.privacyRoot
+        case .sharing:
+            "x-apple.systempreferences:com.apple.Sharing-Settings.extension"
+        case .loginItems, .profiles:
+            "x-apple.systempreferences:com.apple.SystemProfiler.AboutExtension"
         case .firewall:
             "x-apple.systempreferences:com.apple.Network-Settings.extension"
         case .softwareUpdate:
@@ -61,12 +99,25 @@ enum SystemSettingsPane: String, CaseIterable, Sendable {
     /// The anchor within that pane, where there is one.
     private var anchor: String? {
         switch self {
-        case .privacyAndSecurity, .softwareUpdate, .usersAndGroups: nil
+        case .privacyAndSecurity, .softwareUpdate, .usersAndGroups, .sharing: nil
         case .fullDiskAccess:   "Privacy_AllFiles"
         case .filesAndFolders:  "Privacy_FilesAndFolders"
         case .removableVolumes: "Privacy_RemovableVolume"
         case .fileVault:        "FileVault"
         case .firewall:         "Firewall"
+        case .loginItems:       "LoginItems-Extensions"
+        case .profiles:         "Profiles"
+        case .camera:           "Privacy_Camera"
+        case .microphone:       "Privacy_Microphone"
+        case .screenRecording:  "Privacy_ScreenCapture"
+        case .accessibility:    "Privacy_Accessibility"
+        case .inputMonitoring:  "Privacy_ListenEvent"
+        case .locationServices: "Privacy_LocationServices"
+        case .contacts:         "Privacy_Contacts"
+        case .calendars:        "Privacy_Calendars"
+        case .reminders:        "Privacy_Reminders"
+        case .photos:           "Privacy_Photos"
+        case .automation:       "Privacy_Automation"
         }
     }
 

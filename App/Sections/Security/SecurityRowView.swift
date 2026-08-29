@@ -206,6 +206,24 @@ struct ConcernView: View {
         case .filesAndFolders:    "Open Files & Folders…"
         case .removableVolumes:   "Open Removable Volumes…"
         case .privacyAndSecurity: "Open Privacy & Security…"
+
+        // Added 2026-08-28 with the Changes section. Every one of them names its destination for
+        // the same reason as the eight above: this app changes nothing, so a button called "Fix"
+        // would be a lie about what pressing it does.
+        case .sharing:            "Open Sharing settings…"
+        case .loginItems:         "Open Login Items…"
+        case .profiles:           "Open Device Management…"
+        case .camera:             "Open Camera settings…"
+        case .microphone:         "Open Microphone settings…"
+        case .screenRecording:    "Open Screen Recording settings…"
+        case .accessibility:      "Open Accessibility settings…"
+        case .inputMonitoring:    "Open Input Monitoring settings…"
+        case .locationServices:   "Open Location Services…"
+        case .contacts:           "Open Contacts settings…"
+        case .calendars:          "Open Calendars settings…"
+        case .reminders:          "Open Reminders settings…"
+        case .photos:             "Open Photos settings…"
+        case .automation:         "Open Automation settings…"
         }
     }
 }
