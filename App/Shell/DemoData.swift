@@ -112,7 +112,7 @@ enum DemoData {
         let found = findings(machine)
         var out: [SectionID: CheckRecord] = [:]
 
-        let ownRecord: Set<SectionID> = [.hardware, .security, .apps, .storage, .changes]
+        let ownRecord: Set<SectionID> = [.hardware, .security, .apps, .storage, .changes, .backup]
         for section in SectionID.checkable where !ownRecord.contains(section) {
             let mine = found.filter { $0.section == section }
             out[section] = CheckRecord(
@@ -147,6 +147,11 @@ enum DemoData {
         // against and "nothing changed" would be a lie on that run.
         out[.changes] = changes(machine).record
 
+        // Backup's line, for the same reason. On the unwell Mac it is the one that says
+        // "Needs attention" because the backups are switched off — a fact read from Time Machine's
+        // own settings with nothing granted, which is why this section leads with it.
+        out[.backup] = backup(machine).report.record
+
         // Overview's own line is the whole sweep: the oldest of the six, because that is when the
         // sweep began, and honest about any partial look inside it.
         let all = Array(out.values)
@@ -158,8 +163,12 @@ enum DemoData {
         return out
     }
 
+    /// ⚠️ **Every checkable section now builds its own record from its own report**, so this table
+    /// is the fallback for a section that does not yet — and there are none. It is kept rather than
+    /// deleted because it is what a seventh section would reach for on the day it is added, and
+    /// because deleting it would make `records()` stop compiling for the next person who adds one.
     private static let ranMinutesAgo: [SectionID: Int] = [
-        .hardware: 14, .storage: 13, .apps: 11, .security: 11, .backup: 10,
+        .hardware: 14, .storage: 13, .apps: 11, .security: 11,
     ]
 
     // MARK: - What it "found"
@@ -171,7 +180,6 @@ enum DemoData {
     /// into a second copy of itself, and the section a person should actually open gets lost among
     /// its own details.
     static func findings(_ machine: DemoMachine) -> [Finding] {
-        let kept = machine == .healthy ? backup.filter { $0.severity < .attention } : backup
         // ⚠️ Apps contributes exactly one row, `.information`, on both Macs — and it is **not**
         // filtered out of the healthy one, because `.information` is what it always is. Apps cannot
         // turn Overview amber this round: without vulnerability data a version behind is not
@@ -183,12 +191,17 @@ enum DemoData {
         // ⚠️ Changes contributes **at most one** row, and none at all on a first look or a quiet
         // one — the audit trail already says both, and a row reporting that nothing changed is a
         // row somebody has to read to learn nothing.
+        // ⚠️ Backup contributes **at most one** row, and it is about whether the person's files are
+        // backed up — never about where their files happen to live. On the healthy Mac
+        // `BackupReport.overviewFinding` is `nil`; on the unwell one it is the backup that has been
+        // switched off for nearly four weeks with nobody told.
         return [hardware(machine).overviewFinding,
                 security(machine).report.overviewFinding,
                 apps(machine).report.overviewFinding,
                 storage(machine).report.overviewFinding,
+                backup(machine).report.overviewFinding,
                 changes(machine).overviewFinding]
-            .compactMap { $0 } + kept
+            .compactMap { $0 }
     }
 
     // MARK: - Hardware
@@ -1696,30 +1709,319 @@ enum DemoData {
         shippedWithBrowser: 13,
         profilesRead: 2)
 
-    // MARK: Backup
+    // MARK: - Backup
 
-    private static let backup: [Finding] = [
-        Finding(section: .backup,
-                title: "Time Machine last finished 23 days ago",
-                reason: "The backup disk “Archive” has not been plugged in since 3 August. Anything written since then exists only on this Mac.",
-                severity: .problem,
-                measure: "23 days ago",
-                verb: "Open Time Machine"),
-        Finding(section: .backup,
-                title: "214 GB in iCloud Drive is not in any backup",
-                reason: "iCloud is sync, not backup: a file deleted here is deleted everywhere, and a Time Machine copy of a file that was never downloaded is a placeholder.",
-                severity: .attention,
-                measure: "214 GB"),
-        Finding(section: .backup,
-                title: "The Photos library is covered",
-                reason: "312 GB, inside the Time Machine disk’s last complete backup — the one from 3 August.",
-                severity: .information,
-                measure: "312 GB"),
-        Finding(section: .backup,
-                title: "There is no copy off this Mac other than the Archive disk",
-                reason: "One disk, kept in the same room as the Mac. A fire or a theft takes both.",
-                severity: .information),
-    ]
+    /// The whole Backup answer for one machine, built once so its `Finding` keeps a stable `id`.
+    ///
+    /// ⚠️ Computed once and cached, not rebuilt per call. `BackupReport` mints a fresh `UUID` for
+    /// its Overview row, and a `Finding` with a new identity on every draw is how a list animates
+    /// itself to pieces.
+    ///
+    /// ## ⚠️ Built out of the real readers, from the shape macOS actually writes
+    ///
+    /// The Time Machine half goes through `TimeMachineReader.Preferences.destination(from:)` — the
+    /// same parser the real read uses, fed a dictionary with the same keys macOS puts in
+    /// `com.apple.TimeMachine`: `LastKnownVolumeName`, `RESULT`, `SnapshotDates`,
+    /// `ReferenceLocalSnapshotDate` and the rest. The row comes from `TimeMachineReader.row`, the
+    /// verdict from `TimeMachineState`, the coverage rows from `CoverageReader.coverage(of:…)` and
+    /// the page from `RecoveryPlan.make`. **Only the facts are invented.**
+    ///
+    /// ## ⭐ Neither Mac has a `Coverage` marked as a gap, and that is the section's whole argument
+    ///
+    /// `Coverage.isGap` is `true` only for something that lives **on this Mac and nowhere else** and
+    /// is in no backup. Both demo Macs have a backup that has finished at least once, so
+    /// `CoverageReader.included` answers `.yes` for every place — which is what the real reader
+    /// would say, and saying anything else here would be inventing an alarm the app cannot produce.
+    ///
+    /// What the unwell Mac has instead is **72.2 GB in the cloud and not on this disk**, and that is
+    /// deliberately *not* a gap: it is an arrangement working exactly as designed. A tool that
+    /// counted it as missing would open with a 72 GB alarm about nothing. The unwell Mac's actual
+    /// problem is on the row above it — Time Machine switched off, nobody told.
+    static func backup(_ machine: DemoMachine) -> BackupAnswer {
+        switch machine {
+        case .healthy:  healthyBackup
+        case .problems: unwellBackup
+        }
+    }
+
+    // MARK: Backup — the shape of one invented destination
+
+    /// A Time Machine destination, parsed by the real parser out of the keys macOS writes.
+    private static func destinationRecord(name: String,
+                                          successes: [Date],
+                                          attempts: [Date],
+                                          result: Int,
+                                          bytesUsed: Int64,
+                                          bytesAvailable: Int64,
+                                          referenceSnapshot: Date?) -> TimeMachineReader.Preferences.Destination {
+        TimeMachineReader.Preferences.destination(from: [
+            "DestinationID": "6F3B1C0A-DEM0-4E2B-9A77-000000000001",
+            "LastKnownVolumeName": name,
+            "DestinationUUIDs": ["6F3B1C0A-DEM0-4E2B-9A77-000000000002"],
+            "RESULT": NSNumber(value: result),
+            "AttemptDates": attempts,
+            "SnapshotDates": successes,
+            "BytesUsed": NSNumber(value: bytesUsed),
+            "BytesAvailable": NSNumber(value: bytesAvailable),
+            "FilesystemTypeName": "apfs",
+            "LastKnownEncryptionState": "Encrypted",
+        ].merging(referenceSnapshot.map { ["ReferenceLocalSnapshotDate": $0] } ?? [:]) { a, _ in a })
+    }
+
+    /// The Time Machine half, through the real state, the real failure rule and the real row.
+    private static func timeMachine(record: TimeMachineReader.Preferences.Destination,
+                                    automaticBackupsOn: Bool,
+                                    isConnected: Bool,
+                                    volumePath: String?,
+                                    capacity: Int64?,
+                                    free: Int64?,
+                                    snapshots: SnapshotStanding,
+                                    now: Date) -> TimeMachineReader.Result {
+
+        let prefs = TimeMachineReader.Preferences.Reading(
+            answered: true,
+            automaticBackupsOn: automaticBackupsOn,
+            destinations: [record],
+            lastDestinationID: record.id)
+
+        let destination = BackupDestination(name: record.displayName,
+                                            kind: record.kind,
+                                            isConnected: isConnected,
+                                            volumePath: volumePath,
+                                            capacity: capacity.map(SizeOnDisk.init),
+                                            free: free.map(SizeOnDisk.init))
+
+        let state = TimeMachineState(
+            isConfigured: true,
+            automaticBackupsOn: automaticBackupsOn,
+            destination: destination,
+            lastSuccess: record.lastSuccess,
+            // The real discard rule, not a hand-written verdict: a recorded result that a later
+            // success has overtaken is about an older run and is thrown away.
+            failure: TimeMachineReader.failure(for: record, isConnected: isConnected))
+
+        let line = TimeMachineReader.snapshotSentence(snapshots: snapshots,
+                                                      referencePoint: record.referenceSnapshot,
+                                                      now: now)
+
+        return TimeMachineReader.Result(
+            state: state,
+            row: TimeMachineReader.row(from: state, prefs: prefs, snapshots: snapshots,
+                                       snapshotLine: line, now: now),
+            snapshots: snapshots,
+            referencePoint: record.referenceSnapshot,
+            backupsRecorded: record.successes,
+            snapshotLine: line)
+    }
+
+    /// The coverage half, through the real per-place builder.
+    ///
+    /// ⚠️ Every `Presence` is `.here(nil)`. The real reader `lstat`s and never opens anything, so it
+    /// has no size to report — a demo that printed one would photograph a column the app cannot
+    /// fill.
+    private static func coverage(places: [CoverageReader.Place],
+                                 iCloud: CoverageReader.ICloudAccount,
+                                 timeMachine: TimeMachineState,
+                                 cloudOnly: CoverageReader.CloudHolding,
+                                 providers: [String],
+                                 mirrored: Bool,
+                                 fullDiskAccessHeld: Bool,
+                                 now: Date) -> CoverageReader.Reading {
+
+        var rows: [Coverage] = places.compactMap {
+            CoverageReader.coverage(of: $0, presence: .here(nil), iCloud: iCloud,
+                                    timeMachine: timeMachine, now: now)
+        }
+
+        // The same two extra rows `CoverageReader.read` appends, in the same order and from the
+        // same sentences.
+        if let sentence = cloudOnly.sentence {
+            rows.append(Coverage(name: "Files that are in the cloud and not on this disk",
+                                 lives: .onlyInTheCloud,
+                                 included: .no,
+                                 why: sentence,
+                                 bytes: cloudOnly.apparent))
+        }
+        for provider in providers {
+            rows.append(Coverage(name: provider,
+                                 lives: .onAnotherDrive,
+                                 included: .no,
+                                 why: CoverageReader.whyAFileProviderIsNeverOpened(provider)))
+        }
+
+        return CoverageReader.Reading(coverage: rows,
+                                      cloudOnly: cloudOnly,
+                                      providers: providers,
+                                      desktopAndDocumentsMirrored: mirrored,
+                                      iCloud: iCloud,
+                                      fullDiskAccessHeld: fullDiskAccessHeld,
+                                      refused: .sawEverything,
+                                      ranAt: now)
+    }
+
+    /// The invented Mac both pages are written for. One machine, so the page and the Hardware
+    /// section cannot describe two different computers.
+    private static let demoMacDescription = "Kitchen iMac — MacBook Air (M3, 2024)"
+
+    private static func plan(macOS: String,
+                             destinationName: String?,
+                             fileVaultOn: Bool,
+                             writtenOn: Date) -> RecoveryPlan {
+        RecoveryPlan.make(macOSVersion: macOS,
+                          macDescription: demoMacDescription,
+                          architecture: .appleSilicon,
+                          destinationName: destinationName,
+                          fileVaultOn: fileVaultOn,
+                          writtenOn: writtenOn)
+    }
+
+    // MARK: Backup — a healthy Mac
+
+    /// **Backups running, the drive plugged in, and a Recovery Plan on the wall.**
+    ///
+    /// The last backup finished this morning, macOS has thinned its local snapshots on its own — so
+    /// there is no stuck-snapshot line — and the only things "not covered" are the two that never
+    /// can be: files that live in the cloud, and a sync service Wellkept refuses to walk into.
+    /// Neither is a gap, and the row says so in its own words rather than in a warning.
+    private static let healthyBackup: BackupAnswer = {
+        let now = launched
+        let record = destinationRecord(
+            name: "Backups",
+            successes: [daysAgo(9), daysAgo(6), daysAgo(3), daysAgo(1), minutesAgo(310)],
+            attempts: [minutesAgo(310)],
+            result: 0,
+            bytesUsed: 486_000_000_000,
+            bytesAvailable: 1_514_000_000_000,
+            referenceSnapshot: nil)
+
+        let machine = timeMachine(record: record,
+                                  automaticBackupsOn: true,
+                                  isConnected: true,
+                                  volumePath: "/Volumes/Backups",
+                                  capacity: 2_000_000_000_000,
+                                  free: 1_514_000_000_000,
+                                  // Backups are finishing, so macOS thins its own snapshots within
+                                  // about a day. Nothing is stuck and nothing is said.
+                                  snapshots: .none,
+                                  now: now)
+
+        let iCloud = CoverageReader.ICloudAccount(
+            signedIn: true,
+            standings: ["com.apple.Dataclass.Ubiquity": .on,
+                        "com.apple.Dataclass.Photos": .on,
+                        "com.apple.Dataclass.Notes": .on],
+            unreadable: nil)
+
+        let reading = coverage(
+            places: [.homeFolder, .photos, .mail, .messages, .contacts, .notes,
+                     .iCloudDrive, .safari, .music],
+            iCloud: iCloud,
+            timeMachine: machine.state,
+            cloudOnly: CoverageReader.CloudHolding(files: 2_140,
+                                                   apparent: SizeOnDisk(8_400_000_000),
+                                                   measured: true),
+            providers: ["Dropbox"],
+            mirrored: false,
+            fullDiskAccessHeld: true,
+            now: now)
+
+        let today = plan(macOS: "26.6.2", destinationName: "Backups", fileVaultOn: true,
+                         writtenOn: now)
+        // Printed a fortnight ago, for the macOS this Mac is still on. Current, so the page says
+        // nothing about reprinting.
+        let printed = plan(macOS: "26.6.2", destinationName: "Backups", fileVaultOn: true,
+                           writtenOn: daysAgo(14))
+
+        return BackupModel.assemble(machine: machine,
+                                    coverage: reading,
+                                    planForToday: today,
+                                    onRecord: printed,
+                                    destination: nil,
+                                    agentIsOn: false,
+                                    now: minutesAgo(10))
+    }()
+
+    // MARK: Backup — a Mac with problems
+
+    /// **Switched off for nearly four weeks, the drive not seen since August, and no page printed.**
+    ///
+    /// ⚠️ The headline is *"switched off"*, not *"failing"*, and the difference is the point. The
+    /// destination is configured, the last backup finished, and nothing is broken — somebody turned
+    /// automatic backups off and was never told. `TimeMachineStanding` tests `switchedOff` before
+    /// it tests failure precisely so this Mac cannot be described as faulty.
+    ///
+    /// ⭐ It also carries the finding that ties this section to Storage: the one local snapshot
+    /// still on the disk **is** Time Machine's reference point, to the second, so the space Storage
+    /// says is being held is released by letting one backup finish.
+    private static let unwellBackup: BackupAnswer = {
+        let now = launched
+        let lastSuccess = daysAgo(26)
+        let record = destinationRecord(
+            name: "Archive",
+            successes: [daysAgo(88), daysAgo(61), daysAgo(40), lastSuccess],
+            attempts: [lastSuccess],
+            result: 0,
+            bytesUsed: 489_000_000_000,
+            bytesAvailable: 62_000_000_000,
+            // Held to the second of the snapshot below — which is what macOS actually does, and
+            // why the sentence can say what the snapshot is FOR.
+            referenceSnapshot: lastSuccess)
+
+        let machine = timeMachine(
+            record: record,
+            automaticBackupsOn: false,
+            isConnected: false,
+            volumePath: nil,
+            capacity: nil,
+            free: nil,
+            snapshots: SnapshotStanding(snapshots: [
+                LocalSnapshot(name: "com.apple.TimeMachine.2026-08-25-062503.local",
+                              takenOn: lastSuccess),
+            ]),
+            now: now)
+
+        // Four of twenty-four services state themselves; the rest say nothing at all, and there is
+        // no honest way to read a missing key as "off".
+        let iCloud = CoverageReader.ICloudAccount(
+            signedIn: true,
+            standings: ["com.apple.Dataclass.Ubiquity": .on,
+                        "com.apple.Dataclass.Notes": .on],
+            unreadable: nil)
+
+        let reading = coverage(
+            places: [.homeFolder, .photos, .mail, .messages, .contacts, .notes,
+                     .iCloudDrive, .safari, .music],
+            iCloud: iCloud,
+            timeMachine: machine.state,
+            // ⚠️ Named and skipped, never downloaded. Copying these would mean pulling 72 GB onto a
+            // Mac with 95 GB free, over somebody's own internet, to make a second copy of files
+            // that already have one.
+            cloudOnly: CoverageReader.CloudHolding(files: 12_412,
+                                                   apparent: SizeOnDisk(72_200_000_000),
+                                                   measured: true),
+            providers: ["Google Drive"],
+            mirrored: true,
+            // ⚠️ **The unwell Mac has not given Wellkept Full Disk Access, and that is the second
+            // most valuable thing on this screen.** Without it a backup contains no mail, no
+            // messages, no photos, no contacts, no Safari data and no Trash — not partial,
+            // *nothing* — and macOS refuses silently with no error at all. The row says so, names
+            // the six, and offers the one button that changes it.
+            fullDiskAccessHeld: false,
+            now: now)
+
+        let today = plan(macOS: "26.6.2", destinationName: "Archive", fileVaultOn: true,
+                         writtenOn: now)
+
+        return BackupModel.assemble(machine: machine,
+                                    coverage: reading,
+                                    planForToday: today,
+                                    // Nobody has printed the page. It is the one row on this screen
+                                    // that costs nothing to fix and is fixed by a printer.
+                                    onRecord: nil,
+                                    destination: nil,
+                                    agentIsOn: false,
+                                    now: minutesAgo(10))
+    }()
 
     // MARK: - Changes
 

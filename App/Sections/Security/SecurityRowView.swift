@@ -224,6 +224,10 @@ struct ConcernView: View {
         case .reminders:          "Open Reminders settings…"
         case .photos:             "Open Photos settings…"
         case .automation:         "Open Automation settings…"
+
+        // Added 2026-08-29 with the Backup section. ⚠️ It names a destination, not an action:
+        // nothing in Wellkept ever enables, disables or starts a backup.
+        case .timeMachine:        "Open Time Machine settings…"
         }
     }
 }

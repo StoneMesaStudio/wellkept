@@ -308,6 +308,32 @@ final class AppState {
         publish(report.record, finding: report.overviewFinding)
     }
 
+    // MARK: The Backup engine
+
+    /// Backup's own model — Time Machine's state, what is not covered, and the printed page.
+    ///
+    /// ⚠️ **Nothing starts this but a press.** The Time Machine half is free — 52 ms, nothing
+    /// granted — but the coverage half is a bounded walk of the home folder looking for files that
+    /// are in the cloud and not on the disk, and a section that spent that on every launch would
+    /// make the app feel slow on a screen where nothing had changed.
+    ///
+    /// ⛔ **It writes to no drive.** `BackupRun` takes a `RehearsalGate.Pass`, which cannot be
+    /// constructed outside `RehearsalGate`, and nothing reachable from this model asks for one.
+    let backup = BackupModel()
+
+    /// Run the Backup check and file what it found.
+    ///
+    /// ⚠️ **Never in demo mode.** Demo mode's whole promise is that nothing on screen has been read
+    /// from this Mac — and this section's Recovery Plan names the Mac, its macOS version and its
+    /// backup drive, so a real check underneath the invented rows would put this machine's own
+    /// facts on a page about somebody else's.
+    func runBackupCheck() async {
+        guard !demoMode else { return }
+        await backup.check()
+        guard let report = backup.answer?.report else { return }
+        publish(report.record, finding: report.overviewFinding)
+    }
+
     /// File one section's result: its line in the audit trail, and the single row it sends up to
     /// Overview.
     ///

@@ -70,8 +70,24 @@ struct OneMoveOnlyGuardTests {
                 "the scanner cannot find the one call it is guarding")
     }
 
-    /// ⭐ **One rename, in one place.** `AtomicMove` is the only thing that moves a user's file, and
-    /// only `Quarantine.swift` calls it.
+    /// ⭐ **One rename, in one place.** `AtomicMove` is the only thing that moves a user's file.
+    ///
+    /// ⚠️ **Amended 2026-08-29, when the backup engine arrived.** The rule was never "only one file
+    /// may call it" — it was **"there is one implementation of moving a file, and nobody writes a
+    /// second"**. `App/Backup/Engine/BackupRun.swift` moves the previous copy of a file aside on the
+    /// **backup drive's own volume** before writing the new one, and the correct thing for it to do
+    /// is call this one. Writing its own rename there — without `RENAME_EXCL`, without
+    /// `RENAME_NOFOLLOW_ANY` — is exactly the second mover this guard exists to prevent.
+    ///
+    /// So the syscall is still counted, and it is still in one file. The caller list is a short
+    /// **named** list, and an entry that is not recorded here fails the build.
+    static let mayPerformTheMove: [String: String] = [
+        "App/Quarantine/Quarantine.swift":
+            "the engine itself — set aside, put back, empty",
+        "App/Backup/Engine/BackupRun.swift":
+            "keeps the previous version on the backup drive, on that drive's own volume, before the new copy is written",
+    ]
+
     @Test("There is exactly one move in the whole app")
     func onlyOneFileMovesAnything() {
         let syscall = Self.mentions("renameatx_np(")
@@ -82,8 +98,18 @@ struct OneMoveOnlyGuardTests {
         let callers = Set(Self.mentions("AtomicMove.perform(").map {
             $0.split(separator: ":").first.map(String.init) ?? $0
         })
-        #expect(callers == ["App/Quarantine/Quarantine.swift"],
-                "something outside the quarantine engine performs the move: \(callers.sorted())")
+        let unrecorded = callers.filter { Self.mayPerformTheMove[$0] == nil }
+        #expect(unrecorded.isEmpty, """
+            something performs the move without being recorded as allowed to: \(unrecorded.sorted()). \
+            Add it to mayPerformTheMove WITH the reason, or — far more likely — call the one move \
+            rather than writing a second one.
+            """)
+        // ⚠️ And the backup engine calls it exactly once. A second call there would be a copy
+        // path growing quietly beside the one that is reviewed.
+        let inTheBackupEngine = Self.mentions("AtomicMove.perform(")
+            .filter { $0.hasPrefix("App/Backup/") }
+        #expect(inTheBackupEngine.count <= 1,
+                "the backup engine moves files in more than one place: \(inTheBackupEngine)")
     }
 
     /// ⚠️ **The line nobody may write.** A copy is a different act with different consequences:
@@ -96,8 +122,26 @@ struct OneMoveOnlyGuardTests {
     func nothingCopiesAUsersFile() {
         #expect(Self.mentions("clonefile").isEmpty,
                 "clonefile drops ACLs: \(Self.mentions("clonefile"))")
-        #expect(Self.mentions("copyfile(").isEmpty,
-                "copyfile loses the creation date: \(Self.mentions("copyfile("))")
+        // ⚠️ **Amended 2026-08-29.** `copyfile` is still banned everywhere it would be a *move*
+        // wearing a disguise — which is what this guard was written for. A **backup** is a
+        // different act: the destination is a different drive by definition, so a rename is not
+        // available at any price (`renameatx_np` returns `EXDEV` across volumes). One file is
+        // allowed to copy, it is the whole of the backup copier, and it exists to pay back the four
+        // things a copy costs — the creation date, the download-provenance tag, sparseness and hard
+        // links. See the header of `App/Backup/Engine/CopyOne.swift`.
+        let theOneCopier = "App/Backup/Engine/CopyOne.swift"
+        let copyfiles = Self.mentions("copyfile(")
+        #expect(copyfiles.allSatisfy { $0.hasPrefix(theOneCopier + ":") }, """
+            copyfile is used outside the one copier: \(copyfiles). It loses the creation date, \
+            launders the download-provenance tag, inflates sparse files and ignores hard links. \
+            Inside a volume the answer is the move; across volumes the answer is \(theOneCopier), \
+            which repairs all four — not a second copy path beside it.
+            """)
+        // ⭐ And that one copier cannot be called without asking the gate.
+        let copier = (try? String(contentsOf: Self.repositoryRoot.appendingPathComponent(theOneCopier),
+                                  encoding: .utf8)) ?? ""
+        #expect(copier.contains("permittedBy pass: RehearsalGate.Pass"),
+                "the backup copier no longer takes a RehearsalGate.Pass, so anything can call it")
 
         let copies = Self.mentions("copyItem")
         #expect(copies.allSatisfy { $0.hasPrefix("App/Quarantine/Ledger.swift:") }, """

@@ -14,9 +14,13 @@ import Foundation
 //
 //  ## Why "auto" does not break "nothing changes the Mac on a schedule"
 //
-//  Wellkept ships no background piece — no helper, no login item, no agent — and building one is not
-//  on the table. So automatic removal can only ever happen **the next time Wellkept is opened**, and
-//  when it does the app **says what it removed**.
+//  ⚠️ **Wellkept took a login item on 2026-08-29, and it changes nothing here.** The background
+//  piece backs up and does exactly three things, none of which is quarantine: hourly while the drive
+//  is connected, on connect, and noticing a backup that has gone quiet. Nothing on a timer may ever
+//  reach into the quarantine, which holds the person's own files.
+//
+//  So automatic removal can still only ever happen **the next time Wellkept is opened**, and when it
+//  does the app **says what it removed**.
 //
 //  That is the whole reason it is allowed. It is not the app acting unbidden on a timer; it is the
 //  person's own standing instruction being carried out in front of them, the first moment they are
@@ -24,9 +28,11 @@ import Foundation
 //  user is permitted to convert a manual verb into a standing one, because they said so, by name, in
 //  Settings.
 //
-//  ⚠️ **Nothing here may ever be moved onto a timer, a scheduled task, or a launch agent.** If a
-//  future version ships a background piece, this decision is re-opened with John before a single
-//  line here changes.
+//  ⚠️ **Nothing here may ever be moved onto a timer, a scheduled task, or a launch agent.** There
+//  is a launch agent now, and this rule survived it deliberately: `BackgroundPieceProcess` has three
+//  jobs and quarantine is not one of them. Adding a fourth is a conversation with John, not an
+//  edit — the whole quarantine exists so that nobody's file is removed by a machine while they were
+//  busy.
 //
 //  ## Manual, which is the default
 //
@@ -76,8 +82,9 @@ enum ExpiryMode: String, CaseIterable, Sendable, Identifiable {
             + "there until you remove them. Wellkept never removes anything on its own."
         case .auto:
             "The next time you open Wellkept, anything you set aside more than \(Expiry.days) days "
-            + "ago is removed, and Wellkept tells you what it removed. Nothing happens while "
-            + "Wellkept is closed — it has no part that runs in the background."
+            + "ago is removed, and Wellkept tells you what it removed. Nothing happens to your "
+            + "quarantine while Wellkept is closed — the part that keeps running only backs up, and "
+            + "it never touches quarantine."
         }
     }
 }

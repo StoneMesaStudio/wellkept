@@ -33,6 +33,19 @@ enum SystemSettingsPane: String, CaseIterable, Sendable {
     /// Removable volumes — external drives, which is where a backup goes.
     case removableVolumes
 
+    // ── Added 2026-08-29 for the Backup section ─────────────────────────────────────────────────
+    //
+    //  ⚠️ **A destination, never a switch.** `TimeMachineState.remedy` names this pane and nothing
+    //  else: Wellkept never enables, disables or starts a backup. The row's button puts the person
+    //  in front of the control that owns it, and they decide.
+    //
+    //  Time Machine is its own pane in macOS 26 — bundle id read from
+    //  `/System/Library/ExtensionKit/Extensions/TimeMachineSettings.appex` on 2026-08-29 — so it
+    //  gets its own root rather than falling into Privacy & Security.
+
+    /// Time Machine, which owns whether this Mac backs itself up and where to.
+    case timeMachine
+
     /// FileVault. Lives in Privacy & Security, below Gatekeeper's "Allow applications from".
     case fileVault
     /// The firewall — **in Network settings since Ventura**, not in Security where it used to be.
@@ -93,13 +106,15 @@ enum SystemSettingsPane: String, CaseIterable, Sendable {
             "x-apple.systempreferences:com.apple.Software-Update-Settings.extension"
         case .usersAndGroups:
             "x-apple.systempreferences:com.apple.Users-Groups-Settings.extension"
+        case .timeMachine:
+            "x-apple.systempreferences:com.apple.Time-Machine-Settings.extension"
         }
     }
 
     /// The anchor within that pane, where there is one.
     private var anchor: String? {
         switch self {
-        case .privacyAndSecurity, .softwareUpdate, .usersAndGroups, .sharing: nil
+        case .privacyAndSecurity, .softwareUpdate, .usersAndGroups, .sharing, .timeMachine: nil
         case .fullDiskAccess:   "Privacy_AllFiles"
         case .filesAndFolders:  "Privacy_FilesAndFolders"
         case .removableVolumes: "Privacy_RemovableVolume"

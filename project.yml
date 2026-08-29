@@ -26,6 +26,19 @@ targets:
     platform: macOS
     sources:
       - path: App
+      # ⭐ The Login Item's job description, copied into the bundle where SMAppService looks for it.
+      #
+      # `Contents/Library/LaunchAgents/` is the only place `SMAppService.agent(plistName:)` reads
+      # from — a plist anywhere else registers nothing and reports no error at all.
+      #
+      # It is kept outside `App/` on purpose: `App/` is a source path for both the app and the
+      # ViewShots target, and a .plist inside it would also be copied into Resources, where it does
+      # nothing except give the next person two of them to choose between.
+      - path: Resources/LaunchAgents/studio.stonemesa.wellkept.agent.plist
+        buildPhase:
+          copyFiles:
+            destination: wrapper
+            subpath: Contents/Library/LaunchAgents
     dependencies:
       - package: WellkeptCore
         product: WellkeptCore

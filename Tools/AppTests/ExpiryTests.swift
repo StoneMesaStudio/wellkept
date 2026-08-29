@@ -71,8 +71,17 @@ private func record(_ home: URL, name: String = "thing.dmg", setAside: Date) -> 
     /// ⚠️ The automatic option **says out loud** that nothing happens while the app is closed. An app
     /// that implied it was watching the clock would be lying about what it is.
     @Test func bothOptionsExplainThemselvesHonestly() {
-        #expect(ExpiryMode.auto.explanation.contains("Nothing happens while Wellkept is closed"))
-        #expect(ExpiryMode.auto.explanation.contains("no part that runs in the background"))
+        // ⚠️ Updated 2026-08-29, when Wellkept took a login item. The old assertion required the
+        // sentence to claim there was no background piece at all, which is no longer true — so the
+        // test would have kept a false sentence on screen for as long as nobody re-read it. What
+        // still has to be said, and is what actually matters to somebody's files, is that the part
+        // that keeps running never touches quarantine.
+        #expect(ExpiryMode.auto.explanation.contains("Nothing happens to your quarantine while Wellkept is closed"))
+        #expect(ExpiryMode.auto.explanation.contains("never touches quarantine"))
+        for banned in BackgroundPiece.sentencesThatAreNoLongerTrue {
+            #expect(!ExpiryMode.auto.explanation.contains(banned),
+                    Comment(rawValue: "the quarantine setting still says “\(banned)”"))
+        }
         #expect(ExpiryMode.manual.explanation.contains("never removes anything on its own"))
         for mode in ExpiryMode.allCases { #expect(mode.label.contains("30")) }
     }

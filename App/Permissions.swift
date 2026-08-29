@@ -137,8 +137,14 @@ enum FullDiskAccess {
             String(localized: "Full Disk Access is off, so this cannot see what removed apps left behind. Nothing else here needs it.")
         case .security:
             String(localized: "Full Disk Access is off, so the camera, microphone and screen list is empty rather than short.")
+        // ⚠️ **Corrected 2026-08-29, against the measurement.** This used to say "cannot see every
+        // backup on this Mac", which is false in both directions: Time Machine's whole state — on
+        // or off, the destination, the last success, the error — reads with **zero** permissions,
+        // and no grant reveals a backup we cannot otherwise see. What the switch actually costs
+        // here is the thing that matters most: a backup made without it contains **none** of your
+        // mail, messages or photos — not a partial copy, nothing — and macOS refuses silently.
         case .backup:
-            String(localized: "Full Disk Access is off, so this cannot see every backup on this Mac.")
+            String(localized: "Full Disk Access is off, so a backup made now would contain none of your mail, messages or photos — and macOS would not say so.")
         case .changes:
             String(localized: "Full Disk Access is off, so some settings are hidden from this comparison.")
         case .overview, .hardware:

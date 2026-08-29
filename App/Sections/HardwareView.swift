@@ -32,8 +32,10 @@ import WellkeptCore
 //
 //  ## ⚠️ There is no daily check, and nothing on this screen may imply one
 //
-//  Wellkept quits when its window closes and has no background piece. Hardware is read **on launch
-//  and when the button is pressed** — that is the whole list, and the words below say exactly that.
+//  Wellkept quits when its window closes, and the one thing that can outlive it — the backup
+//  background piece a person switches on themselves — does not read hardware and never will.
+//  Hardware is read **on launch and when the button is pressed** — that is the whole list, and the
+//  words below say exactly that.
 
 struct HardwareView: View {
     @Environment(AppState.self) private var app
@@ -114,8 +116,9 @@ struct HardwareView: View {
                 Spacer(minLength: 0)
             }
 
-            // Said once, on the screen it is true of. Wellkept has no schedule; this is the whole
-            // of when Hardware runs.
+            // Said once, on the screen it is true of. Hardware is on no schedule at all — the one
+            // part of Wellkept that runs on a clock is the backup background piece, and it never
+            // touches this. So this is the whole of when Hardware runs.
             Text("Wellkept reads this when the app opens and whenever you press the button — never "
                  + "on its own, and nothing here changes your Mac.")
                 .font(.appCallout)

@@ -97,8 +97,13 @@ enum HelpLibrary {
             + sectionBullets
             + [
                 .heading("How it behaves"),
-                .paragraph("**Nothing changes on your Mac unless you press a button.** Wellkept has no schedule, no background scanning and no automatic tidying, and it quits when you close its window. Every section has one button, and one plain sentence above it saying what pressing it will do."),
-                .paragraph("**Hardware is read once when the app opens**, because it is read-only — it asks the drive, the battery and the memory what they say about themselves and writes nothing. Every other section waits to be asked. There is no daily check and nothing runs while the app is closed."),
+                .paragraph("**Nothing changes on your Mac unless you press a button.** Wellkept has no schedule, no scanning you did not ask for and no automatic tidying. Every section has one button, and one plain sentence above it saying what pressing it will do."),
+                // ⭐ Written once in Core and read here, so this page and the Backup face cannot
+                // end up describing the same background piece differently. It replaced "it quits
+                // when you close its window", which was true until John agreed to a Login Item on
+                // 2026-08-29 and is now only half true — the worst state for a promise.
+                .paragraph(Backup.whatHappensWhenTheWindowCloses),
+                .paragraph("**Hardware is read once when the app opens**, because it is read-only — it asks the drive, the battery and the memory what they say about themselves and writes nothing. Every other section waits to be asked. There is no daily check, and with the background piece off there is nothing of Wellkept running at all once the window is shut."),
                 .paragraph("What it finds is remembered, with the date, so **Overview** can tell you what was checked and when. There is never a score — a number invites you to chase it, and a Mac with nothing wrong would end up graded on how little happened to be installed on it."),
                 // ⚠️ DELETE THIS NOTE as each section lands. Hardware is done; the other five are
                 // not, and a help page that claims a working Storage scan before there is one is
@@ -123,6 +128,15 @@ enum HelpLibrary {
 
                 .heading("It never changes your Mac on a schedule"),
                 .paragraph("Automatic means *looking*. Manual means *touching*. Backup is the one exception, and only because a backup that waits to be asked is a backup that does not exist."),
+                .paragraph("That exception is the background piece, and you switch it on. It does three things and there is no fourth: backs up every hour while your drive is connected, starts a backup when you plug the drive in, and tells you when a backup has not worked in \(BackupFreshness.staleAfterDays) days. It needs no password and no administrator, it is listed as Wellkept in **System Settings ▸ General ▸ Login Items**, and switching it off leaves you a complete app."),
+                .note(Backup.whatTheBackgroundPieceMustProveFirst),
+
+                // ⛔ **John's condition, 2026-08-29: the gate is a shipped, visible thing, not a
+                // note in a document.** The face carries `RehearsalGate.faceLine` where the button
+                // would be; this is the same fact for somebody reading Help rather than the screen.
+                // Written once in `RehearsalGate` and read here, so the two cannot drift.
+                .heading("It will not copy your files yet"),
+                .paragraph(RehearsalGate.helpParagraph),
 
                 // ⚠️ **This section is generated from `Privacy`, not written here.** It used to say
                 // "Nothing leaves this Mac" with one exception attached, while the welcome page said
@@ -173,7 +187,7 @@ enum HelpLibrary {
                 .paragraph("An item that has been in quarantine \(Expiry.days) days rises to the top of the list and is marked ready to remove. What happens then is your choice, in **Settings ▸ Quarantine**:"),
                 .bullet("**Tell me** — the default. It waits there until you remove it. Wellkept never removes anything on its own."),
                 .bullet("**Remove them** — the next time you open Wellkept, anything older than \(Expiry.days) days is removed, and Wellkept tells you what it removed."),
-                .note("Nothing happens while Wellkept is closed. It has no part that runs in the background, so even the automatic setting can only act the next time you open the app — in front of you, and it says so."),
+                .note("Nothing happens to your quarantine while Wellkept is closed. The background piece backs up and does nothing else — it never touches quarantine — so even the automatic setting can only act the next time you open the app, in front of you, and it says so."),
 
                 .heading("Files that are in iCloud"),
                 .paragraph("Setting aside a file from iCloud Drive, or from a Desktop or Documents folder that syncs, takes it off your other devices for as long as it is in quarantine — while it still takes up the same room on this Mac. Wellkept says so on the row rather than refusing to do it."),

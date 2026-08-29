@@ -14,9 +14,9 @@ import Foundation
 //
 //  1. **Unregister any background item.** Once the bundle moves, macOS can no longer find it at
 //     the path it was registered from, and the Background Task Management row survives — for
-//     years, listing an app that is not there, with no way for the user to clear it. Nothing is
-//     registered yet, which is why step 1 is currently a comment; it is written as a step anyway
-//     so the first helper cannot be added without seeing where it goes.
+//     years, listing an app that is not there, with no way for the user to clear it. Since
+//     2026-08-29 there IS one: the backup background piece, `SMAppService.agent`. It is taken back
+//     from `StorageManifest.BackgroundItems`, so the list and the step cannot drift apart.
 //  2. **Delete the leftovers.**
 //  3. **Trash the bundle last.**
 //
@@ -162,14 +162,22 @@ enum Uninstaller {
                handoverNote: notes([handoverNote, recordNote]))
     }
 
-    /// Step 1, and it is deliberately empty.
+    /// ⭐ **Step 1, and it is no longer empty.**
     ///
-    /// Wellkept ships no privileged helper, no login item and no menu-bar agent, so there is
-    /// nothing registered with `SMAppService` to take back. The step exists so that whoever adds
-    /// the first one adds `try? SMAppService.daemon(plistName:).unregister()` **here**, before
-    /// anything moves — see the ordering note at the top of this file for what it costs to get
-    /// that wrong.
-    private static func unregisterBackgroundItems() {}
+    /// Wellkept took a login item on 2026-08-29 — `SMAppService.agent`, no password, no root, the
+    /// background piece that backs up while the drive is connected. It has to be handed back
+    /// **before the bundle moves**: once the app is in the Trash, macOS can no longer find the job
+    /// at the path it was registered from, and the row in System Settings ▸ General ▸ Login Items
+    /// survives for years, naming an app that is not there, with no way for the person to clear it.
+    ///
+    /// ⚠️ It reads `StorageManifest.BackgroundItems.loginItemPlists` rather than a name typed here,
+    /// so a second background piece added later is taken back without anybody remembering to edit
+    /// this file — the same rule the rest of the uninstaller follows for files.
+    ///
+    /// ⛔ Still never `sfltool resetbtm`. See the note at the top of this file.
+    private static func unregisterBackgroundItems() {
+        BackgroundPieceService.unregisterEverythingDeclared()
+    }
 
     // MARK: - What the dialogs say
     //

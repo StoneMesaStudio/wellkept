@@ -20,10 +20,12 @@ import WellkeptCore
 //
 //  ## ⚠️ There is no schedule, and this file is where that promise is kept
 //
-//  Wellkept quits when its window closes and has no background piece, so there is nothing that
-//  could run a check while nobody is looking. Hardware is read **on launch and when the button is
-//  pressed**, and that is the whole list. `checkOnLaunch()` runs once per launch and refuses to
-//  run a second time; nothing here starts a timer.
+//  Wellkept quits when its window closes. The one part that can outlive the window is the backup
+//  background piece, which the person switches on themselves and which does three things, none of
+//  them a hardware check — so there is still nothing that runs a check while nobody is looking.
+//  Hardware is read **on launch and when the button is pressed**, and that is the whole list.
+//  `checkOnLaunch()` runs once per launch and refuses to run a second time; nothing here starts a
+//  timer.
 //
 //  ## ⚠️ It never runs under the test harness
 //

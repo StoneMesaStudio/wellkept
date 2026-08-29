@@ -5,14 +5,29 @@ import WellkeptCore
 //  WellkeptApp.swift
 //  Wellkept
 //
-//  One window, a normal title bar, and the menu bar.
+//  One window, a normal title bar, the menu bar — and, since 2026-08-29, two ways to start.
 //
-//  ## Closing the window quits the app
+//  ## ⭐ The same executable is also the background piece
+//
+//  `WellkeptEntry` is `@main`, not `WellkeptApp`. It looks at the command line first: launchd starts
+//  this same binary with `--background-piece`, and that path never touches SwiftUI or
+//  `NSApplication` at all — no window, no menu bar, no Dock tile. Everything it does is in
+//  `App/Backup/Agent/`.
+//
+//  ⚠️ **The same binary is the point, not a shortcut.** macOS decides Full Disk Access from the code
+//  signature of the process asking; a separate helper would be a different program with a different
+//  identity, and a scheduled backup made without the grant contains no mail, no messages and no
+//  photos — silently, with no error. See `BackgroundPiece.swift`.
+//
+//  ## Closing the window quits the app, unless the person switched the background piece on
 //
 //  There is no menu-bar icon yet, so an app still running with nothing on screen is a process the
-//  user cannot find and cannot stop without the Dock or Activity Monitor. When the icon ships, this
-//  flips: closing will hide, and the rule a person learns is *if the icon is there, the app is
-//  still there.* One rule, and it is always visibly true.
+//  user cannot find and cannot stop without the Dock or Activity Monitor. That is still true of the
+//  app. It is **not** true of the background piece, which is a separate process the person switches
+//  on themselves and can see and stop in System Settings ▸ General ▸ Login Items — which is exactly
+//  what makes it allowed to exist. `Backup.whatHappensWhenTheWindowCloses` is the sentence, written
+//  once. When the menu-bar icon ships, this flips: closing will hide, and the rule a person learns
+//  is *if the icon is there, the app is still there.* One rule, and it is always visibly true.
 //
 //  ## Why the other three scenes are mounted here
 //
@@ -29,9 +44,30 @@ final class WellkeptAppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 }
 
+// MARK: - ⭐ Which of the two things this process is
+
+/// **The entry point, and the only thing in the app that reads the command line.**
+///
+/// It exists so `runUntilKilled()` can be reached before SwiftUI is: `App` supplies its own
+/// `main()`, and there is no hook inside it that runs early enough to decide not to be an
+/// application at all.
+///
+/// ⚠️ `MainActor.assumeIsolated` is correct rather than convenient — `main()` runs on the main
+/// thread by definition, and the background piece's timer and workspace observer both need the main
+/// run loop they are about to be added to.
+@main
+enum WellkeptEntry {
+    static func main() {
+        if BackgroundPiece.isTheBackgroundPiece() {
+            MainActor.assumeIsolated { BackgroundPieceProcess.runUntilKilled() }
+            return
+        }
+        WellkeptApp.main()
+    }
+}
+
 // MARK: - The app
 
-@main
 struct WellkeptApp: App {
     @NSApplicationDelegateAdaptor(WellkeptAppDelegate.self) private var delegate
 

@@ -67,7 +67,9 @@ struct SecuritySectionTests {
     // MARK: - The two sentences this section may not say
 
     /// ⚠️ **"Safe" is not a verdict this app is entitled to.** Wellkept reads when the button is
-    /// pressed and has no background piece at all, so any wording that implies live protection is a
+    /// pressed, and the one part of Wellkept that keeps running backs up and nothing else — it
+    /// watches no protection and reads no security setting. So any wording that implies live
+    /// protection is a
     /// promise it cannot keep — and somebody would reasonably rely on it.
     ///
     /// The section's *question* is still "Am I safe?", which is the thing a person is asking. It is

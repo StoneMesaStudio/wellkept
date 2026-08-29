@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Wellkept's background piece.
+
+	  ⭐ Copied into Wellkept.app/Contents/Library/LaunchAgents/ by a build phase declared in
+	  project.yml. SMAppService.agent(plistName:) reads it from there. Registered for one user,
+	  with no password and no administrator, and listed in System Settings ▸ General ▸ Login Items.
+
+	  ⚠️ The Label and the file name are also written in App/Backup/Agent/BackgroundPiece.swift.
+	  BackgroundPieceTests reads this file off the disk and fails the build if the two disagree —
+	  a mismatch would register a job under one name and unregister nothing under another.
+
+	  ⚠️ BundleProgram is the APP'S OWN executable, not a separate helper, and that is the whole
+	  safety argument for this feature. macOS decides Full Disk Access from the code signature of
+	  the process asking; a separate helper is a different program with a different identity and
+	  would almost certainly get its own empty entry, so a scheduled backup would silently contain
+	  no mail, no messages and no photos with no error reported. Same binary, same signature, best
+	  chance of inheriting the grant — and AgentSight proves it at run time rather than assuming it.
+	-->
+	<key>Label</key>
+	<string>studio.stonemesa.wellkept.agent</string>
+
+	<key>BundleProgram</key>
+	<string>Contents/MacOS/Wellkept</string>
+
+	<!-- argv[0] is a name, not a path, because BundleProgram supplies the path. The flag is what
+	     WellkeptEntry.main() branches on, before SwiftUI or NSApplication is touched. -->
+	<key>ProgramArguments</key>
+	<array>
+		<string>Wellkept</string>
+		<string>--background-piece</string>
+	</array>
+
+	<key>RunAtLoad</key>
+	<true/>
+
+	<!-- Restart if it crashes, and only then. A plain KeepAlive would fight the person who is
+	     trying to stop it. -->
+	<key>KeepAlive</key>
+	<dict>
+		<key>SuccessfulExit</key>
+		<false/>
+	</dict>
+
+	<!-- ⭐ This is what makes the Login Items row say "Wellkept" instead of a raw reverse-DNS
+	     label. Somebody who finds a background item they cannot place will switch it off, and
+	     they would be right to. -->
+	<key>AssociatedBundleIdentifiers</key>
+	<array>
+		<string>studio.stonemesa.wellkept</string>
+	</array>
+
+	<!--
+	  ⛔ Deliberately absent: ProcessType Background and LowPriorityIO. Time Machine takes them and
+	  the measurement is that it gives away about 42% of its throughput to throttling and runs on
+	  efficiency cores. A backup nobody is watching still has to finish.
+	-->
+</dict>
+</plist>

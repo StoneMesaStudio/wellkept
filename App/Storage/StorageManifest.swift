@@ -192,6 +192,60 @@ enum StorageManifest {
         supportDirectory(home: home).appending(path: "Snapshots.jsonl")
     }
 
+    /// ⭐ **What the background piece could see, and what it did.**
+    ///
+    /// Written by both halves of the app: the window records what *it* can read, the login item
+    /// records what *it* can read, and the difference between the two is the answer to the one
+    /// question nobody had answered — whether a login item inherits Full Disk Access. Without the
+    /// grant a scheduled backup contains no mail, no messages and no photos, and macOS reports no
+    /// error at all. See `AgentSight`.
+    ///
+    /// Wellkept's own bookkeeping, so `.delete` with the rest.
+    static func backgroundPieceRecord(home: URL = home()) -> URL {
+        supportDirectory(home: home).appending(path: "BackgroundPiece.json")
+    }
+
+    /// ⭐ **The Recovery Plan a person actually printed, and the macOS it was written for.**
+    ///
+    /// ⚠️ The plan is a document with a lifetime: Migration Assistant refuses a backup made on a
+    /// newer macOS than the machine being restored to, so the page has to say which version it was
+    /// written for and the app has to notice when that has moved on. That is only possible if the
+    /// printing is remembered, which is what this file is.
+    ///
+    /// ⛔ **It holds no secret and there is nowhere in it to put one.** `RecoveryBlank` has a label
+    /// and no value — the FileVault key, the Apple Account password and the drive's password are
+    /// lines a person fills in by hand, on paper, and Wellkept never sees any of them.
+    ///
+    /// Wellkept's own bookkeeping, so `.delete` with the rest.
+    static func recoveryPlanRecord(home: URL = home()) -> URL {
+        supportDirectory(home: home).appending(path: "RecoveryPlan.json")
+    }
+
+    // MARK: - ⭐ What Wellkept registers with macOS, rather than writes to disk
+
+    /// **The login items Wellkept asks macOS to run, declared here for the same reason every file
+    /// is declared here: so the uninstaller cannot go stale.**
+    ///
+    /// ⚠️ **Unregistering comes FIRST in the uninstall order, before the bundle moves.** Once the
+    /// app is in the Trash, macOS can no longer find the job at the path it was registered from,
+    /// and the row in System Settings ▸ General ▸ Login Items survives — for years, naming an app
+    /// that is not there, with no way for the person to clear it. `Uninstaller` documents the
+    /// ordering; `BackgroundPieceService.unregisterEverythingDeclared()` reads this list.
+    ///
+    /// ⛔ **Never `sfltool resetbtm` as the cure.** It clears the stale row by resetting the
+    /// Background Task Management database for *every app on the machine*.
+    enum BackgroundItems {
+
+        /// Every `SMAppService.agent` plist inside Wellkept's bundle. One today.
+        static let loginItemPlists = [BackgroundPiece.plistName]
+
+        /// The launchd labels, for saying out loud what is being taken back.
+        static let loginItemLabels = [BackgroundPiece.label]
+
+        /// What a person is told about it, in the uninstaller and in Help.
+        static let sentence = "Wellkept's background piece has been removed from Login Items."
+    }
+
     /// Where the user pointed Backup, if they have. `nil` until they do.
     ///
     /// A path string rather than a security-scoped bookmark because Wellkept is unsandboxed and
@@ -281,6 +335,14 @@ enum StorageManifest {
         add("Settings record",
             "What this Mac's settings were, at every launch, going back to the first one",
             snapshotStore(home: home), .ask)
+
+        add("Recovery Plan",
+            "The record of the printed page for the day this Mac will not start — no passwords, no keys",
+            recoveryPlanRecord(home: home), .delete)
+
+        add("Background piece record",
+            "What the part of Wellkept that runs in the background could see, and what it did",
+            backgroundPieceRecord(home: home), .delete)
 
         add("Thermal record",
             "How often macOS has said this Mac was running hot",

@@ -102,7 +102,12 @@ public struct CheckRecord: Sendable, Hashable {
 - Bronze appears in exactly three places: selected sidebar row, the main button, section headings.
 - Window opens 1,100 × 760, floor 1,020 × 640. Normal title bar. One window. Full screen allowed.
   Content column stays 700 pt and centres on a wide display.
-- Closing the window quits (there is no menu-bar icon yet).
+- Closing the window quits (there is no menu-bar icon yet) — **unless the person has switched on
+  the backup background piece**, added 2026-08-29. That is a separate process (`SMAppService.agent`,
+  no password, no root, listed in System Settings ▸ General ▸ Login Items) which backs up hourly
+  while the drive is connected, starts a backup on connect, and notices a backup that has gone
+  quiet. It does nothing else, and **off is still a complete app**. The sentence is written once, in
+  `Backup.whatHappensWhenTheWindowCloses`; never write a second copy of it.
 - Every section shows its **finished face with the real verb greyed out**, and one line
   underneath saying it is coming.
 - The **Options** disclosure does not appear on a section with no options yet.
