@@ -1021,11 +1021,19 @@ extension Watched {
 
     // MARK: What starts on its own
 
-    //  These four are counts, not switches, so none of them carries a `safeValue`. Three more login
+    //  These are counts, not switches, so three of the four carry no `safeValue`. Three more login
     //  items is a fact about a Mac somebody installed software on; calling it amber would put a
-    //  warning on every working machine in the world. The exception people expect — a configuration
-    //  profile arriving on a Mac nobody manages — is said in the description rather than coloured,
-    //  because the *number* is not what is interesting and only a person can tell which it is.
+    //  warning on every working machine in the world.
+    //
+    //  ⚠️ **Configuration profiles are the exception, and they earn it.** The first draft treated
+    //  them like the other three counts and said the interesting part in words instead — which
+    //  produced a screen (2026-08-28, shot 504) whose row read *Good* one inch above its own
+    //  sentence calling a new profile "the single thing on this list most worth asking about".
+    //  A reader believes the chip, not the paragraph. So this one count has a `safeValue` of "0".
+    //  It does not warn a managed Mac: `Cause.mayRaiseSeverity` is already false when an
+    //  organisation's profile is what set it, which is exactly the case where a profile is
+    //  ordinary. What is left is a profile arriving on a Mac nobody manages, and that is the case
+    //  the description was written about.
 
     private static let startup: [Watched] = [
         Watched(key: WatchedKey(.startsOnItsOwn, "userAgent"),
@@ -1058,6 +1066,7 @@ extension Watched {
                     does: "Files that let an organisation set this Mac's settings and keep them set, whatever anybody here does.",
                     costOfTurningItOff: "Whatever the profile configured stops being applied — a wifi network, a mail account, a security rule, a restriction.",
                     whyItMightHaveChanged: "An employer, a school or a VPN app installed one. A profile appearing on a Mac nobody manages is the single thing on this list most worth asking about."),
+                safeValue: "0",
                 settingsPane: "profiles"),
     ]
 
