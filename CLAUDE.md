@@ -1,5 +1,15 @@
 # Wellkept — project instructions
 
+⚠️ **This repository is PUBLIC** — `github.com/StoneMesaStudio/wellkept`, GPL-3.0, since
+2026-08-30. Everything here is permanent and readable by anyone.
+
+**Keep every measurement. Drop every identifier.** The worksheets are the best thing in this repo
+because they carry measured facts, features killed on evidence, and mistakes named with what they
+cost — but they were written while measuring one real person's Mac, and that had to be stripped out
+before publishing. So: no names, no email addresses, no real drive names, no serial numbers, no
+Team ID, and no test fixtures named after anybody. Write "decided 2026-08-27" and keep the
+reasoning; never "X said" with a name attached.
+
 **Wellkept — a health check for your Mac.** Native Swift/SwiftUI, macOS 14+, unsandboxed,
 Developer ID + notarized, direct download. Free, open source, **GPL-3.0**. Bundle id
 `studio.stonemesa.wellkept`.
