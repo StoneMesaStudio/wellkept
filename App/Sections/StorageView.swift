@@ -34,7 +34,7 @@ import WellkeptCore
 //  |---|---|---|
 //  | Selection | ticks, and some arrive ticked | no ticks anywhere |
 //  | The press | one, for the whole batch | one file, after a sheet |
-//  | Before it | `SetAsideNotice` — John's before-sentence | `SetAsideSheet` — John's arithmetic |
+//  | Before it | `SetAsideNotice` — the before-sentence | `SetAsideSheet` — the approved arithmetic |
 //  | Routes | one | two: set aside, or set aside and empty |
 //
 //  The four verbs are identical. What differs is the ceremony, and it is carried by three visible
@@ -76,7 +76,7 @@ struct StorageView: View {
 
     private var scanning: Bool { live && model.isScanning }
 
-    /// ⚠️ John's consequence, threaded through to every place a press is offered: **if the disk is
+    /// ⚠️ The consequence, threaded through to every place a press is offered: **if the disk is
     /// full today, quarantine is the wrong button.**
     private var diskIsAlreadyFull: Bool {
         answer.map { $0.report.freeSpace.pressure != .comfortable } ?? false

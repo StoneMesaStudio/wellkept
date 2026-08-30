@@ -129,8 +129,8 @@ import WellkeptCore
         #expect(HardwareTopic.speed.rawValue    == "speed")
     }
 
-    /// The label is what a person reads and John edits. Making a word better must stay a one-line
-    /// change; deriving the label from the raw value would make it a schema change.
+    /// The label is what a person reads, and it may be edited. Making a word better must stay a
+    /// one-line change; deriving the label from the raw value would make it a schema change.
     @Test func labelsAreEnglishAndAreAllowedToDriftFromTheKeys() {
         #expect(HardwareTopic.drive.label    == "Drive")
         #expect(HardwareTopic.battery.label  == "Battery")
@@ -545,7 +545,7 @@ import WellkeptCore
 @Suite struct MachineBlockCarriesNoStatusTests {
 
     private static let m3 = MachineFacts(
-        name: "John's MacBook Air",
+        name: "Ada's MacBook Air",
         modelName: "MacBook Air (15-inch, M3, 2024)",
         modelIdentifier: "Mac15,13",
         chip: "Apple M3",
@@ -577,7 +577,7 @@ import WellkeptCore
         // The chip above the rows still says Good, because every row is good. What is out of date
         // is Apple's support for the macOS it can run, and that is a sentence, not a fault light.
         #expect(report.status == .good)
-        // It does reach Overview — John, 2026-08-27: say it plainly, as security rather than as a
+        // It does reach Overview — decided 2026-08-27: say it plainly, as security rather than as a
         // reason to buy a machine.
         #expect(report.overviewFinding?.severity == .problem)
         #expect(report.overviewFinding?.title == "This Mac no longer gets security updates")
@@ -662,7 +662,7 @@ import WellkeptCore
 
     private static func report(ranAt: Date = Date(timeIntervalSince1970: 1_787_000_000)) -> HardwareReport {
         HardwareReport(
-            facts: MachineFacts(name: "John's MacBook Air",
+            facts: MachineFacts(name: "Ada's MacBook Air",
                                 modelName: "MacBook Air (15-inch, M3, 2024)",
                                 modelIdentifier: "Mac15,13", chip: "Apple M3", memory: "8 GB",
                                 driveSize: "494 GB", systemVersion: "macOS 26.6.2",
@@ -681,7 +681,7 @@ import WellkeptCore
     /// software doing — so the text is one string, shown and pasted, and cannot drift.
     @Test func theTextCarriesTheMachineTheDateAndTheFinding() {
         let text = Self.report().clipboardText()
-        #expect(text.contains("John's MacBook Air"))
+        #expect(text.contains("Ada's MacBook Air"))
         #expect(text.contains("MacBook Air (15-inch, M3, 2024)"))
         #expect(text.contains("Drive: This drive says it is failing."))
         #expect(text.contains("APPLE SSD AP0512Z"))

@@ -30,7 +30,7 @@ import WellkeptCore
 //    worked disagree about which entry is newest: BBEdit's lists a 2011 version first.
 //  - **CVE matching.** Of five ordinary Mac apps checked against the US vulnerability database, two
 //    are absent entirely and one confuses a code editor with its plugins.
-//  - **A hand-kept list of makers' version pages.** John declined it: *"I don't know that I want
+//  - **A hand-kept list of makers' version pages.** It was declined: *"I don't know that I want
 //    that responsibility. They frequently release updates."* Coverage drops from about 13 apps to
 //    about 9, and the section says so plainly rather than implying it looked everywhere.
 //

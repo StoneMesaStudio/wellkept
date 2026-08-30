@@ -12,7 +12,7 @@ import WellkeptCore
 //
 //  ## ⚠️ The two ceremonies are the section's whole design, and they live here
 //
-//  John, 2026-08-28, asked whether setting aside machine junk and setting aside one of your own big
+//  Asked on 2026-08-28: whether setting aside machine junk and setting aside one of your own big
 //  files should look and behave differently. **Yes — two ceremonies, same four verbs.**
 //
 //  - **Machine junk — `setAsideTicked()`.** A batch. Things arrive ticked, one press moves all of
@@ -46,7 +46,7 @@ import WellkeptCore
 //  ## ⚠️ Nothing here composes a sentence about bytes
 //
 //  Every figure a person reads comes from `Quarantine.Report.sentence`, `DeleteReport.sentence`,
-//  `Quarantine.Summary.rowSentence` or `FreeSpace.Says`. Those are the sentences John approved, and
+//  `Quarantine.Summary.rowSentence` or `FreeSpace.Says`. Those are the approved sentences, and
 //  the one that reports space coming back measures it before and after rather than predicting it.
 
 /// One thing the scan said while it was running. `Sendable` because it crosses from the detached
@@ -106,7 +106,7 @@ final class StorageModel {
 
     // MARK: - Scanning
 
-    /// Run the whole sweep. Long — about a minute on this Mac for a million files — so every reader
+    /// Run the whole sweep. Long — about a minute on one real Mac for a million files — so every reader
     /// runs on a detached task and the screen fills in stage by stage while it does.
     func scan() async {
         guard !isScanning else { return }
@@ -186,7 +186,7 @@ final class StorageModel {
         Bytes.sum(tickedItems(in: row, arriving: arriving).map(\.bytes))
     }
 
-    /// Whether anything in the batch is somewhere iCloud syncs. Drives John's one line.
+    /// Whether anything in the batch is somewhere iCloud syncs. Drives the one line.
     func tickedTouchICloud(in row: StorageRow, arriving: Set<String> = []) -> Bool {
         tickedItems(in: row, arriving: arriving).contains { $0.cloudStanding != .onThisMac }
     }
@@ -226,7 +226,7 @@ final class StorageModel {
 
     /// **One file, chosen by a person, after a sheet that stated the arithmetic.**
     ///
-    /// - Parameter thenEmpty: John's second route. Setting something aside returns no room at all;
+    /// - Parameter thenEmpty: The second route. Setting something aside returns no room at all;
     ///   somebody who needs the space today wants both halves in one sitting, and offering only the
     ///   first is how a person sets 40 GB aside and watches nothing happen.
     func setAside(_ item: Item, thenEmpty: Bool) async {

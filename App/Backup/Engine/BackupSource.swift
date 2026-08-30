@@ -18,23 +18,23 @@ import WellkeptCore
 //  whole-Mac backup is therefore not a thing this app can make, at any effort, without a privileged
 //  helper it does not ship.
 //
-//  ⚠️ **So the promise is "all your files" and it is never `Backup.promiseWeDoNotMake`.** Nothing in
-//  this file, or anything reading it, may imply otherwise.
+//  ⚠️ **So the promise is "all your files" and it is never `Backup.promiseWeDoNotMake`.** Nothing
+//  in this file, or anything reading it, may imply otherwise.
 //
 //  ## The three ways something does not get copied, and only two of them are gaps
 //
-//  1. **In iCloud and not on this disk.** 72.2 GB of this Mac's files are placeholders — 65.4 GB of
-//     `~/Documents/Media` under Desktop & Documents syncing, plus Google Drive. Copying them means
+//  1. **In iCloud and not on this disk.** 72.2 GB of one measured Mac's files are placeholders —
+//     65.4 GB of a media folder under Desktop & Documents syncing, plus Google Drive. Copying them means
 //     **downloading 72 GB onto a Mac with 95 GB free**, over somebody's own internet, to back up
 //     files that already have a second copy in the cloud. They are **named and skipped**, never
 //     downloaded by default. ⚠️ Time Machine has exactly the same hole and never mentions it; this
 //     section says it every single run.
-//  2. **A cloud provider's folder we refuse to walk at all.** ⛔ `~/Library/CloudStorage/GoogleDrive-…`
-//     is **indistinguishable from a local folder by every test this app uses** — same filesystem,
-//     same device number as `~/Documents`, no ubiquity flag, no dataless flag. Reading it during the
-//     research timed out and killed a scan, and had it succeeded it would have pulled the whole
-//     Drive down. It is detected **by name** and refused, which is the one place in this engine
-//     where a name is the evidence. See `whyANameIsTheEvidenceHere`.
+//  2. **A cloud provider's folder we refuse to walk at all.** ⛔
+//     `~/Library/CloudStorage/GoogleDrive-…` is **indistinguishable from a local folder by every
+//     test this app uses** — same filesystem, same device number as `~/Documents`, no ubiquity
+//     flag, no dataless flag. Reading it during the research timed out and killed a scan, and had
+//     it succeeded it would have pulled the whole Drive down. It is detected **by name** and
+//     refused, which is the one place in this engine where a name is the evidence. See `whyANameIsTheEvidenceHere`.
 //  3. **A thing a copy means nothing for** — a socket, a device node, a named pipe. Not a gap and
 //     not a loss.
 //
@@ -225,8 +225,8 @@ struct SourceRules: Sendable, Equatable {
     ///
     /// `Movable`'s rule is identity, never name, and it is right: a blocklist that *permits* goes
     /// stale silently and costs somebody their files. This list runs the other way. It only ever
-    /// **subtracts** from what is copied, so a stale entry costs somebody a folder that had a second
-    /// copy in the cloud anyway. The two failures are not symmetrical.
+    /// **subtracts** from what is copied, so a stale entry costs somebody a folder that had a
+    /// second copy in the cloud anyway. The two failures are not symmetrical.
     ///
     /// And there is no other reading available. Measured 2026-08-29: the Google Drive folder is on
     /// the same filesystem and the same device as `~/Documents`, carries no ubiquity flag and no
@@ -283,8 +283,8 @@ struct SourceRules: Sendable, Equatable {
 
     /// **Should this file be copied, and if not, why.** `nil` means copy it.
     ///
-    /// ⚠️ **`isCloudOnly` is read from the file's own `SF_DATALESS` flag**, taken in the same `lstat`
-    /// as everything else. It is never inferred from a size, a folder, or the result of trying.
+    /// ⚠️ **`isCloudOnly` is read from the file's own `SF_DATALESS` flag**, taken in the same
+    /// `lstat` as everything else. It is never inferred from a size, a folder, or the result of trying.
     func mayCopy(_ item: SourceItem) -> SourceExclusion? {
         if item.isCloudOnly { return .inTheCloudOnly }
         if let provider = cloudProvider(of: URL(filePath: item.path)) {

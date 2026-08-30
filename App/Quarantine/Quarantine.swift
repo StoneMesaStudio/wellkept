@@ -12,10 +12,10 @@ import WellkeptCore
 //  Quarantine · Restore · Delete · Ignore. The words are fixed app-wide and no screen invents a
 //  synonym for them.
 //
-//  ## What quarantine actually is — John, 2026-08-28
+//  ## What quarantine actually is — decided 2026-08-28
 //
-//  He asked the question that reframed the whole feature: *"why would I do that? What is the
-//  context?"*
+//  One question reframed the whole feature: *why would anybody press this, and what is the
+//  context?* Everything below is the answer, and it is not the answer a cleaner would give.
 //
 //  **Quarantine is not "free up space". It moves no bytes off the disk at all.** Measured: setting
 //  aside 391 MB across 100,000 files moved free space by **−8 KiB**. A same-volume rename re-points
@@ -25,7 +25,7 @@ import WellkeptCore
 //
 //  ⚠️ **So nothing in this file, and nothing that reads it, may ever say a quarantine "freed"
 //  anything.** A person checks About This Mac within a minute and is right to distrust everything
-//  else the app says afterwards. `QuarantineWords` holds the sentences John approved; use them.
+//  else the app says afterwards. `QuarantineWords` holds the approved sentences; use them.
 //
 //  ## The one safe move
 //
@@ -62,19 +62,19 @@ import WellkeptCore
 
 // MARK: - The words
 
-/// The sentences John settled on, in one place so no screen can drift from them.
+/// The settled sentences, in one place so no screen can drift from them.
 ///
 /// ⚠️ **The word "freed" is banned app-wide**, and `QuarantineWordsTests` fails the build if it, or
 /// "reclaimed", turns up in a string anywhere under `App/`.
 enum QuarantineWords {
 
-    /// Before the button. John's words, 2026-08-28.
+    /// Before the button. The words settled 2026-08-28.
     static func beforeSettingAside(_ bytes: Int64) -> String {
         "Set aside \(StorageManifest.readable(bytes)). Nothing is deleted and no space comes back "
         + "until you empty the quarantine."
     }
 
-    /// ⚠️ The consequence John drew out: **if the disk is full today, quarantine is the wrong
+    /// ⚠️ The consequence drawn out: **if the disk is full today, quarantine is the wrong
     /// button.** Wanting the space back now means quarantine and then empty, deliberately, in one
     /// sitting. Storage has to say this rather than let somebody set aside 40 GB and watch nothing
     /// happen.
@@ -131,7 +131,7 @@ extension Quarantine {
         var moved: [QuarantineRecord] { outcomes.compactMap(\.record) }
         var refused: [Outcome] { outcomes.filter { !$0.moved } }
         var bytesSetAside: Int64 { moved.reduce(0) { $0 + $1.bytes } }
-        /// Whether John's one line has to appear.
+        /// Whether the one line has to appear.
         var anyWasInICloud: Bool { moved.contains(where: \.wasInICloud) }
 
         /// What the screen says afterwards. **Never a figure that came back** — nothing came back.
@@ -296,7 +296,7 @@ extension Quarantine {
 
 extension Quarantine {
 
-    /// The permanent row on the Storage face. John's shape, 2026-08-28: *"40 GB set aside — oldest
+    /// The permanent row on the Storage face. The settled shape, 2026-08-28: *"40 GB set aside — oldest
     /// is 12 days old"*, with the Empty button on it.
     struct Summary: Sendable {
         let count: Int

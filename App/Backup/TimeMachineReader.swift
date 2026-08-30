@@ -18,13 +18,14 @@ import WellkeptCore
 //
 //  ## ⭐ The mistake this file exists to not repeat
 //
-//  On 2026-08-28 the owner was told **"Time Machine cannot reach JDS Backup"**, which reads as a
-//  fault. Measured the next morning, on the same Mac:
+//  On 2026-08-28 an earlier draft of this section reported **"Time Machine cannot reach the backup
+//  drive"** on a real Mac, which reads as a fault. Measured properly the next morning, on the same
+//  machine:
 //
 //  | Reading | Value |
 //  |---|---|
 //  | `AutoBackup` | **0 — automatic backups are switched off** |
-//  | Destination | JDS Backup, configured and correct |
+//  | Destination | the configured backup drive, correct |
 //  | Mounted right now | No. The drive is in a drawer. |
 //  | Last successful backup | **25 August 13:03:41 UTC** |
 //  | Backups recorded | **Four**, from 3 June to 25 August |
@@ -589,7 +590,7 @@ extension TimeMachineReader {
         }
 
         /// ⛔ **Read-only, and it does not mount.** `tmutil destinationinfo` prints the configured
-        /// destinations with the drive in a drawer — verified on this Mac, which is exactly why it
+        /// destinations with the drive in a drawer — verified on one real Mac, which is exactly why it
         /// is the tie-break rather than `latestbackup`, whose first act is to try to mount the
         /// drive.
         ///

@@ -103,7 +103,7 @@ struct TheAudiobookSurvives {
 struct TheHerdTrap {
 
     /// ⚠️ **90 MB in Application Support, no app, no receipt, no Spotlight entry, untouched for
-    /// four and a half months — and it is the owner's PHP.**
+    /// four and a half months — and it is a working PHP install.**
     ///
     /// It is safe because there is no rule in the file that reasons from absence. This test would
     /// fail the moment somebody adds one.
@@ -492,7 +492,7 @@ struct TheLaw {
 @Suite("Read from this Mac, read-only")
 struct OnThisMac {
 
-    /// ⭐ **The live version of the audiobook test.** On this Mac there are two audiobooks under
+    /// ⭐ **The live version of the audiobook test.** On one real Mac there are two audiobooks under
     /// `~/Library/Caches/com.apple.bookassetd`, 1.5 GB between them. Every folder on the way down to
     /// them has to come back as the person's. On a Mac with no audiobooks this passes trivially,
     /// which is correct.

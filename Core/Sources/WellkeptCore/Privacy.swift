@@ -8,7 +8,7 @@ import Foundation
 //  ## Why this file exists
 //
 //  Until 2026-08-27 the welcome page said **"Nothing leaves your Mac."** That was Claude's wording,
-//  not John's, and John struck it:
+//  and it was struck, in favour of this:
 //
 //  > *"it is about not scraping user data, violating their privacy or collecting contact
 //  > information for marketing. No data is collected and sold. Information leaving the computer to
@@ -86,7 +86,7 @@ public enum Privacy {
     /// — what is sent, who receives it, what the user gets for it, and what turning it off costs —
     /// and it makes the welcome page grow a line automatically, so nothing can be added quietly.
     ///
-    /// Raw values are storage and are permanent; the labels are English and John edits them freely.
+    /// Raw values are storage and are permanent; the labels are English and they may be edited freely.
     public enum Departure: String, CaseIterable, Sendable, Identifiable, Codable, Hashable {
 
         /// Asking Apple's storefront, and a small number of makers, whether an app has a newer

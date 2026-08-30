@@ -22,7 +22,7 @@ struct ScanIOPolicyTests {
     /// ⭐ **The one line that turned a nine-minute scan back into 36 seconds.**
     ///
     /// Without it, touching a dataless file makes macOS download it — 524 of them came down over
-    /// the owner's internet during the research, filling the disk we were there to help him empty.
+    /// Somebody's internet during the research, filling the disk we were there to help them empty.
     @Test func theThreadHoldsCloudFilesWhereTheyAre() {
         #expect(ScanPolicy.prepareThisThread())
         #expect(ScanPolicy.thisThreadHoldsCloudFilesWhereTheyAre)
@@ -69,9 +69,9 @@ struct ScanDescentTests {
         #expect(volume?.isSealedSystem == false)
     }
 
-    /// ⚠️ `/System/Library` is on the sealed volume, which shares a device number and a display name
-    /// with the Data volume. Only `statfs` separates them, and only that separation stops a scan
-    /// counting macOS as if it were somebody's files.
+    /// ⚠️ `/System/Library` is on the sealed volume, which shares a device number and a display
+    /// name with the Data volume. Only `statfs` separates them, and only that separation stops a
+    /// scan counting macOS as if it were somebody's files.
     @Test func theSealedSystemVolumeIsRefused() {
         let scanVolume = Movable.volume(of: ScanPolicy.root().path(percentEncoded: false))
         let verdict = ScanPolicy.descend(into: URL(filePath: "/System/Library"),
@@ -104,9 +104,9 @@ struct ScanDescentTests {
     /// ⛔ **Another app's sandboxed data is refused before anything touches it**, because for those
     /// folders macOS raises its dialog on the attempt rather than on the failure.
     ///
-    /// The name comes from `LeftoverReader.Place`, the one file permitted to spell it. The rule is a
-    /// suffix rather than a list, so the group variant is covered by the same line — which is what
-    /// this test is really checking.
+    /// The name comes from `LeftoverReader.Place`, the one file permitted to spell it. The rule is
+    /// a suffix rather than a list, so the group variant is covered by the same line — which is
+    /// what this test is really checking.
     @Test func anotherAppsDataIsRefusedByShapeNotByAList() {
         let home = URL(filePath: "/Users/somebody")
         let gated = LeftoverReader.Place.containers.directory
@@ -264,14 +264,14 @@ struct FreeSpaceReadingTests {
     }
 }
 
-// MARK: - ⭐ The arithmetic John approved
+// MARK: - ⭐ The approved arithmetic
 
 @Suite("The sheet states the arithmetic before the press")
 struct FreeSpaceArithmeticTests {
 
-    /// ⭐ **John's sentence, 2026-08-28.** The figure quoted is what would come back, not the size
-    /// on disk — where a snapshot is holding the blocks the two differ by up to 150×, and quoting
-    /// the larger one would be a promise the second press cannot keep.
+    /// ⭐ **The settled sentence, 2026-08-28.** The figure quoted is what would come back, not the
+    /// size on disk — where a snapshot is holding the blocks the two differ by up to 150×, and
+    /// quoting the larger one would be a promise the second press cannot keep.
     @Test func theSheetQuotesWhatWouldActuallyComeBack() {
         let twelveGigs = Bytes(onDisk: SizeOnDisk(12_000_000_000),
                                recoverableToday: .all(of: SizeOnDisk(12_000_000_000)))
@@ -290,9 +290,9 @@ struct FreeSpaceArithmeticTests {
         #expect(sentence.contains("12 GB") == false)
     }
 
-    /// ⭐ Both buttons, in John's order: the ordinary one, and the one for somebody who needs the
-    /// room today. The second exists because setting 40 GB aside and watching nothing happen is the
-    /// failure this section was designed around.
+    /// ⭐ Both buttons, in the settled order: the ordinary one, and the one for somebody who needs
+    /// the room today. The second exists because setting 40 GB aside and watching nothing happen is
+    /// the failure this section was designed around.
     @Test func theSheetOffersBothRoutes() {
         #expect(FreeSpace.Says.setAsideOnly == "Set aside")
         #expect(FreeSpace.Says.setAsideAndEmpty.contains("empty the quarantine"))
@@ -327,8 +327,8 @@ struct FreeSpaceArithmeticTests {
         #expect(busy.sentence.contains("writing"))
     }
 
-    /// The measuring wrapper takes both readings or reports none. **Never a zero**, which would read
-    /// as "nothing came back".
+    /// The measuring wrapper takes both readings or reports none. **Never a zero**, which would
+    /// read as "nothing came back".
     @Test func measuringTakesBothReadingsOrNone() {
         var ran = false
         let (result, change) = FreeSpace.measuring { () -> Int in ran = true; return 7 }
@@ -344,16 +344,16 @@ struct FreeSpaceArithmeticTests {
 @Suite("Sentences that exist twice stay identical")
 struct StorageWordingTests {
 
-    /// John's line has a copy in `WellkeptCore` for a row that has not been through the engine, and
-    /// one in the engine itself. Two copies of a sentence is one copy too many unless something
-    /// checks them.
+    /// The settled line has a copy in `WellkeptCore` for a row that has not been through the
+    /// engine, and one in the engine itself. Two copies of a sentence is one copy too many unless
+    /// something checks them.
     @Test func theICloudWarningIsOneSentence() {
         #expect(CloudStanding.alsoRemovesItFromYourDevices == Movable.iCloudWarning)
     }
 
-    /// `WellkeptCore` names the Full Disk Access pane by the raw value of an app-layer enum, because
-    /// the `x-apple.systempreferences:` anchors are Apple internals that live in one file. If that
-    /// case is ever renamed, the Storage remedy button quietly stops resolving.
+    /// `WellkeptCore` names the Full Disk Access pane by the raw value of an app-layer enum,
+    /// because the `x-apple.systempreferences:` anchors are Apple internals that live in one file.
+    /// If that case is ever renamed, the Storage remedy button quietly stops resolving.
     @Test func theRemedyNamesARealPane() {
         let refused = UnreadablePlaces(count: 54, notable: ["your Trash"])
         #expect(refused.remedy?.settingsPane == SystemSettingsPane.fullDiskAccess.rawValue)

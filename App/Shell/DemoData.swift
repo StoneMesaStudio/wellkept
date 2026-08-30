@@ -19,7 +19,7 @@ import WellkeptCore
 //
 //  ## ⚠️ Two Macs, not one
 //
-//  John, 2026-08-27, asked which machine the demo should be: *"I would give them both. The goal is
+//  Asked on 2026-08-27, which machine the demo should be: *"I would give them both. The goal is
 //  a healthy mac."* So demo mode offers a choice, and both are photographed:
 //
 //  - **A healthy Mac** — the point of the product. Everything checked, nothing wrong, and the
@@ -697,7 +697,7 @@ enum DemoData {
             thing("/Users/sample/Documents/Virtual Machines/Docker.raw",
                   onDisk: 18_200_000_000, kind: .diskImage, changedDaysAgo: 40, under: snapshots,
                   reason: BigFiles.Says.because(SizeOnDisk(18_200_000_000))),
-            // John's one line lives on this row, because this one is genuinely synced.
+            // The one line lives on this row, because this one is genuinely synced.
             thing("/Users/sample/Library/Mobile Documents/com~apple~CloudDocs/Wedding Video.mov",
                   onDisk: 12_400_000_000, cloud: .bothPlaces,
                   changedDaysAgo: 210, openedDaysAgo: 190, under: snapshots,
@@ -1961,7 +1961,7 @@ enum DemoData {
             successes: [daysAgo(88), daysAgo(61), daysAgo(40), lastSuccess],
             attempts: [lastSuccess],
             result: 0,
-            bytesUsed: 489_000_000_000,
+            bytesUsed: 430_000_000_000,
             bytesAvailable: 62_000_000_000,
             // Held to the second of the snapshot below — which is what macOS actually does, and
             // why the sentence can say what the snapshot is FOR.

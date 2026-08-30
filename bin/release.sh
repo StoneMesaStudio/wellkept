@@ -37,7 +37,6 @@ run()  { if [ "$DRY" = 1 ]; then echo "  would run: $*"; else "$@"; fi; }
 
 APP_NAME="Wellkept"
 BUNDLE_ID="studio.stonemesa.wellkept"
-TEAM_ID="RD59TDS75G"
 DIST="$ROOT/dist"
 BUILD="$ROOT/build/release-signed"
 APP="$BUILD/$APP_NAME.app"
@@ -65,6 +64,16 @@ if [ -z "$IDENTITY" ]; then
   App Store; the notary service will not accept it."
 fi
 ok "$IDENTITY"
+
+# ⭐ The team is read out of the certificate, never checked into the repo. A Developer ID identity
+# is spelled "Developer ID Application: Some Name (TEAMID1234)", so the answer is already sitting
+# in the string we just matched — and a hardcoded team in a public file is an account identifier
+# for anybody who clones it. `WELLKEPT_TEAM_ID` overrides, for a Mac with several teams installed.
+TEAM_ID="${WELLKEPT_TEAM_ID:-$(printf '%s' "$IDENTITY" | sed -nE 's/.*\(([A-Z0-9]{10})\)$/\1/p')}"
+[ -n "$TEAM_ID" ] || die "Could not read a team out of the certificate:
+  $IDENTITY
+  Set WELLKEPT_TEAM_ID=XXXXXXXXXX and run this again."
+ok "team $TEAM_ID"
 
 # ---- 2. Notary credentials ------------------------------------------------
 # The issuer is team-wide, so the key any of the studio's apps uses works here too.

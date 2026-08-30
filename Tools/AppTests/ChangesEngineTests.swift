@@ -216,7 +216,7 @@ struct SnapshotStoreFileTests {
         #expect(SnapshotStore.snapshots(home: ground.home).count == 1)
     }
 
-    /// **John's answer 3, 2026-08-28** — save-out is a readable summary *and* the raw file, so it
+    /// **Answer 3, 2026-08-28** — save-out is a readable summary *and* the raw file, so it
     /// is worth something to somebody who no longer has Wellkept.
     @Test func savingWritesBothHalves() throws {
         let ground = try sandbox()
@@ -419,7 +419,7 @@ struct AttributionTests {
         } else {
             Issue.record("a `last -y` reboot line was not recognised")
         }
-        #expect(Attribution.parseBootLine("jds  console  Mon Aug 24 2026 20:09") == nil)
+        #expect(Attribution.parseBootLine("ada  console  Mon Aug 24 2026 20:09") == nil)
     }
 
     /// ⚠️ **Two minute-resolution readings cannot produce "and 52 seconds".** The precision travels
@@ -613,7 +613,7 @@ struct DiffReportTests {
         #expect(unread.first?.why == .notPermitted)
     }
 
-    /// One line per topic. **John's answer 4, 2026-08-28**: shown once, never repeated per
+    /// One line per topic. **Answer 4, 2026-08-28**: shown once, never repeated per
     /// permission.
     @Test func theFullDiskAccessLineIsSaidOnceAndNotTwelveTimes() {
         var unreadable: [String: String] = [:]
@@ -624,7 +624,7 @@ struct DiffReportTests {
         #expect(Diff.unread(snapshot(2_000, unreadable: unreadable)).count == 1)
     }
 
-    /// **John's answer 4** — we can see *that* the grants changed and not *what*, and that is the
+    /// **Answer 4** — we can see *that* the grants changed and not *what*, and that is the
     /// one line with the button on it.
     @Test func privacyGoingDarkIsReportedRatherThanReadingAsZero() {
         let camera = WatchedKey(.whoCanWatch, "camera").storageKey

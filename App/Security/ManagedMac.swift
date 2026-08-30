@@ -15,7 +15,7 @@ import WellkeptCore
 //
 //  Report those as faults and Wellkept stops being a health check and becomes an accusation about
 //  somebody's employer, aimed at the one person in the building who cannot act on it and who has
-//  something to lose by trying. John's decision, 2026-08-27: **a management fact is never a
+//  something to lose by trying. The decision, 2026-08-27: **a management fact is never a
 //  problem.** Not amber, not red, not a nag.
 //
 //  So this file answers two separate questions, and they are genuinely separate:
@@ -30,10 +30,10 @@ import WellkeptCore
 //
 //  ## ⚠️ What is deliberately not done here
 //
-//  - **Nothing is enumerated out of `/var/db/ConfigurationProfiles/Store`.** Measured on this Mac,
+//  - **Nothing is enumerated out of `/var/db/ConfigurationProfiles/Store`.** Measured on one real Mac,
 //    2026-08-27: that directory answers `Operation not permitted` to an ordinary read. The tool
 //    Apple ships for it raises an authorization dialog, and an earlier research round put a system
-//    password box on the owner's screen doing exactly that. If a fact needs elevation, the fact is
+//    password box on somebody's screen doing exactly that. If a fact needs elevation, the fact is
 //    that it needs elevation.
 //  - **No subprocess.** Everything below is a file existence check or a CoreFoundation call. The
 //    controller chip's own MDM flags are passed in by `ProtectionReader`, which was already running

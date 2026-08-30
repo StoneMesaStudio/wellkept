@@ -109,7 +109,7 @@ struct HealthReportOneListTests {
                                         status: .good, complete: false)
         return HealthReport(
             writtenOn: Page.ran,
-            machine: MachineFacts(name: "John's MacBook Air",
+            machine: MachineFacts(name: "Ada's MacBook Air",
                                   modelName: "MacBook Air (15-inch, M3, 2024)",
                                   modelIdentifier: "Mac15,13",
                                   chip: "Apple M3",
@@ -203,7 +203,7 @@ struct HealthReportOneListTests {
     func theFileNameNamesTheMacAndTheDay() {
         let name = HealthReportDocument.fileName(for: busyPage)
         #expect(name.hasSuffix(".pdf"))
-        #expect(name.contains("John's MacBook Air"))
+        #expect(name.contains("Ada's MacBook Air"))
         #expect(!name.contains("/"))
     }
 }
@@ -347,7 +347,7 @@ struct HealthReportFromTheWindowTests {
     /// convention, and the reason both menu items open this sheet instead of printing.
     @Test("The sheet says what the page identifies, before either button")
     func theSheetNamesWhatIsAboutToLeave() {
-        let facts = MachineFacts(name: "John's MacBook Air",
+        let facts = MachineFacts(name: "Ada's MacBook Air",
                                  modelName: "MacBook Air (15-inch, M3, 2024)",
                                  modelIdentifier: "Mac15,13",
                                  chip: "Apple M3",
@@ -363,7 +363,7 @@ struct HealthReportFromTheWindowTests {
                                    findings: [], records: [:])
 
         #expect(HealthReportSheet.caution(for: withSerial)?.contains("serial number") == true)
-        #expect(HealthReportSheet.caution(for: withSerial)?.contains("John's MacBook Air") == true)
+        #expect(HealthReportSheet.caution(for: withSerial)?.contains("Ada's MacBook Air") == true)
         #expect(HealthReportSheet.caution(for: without)?.contains("left off") == true)
         // A page that names no Mac has nothing to warn about.
         #expect(HealthReportSheet.caution(

@@ -14,7 +14,7 @@ import WellkeptCore
 //  already been made out loud:
 //
 //  1. Reading a Mac with automatic backups switched off and calling it **failing**. That happened
-//     in front of the owner on 2026-08-28.
+//     in front of a real person on 2026-08-28.
 //  2. Counting a file that also lives in iCloud as a **backup gap**. That has not happened yet, and
 //     on this Mac it would open the section with a 72 GB alarm about an arrangement that works.
 //
@@ -36,12 +36,12 @@ struct TimeMachinePrecedenceTests {
         TimeMachineState(
             isConfigured: true,
             automaticBackupsOn: false,
-            destination: BackupDestination(name: "JDS Backup", kind: .localDrive, isConnected: false),
+            destination: BackupDestination(name: "Backup Drive", kind: .localDrive, isConnected: false),
             lastSuccess: now.addingTimeInterval(-4 * 86_400),
             failure: TimeMachineFailure(code: 45, message: "Backup failed with error 45", cause: .driveNotConnected))
     }
 
-    @Test("The owner's Mac reads as switched off, not as failing")
+    @Test("The measured Mac reads as switched off, not as failing")
     func theRealMacReadsCorrectly() {
         let now = Date()
         let state = thisMac(now: now)
@@ -141,7 +141,7 @@ struct TimeMachinePrecedenceTests {
 
 // MARK: - Freshness
 
-@Suite("Nine days is the line, and it is the owner's number")
+@Suite("Nine days is the line, and it is a chosen number")
 struct FreshnessTests {
 
     @Test func nineDaysIsStale() {
@@ -361,7 +361,7 @@ struct BackupReportTests {
     private func switchedOffMac(now: Date) -> TimeMachineState {
         TimeMachineState(isConfigured: true,
                          automaticBackupsOn: false,
-                         destination: BackupDestination(name: "JDS Backup", kind: .localDrive, isConnected: false),
+                         destination: BackupDestination(name: "Backup Drive", kind: .localDrive, isConnected: false),
                          lastSuccess: now.addingTimeInterval(-4 * 86_400))
     }
 
@@ -444,7 +444,7 @@ struct RehearsalGateTests {
     @Test("⛔ Nothing is offered until somebody has restored from a real drive")
     func theGateIsShutUntilItIsNot() {
         // ⚠️ This test does not assert the gate is shut. It asserts the gate and what it offers
-        // agree with each other — so it keeps working on the day John opens it, and it catches a
+        // agree with each other — so it keeps working on the day somebody opens it, and it catches a
         // half-flip where the constant moved and the offer did not.
         #expect(RehearsalGate.mayBeOffered == RehearsalGate.hasBeenRehearsed)
         if !RehearsalGate.hasBeenRehearsed {
@@ -524,7 +524,7 @@ struct RecoveryPlanTests {
 
     private func plan(fileVaultOn: Bool = true,
                       macOS: String = "26.6.2",
-                      destination: String? = "JDS Backup") -> RecoveryPlan {
+                      destination: String? = "Backup Drive") -> RecoveryPlan {
         RecoveryPlan.make(macOSVersion: macOS,
                           macDescription: "MacBook Pro (14-inch, M3, 2024)",
                           architecture: .appleSilicon,

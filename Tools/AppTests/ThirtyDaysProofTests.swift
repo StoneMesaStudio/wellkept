@@ -10,7 +10,7 @@ import WellkeptCore
 //
 //  ⭐ **Thirty calendar days, both settings, and the Mac that gets opened once a quarter.**
 //
-//  John's answer, 2026-08-28: **thirty CALENDAR days**, not days the app happened to be open, and
+//  The answer, 2026-08-28: **thirty CALENDAR days**, not days the app happened to be open, and
 //  **the user chooses** — *remove them at thirty days* or *tell me at thirty days*, with manual as
 //  the default.
 //
@@ -111,7 +111,7 @@ struct ThirtyDaysProofTests {
         #expect(!Expiry.isReady(record, now: start.addingTimeInterval(29 * 86_400)))
         #expect(!Expiry.isReady(record, now: start.addingTimeInterval(30 * 86_400 - 1)))
         #expect(Expiry.isReady(record, now: start.addingTimeInterval(30 * 86_400)))
-        #expect(Expiry.days == 30, "the number John chose")
+        #expect(Expiry.days == 30, "the settled number")
     }
 
     /// The calendar and plain arithmetic disagree across a month whose length is not thirty days,
@@ -144,7 +144,7 @@ struct ThirtyDaysProofTests {
     }
 
     /// ⭐ **A year, and a hundred openings, and nothing is removed.** The items rise to the top of
-    /// the list and wait there, which is exactly what John asked for.
+    /// the list and wait there, which is exactly what the developer asked for.
     @Test func manualRemovesNothingEverNoMatterHowLongOrHowOften() throws {
         let ground = try ProvingGround()
         defer { ground.tearDown() }

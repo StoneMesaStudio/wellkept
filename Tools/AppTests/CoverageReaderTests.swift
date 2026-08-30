@@ -11,7 +11,7 @@ import WellkeptCore
 //
 //  ⭐ **What is not backed up, and the four ways of getting that wrong.**
 //
-//  1. Calling a file that lives in iCloud a missing one. 72.2 GB of this Mac is in exactly that
+//  1. Calling a file that lives in iCloud a missing one. 72.2 GB of one measured Mac is in exactly that
 //     state, so the alarmist version of this section opens with a 72 GB scare about an arrangement
 //     that works.
 //  2. Calling a place backed up because Time Machine exists. We cannot see inside a backup, so
@@ -227,7 +227,7 @@ struct CoverageInclusionTests {
 @Suite("A missing Enabled key is not an Off")
 struct ICloudStandingTests {
 
-    /// ⚠️ **Measured on this Mac 2026-08-29: 4 of 24 services carry `Enabled`.** Photos, Mail,
+    /// ⚠️ **Measured on one real Mac 2026-08-29: 4 of 24 services carry `Enabled`.** Photos, Mail,
     /// Messages, Contacts, Calendars, Reminders and Bookmarks are listed with no verdict at all.
     /// Reading that absence as "off" would be an invention; reading it as "on" would be a
     /// comfortable one.
@@ -303,7 +303,7 @@ struct ICloudStandingTests {
         #expect(account.unreadable == nil)
     }
 
-    /// ⛔ **Only `Services` is parsed.** The same file carries the owner's email address, display
+    /// ⛔ **Only `Services` is parsed.** The same file carries the person's email address, display
     /// name, first and last name and two directory identifiers. This asserts by construction: the
     /// type has three properties and none of them could hold one.
     @Test func nothingAboutThePersonIsEverRead() throws {
@@ -355,11 +355,11 @@ struct ICloudStandingTests {
 @Suite("A third-party sync folder is named, never opened, and never printed with its account")
 struct FileProviderTests {
 
-    /// ⭐ **The folder is called `GoogleDrive-johndseidner@gmail.com`.** That is somebody's Google
+    /// ⭐ **The folder is called `GoogleDrive-someone@gmail.com`.** That is somebody's Google
     /// address sitting in a path, one step from a row or a clipboard. Everything after the first
     /// hyphen is dropped.
     @Test func theAccountIsStrippedOffTheProviderName() {
-        #expect(CoverageReader.providerName("GoogleDrive-johndseidner@gmail.com") == "GoogleDrive")
+        #expect(CoverageReader.providerName("GoogleDrive-someone@gmail.com") == "GoogleDrive")
         #expect(CoverageReader.providerName("OneDrive-Personal") == "OneDrive")
         #expect(CoverageReader.providerName("ProtonDrive-someone@proton.me") == "ProtonDrive")
         // No hyphen, nothing to strip.
@@ -669,7 +669,7 @@ enum Fixtures {
 
     static let now = Date(timeIntervalSince1970: 1_787_000_000)
 
-    static let drive = BackupDestination(name: "JDS Backup",
+    static let drive = BackupDestination(name: "Backup Drive",
                                          kind: .localDrive,
                                          isConnected: false,
                                          volumePath: nil,
@@ -688,10 +688,10 @@ enum Fixtures {
 
     static let working = TimeMachineState(isConfigured: true,
                                           automaticBackupsOn: true,
-                                          destination: BackupDestination(name: "JDS Backup",
+                                          destination: BackupDestination(name: "Backup Drive",
                                                                          kind: .localDrive,
                                                                          isConnected: true,
-                                                                         volumePath: "/Volumes/JDS Backup",
+                                                                         volumePath: "/Volumes/Backup Drive",
                                                                          capacity: SizeOnDisk(2_000_000_000_000),
                                                                          free: SizeOnDisk(500_000_000_000)),
                                           lastSuccess: now.addingTimeInterval(-3_600))

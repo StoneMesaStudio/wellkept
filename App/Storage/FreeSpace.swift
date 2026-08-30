@@ -7,7 +7,7 @@ import WellkeptCore
 //  FreeSpace.swift
 //  Wellkept — App/Storage
 //
-//  ⭐ **The two answers to "how much room is left", and the arithmetic John approved.**
+//  ⭐ **The two answers to "how much room is left", and the approved arithmetic.**
 //
 //  ## The measurement this file exists because of
 //
@@ -27,7 +27,7 @@ import WellkeptCore
 //  12, because the purgeable pool moves underneath. That is why `FreeSpacePicture.finderShows` is a
 //  `FinderFigure` — a type with a private byte count, no operators, and one named subtraction.
 //
-//  ## John's ruling, 2026-08-28
+//  ## The ruling, 2026-08-28
 //
 //  > *"Lead with the real one. Ours has to add up. So: the real number leads, with Finder's printed
 //  > underneath and one line saying what the difference is. We are not contradicting Finder, we are
@@ -233,7 +233,7 @@ enum FreeSpace {
     }
 }
 
-// MARK: - ⭐ The arithmetic John approved
+// MARK: - ⭐ The approved arithmetic
 
 extension FreeSpace {
 
@@ -244,7 +244,7 @@ extension FreeSpace {
     /// same button.
     enum Says {
 
-        /// ⭐ **John's sheet, 2026-08-28, for a person's own file.** One at a time, never
+        /// ⭐ **The sheet, 2026-08-28, for a person's own file.** One at a time, never
         /// pre-ticked, and the arithmetic is stated *before* the press rather than explained after
         /// it.
         ///
@@ -265,7 +265,7 @@ extension FreeSpace {
                  + "\(bytes.recoverableToday.text) back you also have to empty the quarantine."
         }
 
-        /// The two buttons on that sheet, in John's order: the ordinary one first, and the one for
+        /// The two buttons on that sheet, in the settled order: the ordinary one first, and the one for
         /// somebody who needs the room today second. Cancel is the sheet's visible exit and is not
         /// one of these.
         ///

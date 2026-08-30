@@ -27,7 +27,7 @@ import WellkeptCore
 //  - **The clean state.** The one screen this whole app exists to be able to show. Look at what is
 //    *not* on it: no score, no badge, no number out of anything — a sentence and a date, and the
 //    audit trail open underneath it, because "everything looks fine" is worth exactly as much as
-//    the evidence behind it. John asked for that list by name.
+//    the evidence behind it. The developer asked for that list by name.
 //
 //    ⚠️ **On a Mac where Full Disk Access is off — which the test runner is — this picture also
 //    carries the standing permission notice, directly under a headline saying everything looks
@@ -163,7 +163,7 @@ struct OverviewReportShot {
     ///
     /// The audit trail opens by itself here and only here: on a Mac with nothing wrong, the list of
     /// what was actually checked *is* the reassurance, and a verdict with its evidence folded away
-    /// is an opinion. John asked for it in those words on 2026-08-26.
+    /// is an opinion. The developer asked for it in those words on 2026-08-26.
     @Test("Overview, everything fine")
     func theCleanState() {
         let size = Layout.windowDefault
@@ -350,7 +350,7 @@ enum ReportMac {
     private static let writtenOn = Date(timeIntervalSince1970: 1_787_000_000)
 
     private static let facts = MachineFacts(
-        name: "John's MacBook Air",
+        name: "Ada's MacBook Air",
         modelName: "MacBook Air (15-inch, M3, 2024)",
         modelIdentifier: "Mac15,13",
         chip: "Apple M3",

@@ -9,7 +9,7 @@ import WellkeptCore
 //
 //  ⭐ **What the background piece found, written down where a person can read it.**
 //
-//  John's condition was that the code establish at run time whether the background piece inherits
+//  The condition was that the code establish at run time whether the background piece inherits
 //  Full Disk Access **and record what it found**. This is the record. It holds three things:
 //
 //  1. What **the app** could see, taken when the window was open.

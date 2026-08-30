@@ -132,7 +132,7 @@ struct HardwareShot {
                         50, "hardware-never-checked")
     }
 
-    /// **A healthy Mac.** John, 2026-08-27: *"I would give them both. The goal is a healthy mac."*
+    /// **A healthy Mac.** Decided 2026-08-27: *"I would give them both. The goal is a healthy mac."*
     /// This is the case the product exists to be able to show, not the boring one to skip: five
     /// rows of Good, a machine block, and nothing asking anything of anybody.
     @Test("Hardware, the healthy demo Mac")

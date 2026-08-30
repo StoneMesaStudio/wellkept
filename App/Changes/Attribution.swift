@@ -21,7 +21,7 @@ import WellkeptCore
 //
 //  | Source | Permission | What it gives |
 //  |---|---|---|
-//  | `/Library/Receipts/InstallHistory.plist` | **World-readable** (0664 root:admin) | Every install, 110 deep on this Mac, with a real date |
+//  | `/Library/Receipts/InstallHistory.plist` | **World-readable** (0664 root:admin) | Every install, 110 deep on one real Mac, with a real date |
 //  | `/usr/bin/last -y` | Readable here; **empty on a standard account** | Reboot and shutdown times, to the minute |
 //  | `kern.boottime` | **None at all** | This boot, exact to the microsecond |
 //  | `/private/var/log/shutdown_monitor.log`'s modification time | **World-readable** (0644 root:wheel) | The last shutdown, exact to the second |

@@ -65,7 +65,7 @@ import WellkeptCore
     /// ⚠️ **A raw value is storage; a label is English**, and `whoCanWatch` is the case that proves
     /// they are allowed to drift apart for ever.
     ///
-    /// John's call, 2026-08-27: the screen is labelled for what it lists — camera, microphone,
+    /// Settled 2026-08-27: the screen is labelled for what it lists — camera, microphone,
     /// screen and control — not "Who can watch you". Same rows, different temperature: that title
     /// tells somebody they are being watched before they have read a line, and for almost everyone
     /// nothing is wrong.
@@ -90,13 +90,13 @@ import WellkeptCore
 
 @Suite struct NineAmberConditionsTests {
 
-    /// ⚠️ **Nine. John kept all nine on 2026-08-27 and struck none.**
+    /// ⚠️ **Nine. All nine were kept on 2026-08-27 and none was struck.**
     ///
-    /// A tenth is a conversation with him, not a pull request — and this is what makes that true
-    /// rather than aspirational. Six readers written in parallel would otherwise arrive with ten,
-    /// twelve, twenty conditions between them, each defensible alone and collectively a screen of
-    /// amber on a healthy Mac.
-    @Test func thereAreExactlyNineAndTheyAreTheNineJohnKept() {
+    /// A tenth is a conversation with the developer, not a pull request — and this is what makes
+    /// that true rather than aspirational. Six readers written in parallel would otherwise arrive
+    /// with ten, twelve, twenty conditions between them, each defensible alone and collectively a
+    /// screen of amber on a healthy Mac.
+    @Test func thereAreExactlyNineAndTheyAreTheNineThatWereKept() {
         #expect(SecurityConcern.allCases.count == 9)
         #expect(SecurityConcern.allCases == [
             .fileVaultOff,
@@ -111,10 +111,10 @@ import WellkeptCore
         ])
     }
 
-    /// ⚠️ **Nothing in Security is ever a problem.** Every one of the nine is a setting somebody may
-    /// have chosen deliberately, or a machine an employer configured. Amber says "worth a look";
-    /// red would say "you have done something wrong", and this section is not in a position to know
-    /// that.
+    /// ⚠️ **Nothing in Security is ever a problem.** Every one of the nine is a setting somebody
+    /// may have chosen deliberately, or a machine an employer configured. Amber says "worth a
+    /// look"; red would say "you have done something wrong", and this section is not in a position
+    /// to know that.
     @Test func everyConcernIsAmberAndNoneIsRed() {
         for concern in SecurityConcern.allCases {
             #expect(concern.severity == .attention,
@@ -490,7 +490,7 @@ import WellkeptCore
 @Suite struct GrantTests {
 
     /// ⚠️ **Eleven of the twelve need Full Disk Access; Location is the one that does not.**
-    /// Measured on this Mac, 2026-08-27 — and it is the strongest true reason to grant the
+    /// Measured on one real Mac, 2026-08-27 — and it is the strongest true reason to grant the
     /// permission, which setup was previously selling on storage.
     @Test func onlyLocationReadsWithoutFullDiskAccess() {
         let free = Permission.allCases.filter { !$0.needsFullDiskAccessToRead }
@@ -543,7 +543,7 @@ import WellkeptCore
         #expect(camera.id != microphone.id)
     }
 
-    /// ⚠️ **Wellkept holds Full Disk Access, so Wellkept appears in its own list.** John's call,
+    /// ⚠️ **Wellkept holds Full Disk Access, so Wellkept appears in its own list.** Settled
     /// 2026-08-27: say so rather than filter ourselves out. An app that quietly removes itself from
     /// the list of apps that can read your disk is doing the thing this app exists to catch other
     /// software doing.
@@ -560,8 +560,8 @@ import WellkeptCore
 //  ⚠️ **The regression guard on the bug that was found on 2026-08-27 and fixed the same day.**
 //
 //  `Unreadable` had two cases. Every root-only Security fact — the FileVault recovery key, who can
-//  unlock the Mac, Gatekeeper's exception list, the Intel firmware password, Apple's own login-items
-//  store — came back as the refused one, which set `complete = false`. Not on an unusual Mac: on
+//  unlock the Mac, Gatekeeper's exception list, the Intel firmware password, Apple's own
+//  login-items store — came back as the refused one, which set `complete = false`. Not on an unusual Mac: on
 //  **every** Mac, including one where nothing at all was wrong, for ever, with no button anywhere
 //  that could clear it.
 //

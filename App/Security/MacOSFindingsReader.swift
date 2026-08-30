@@ -10,7 +10,7 @@ import WellkeptCore
 //
 //  This is the row that tells somebody their Mac has already been checked, by Apple, without them
 //  asking — about twenty scanners that run in the background and clean up what they find. It is
-//  reporting, never scanning: Wellkept runs nothing and removes nothing here. John's answer,
+//  reporting, never scanning: Wellkept runs nothing and removes nothing here. The answer,
 //  2026-08-27, on whether Wellkept should scan for malware itself: **after quarantine exists.** A
 //  scan that finds something today has nowhere to put it.
 //
@@ -21,14 +21,14 @@ import WellkeptCore
 //  predicate is `subsystem BEGINSWITH "com.apple.XProtect"`, which catches XProtect, the
 //  Remediator plugins and the behavioural service in one pass.
 //
-//  Measured on this Mac: **about 5.5 seconds.** It is by far the slowest read in the app, and it is
+//  Measured on one real Mac: **about 5.5 seconds.** It is by far the slowest read in the app, and it is
 //  why **Security does not run on launch** — it runs on a press, and the screen has to show that it
 //  is still looking.
 //
 //  ## ⚠️ The window is measured, never assumed
 //
 //  macOS keeps roughly a fortnight of log, and **how far back is decided by how chatty this Mac has
-//  been, not by any policy.** On this Mac the store reached back 14 days; on a quiet Mac it reaches
+//  been, not by any policy.** On one real Mac the store reached back 14 days; on a quiet Mac it reaches
 //  further, on a busy one less, and the same Mac gives a different answer next week.
 //
 //  So "nothing was ever found" and "something was found three weeks ago" look **identical** from
@@ -58,7 +58,7 @@ import WellkeptCore
 //  `SecurityRow.severity` is computed from concerns — so there is no route by which this row turns
 //  amber, including the case where macOS found and removed something. That is defensible: what this
 //  row reports is **already dealt with**, by Apple, before Wellkept ever looked. It is stated
-//  plainly in the row's own words. A tenth condition is a conversation with John, not a pull
+//  plainly in the row's own words. A tenth condition is a conversation with the developer, not a pull
 //  request.
 
 enum MacOSFindingsReader {
@@ -381,7 +381,7 @@ enum MacOSFindingsReader {
         let start = store.position(date: .distantPast)
 
         // The window, from the first entry of any kind. Lazy, so this stops after one entry — it
-        // measured 0.8 s on this Mac against 4.6 s for the filtered pass.
+        // measured 0.8 s on one real Mac against 4.6 s for the filtered pass.
         var earliest: Date?
         if let all = try? store.getEntries(at: start) {
             for entry in all { earliest = entry.date; break }

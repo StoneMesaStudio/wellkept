@@ -8,7 +8,7 @@ import WellkeptCore
 //  **Four controls, a permissions page, a quarantine page, and the demo switch. Nothing else.**
 //
 //  The quarantine page arrived on 2026-08-28 with the engine that fills it. It carries the one
-//  question John settled — what happens to a set-aside item at thirty days, and manual is the
+//  question settled — what happens to a set-aside item at thirty days, and manual is the
 //  default — and the ignore list, which is the only decision in this app that leaves no trace on
 //  screen and so had nowhere to be taken back from.
 //
@@ -405,7 +405,7 @@ private struct PermissionCard: View {
 /// and the reason this file's header rule is written the way it is: every setting read app-wide
 /// has a control on this screen.
 ///
-/// **Two machines, not one.** John, 2026-08-27: *"I would give them both. The goal is a healthy
+/// **Two machines, not one.** Decided 2026-08-27: *"I would give them both. The goal is a healthy
 /// mac."* The healthy one is the default because it is the product's own case; the unwell one is
 /// how the screens that have never run against a real fault get looked at.
 private struct DemoSettings: View {

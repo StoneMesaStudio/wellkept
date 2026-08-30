@@ -39,7 +39,7 @@ import WellkeptCore
 //  The log read alone is about six seconds — the slowest read in the app. So Security runs on a
 //  press, and while it runs the panel fills in row by row rather than sitting frozen behind a
 //  spinner. There is no scan button of any kind: a malware scan that found something would have
-//  nowhere to put it until quarantine exists, which is John's decision of 2026-08-27 and not a
+//  nowhere to put it until quarantine exists, which is the decision of 2026-08-27 and not a
 //  gap waiting to be filled in.
 
 struct SecurityView: View {
@@ -227,7 +227,7 @@ struct SecurityView: View {
     /// The section's own audit trail: when it ran, how far back it could see, whether it saw
     /// everything, and what it did not.
     ///
-    /// John asked for this on a clean Overview — a check that says "nothing is wrong" is worth
+    /// The developer asked for this on a clean Overview — a check that says "nothing is wrong" is worth
     /// exactly as much as the list of what it actually looked at. The same argument holds one level
     /// down, and here it costs nothing.
     private func whatWasRead(_ answer: SecurityAnswer) -> some View {

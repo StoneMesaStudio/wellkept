@@ -125,7 +125,7 @@ struct ShellShot {
 
     /// **Overview under each of the two demo Macs.**
     ///
-    /// John, 2026-08-27: *"I would give them both. The goal is a healthy mac."* This is the pair of
+    /// Decided 2026-08-27: *"I would give them both. The goal is a healthy mac."* This is the pair of
     /// pictures that decides whether that worked: Overview on the healthy Mac says "Everything
     /// looks fine" with the audit trail open beneath it, and on the unwell one it carries **one**
     /// row from Hardware — never five — beside whatever the other sections found.

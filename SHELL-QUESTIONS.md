@@ -1,8 +1,8 @@
 # Wellkept — the shell: full question set
 
 Working document, 2026-08-26. Assembled by 12 agents from the build plan, `~/Sites/DESIGN.md`,
-the Wellkept memory bank, and the six sibling Swift apps. **Not for John to read** — the
-questions go to him in chat, a few at a time, in this order. Answers get recorded here.
+the Wellkept memory bank, and the six sibling Swift apps. It was never meant to be read start to
+finish — the questions were put a few at a time, in this order, and the answers recorded here.
 
 ## Two corrections found while mining
 
@@ -11,9 +11,10 @@ questions go to him in chat, a few at a time, in this order. Answers get recorde
    already has `bin/release.sh` (hardened-runtime check → notarytool → stapler → DMG),
    `App/Uninstaller.swift`, `App/Permissions.swift` and SMAppService register/unregister.
    Lode and Waypoint stay design law; Scout is plumbing law.
-2. **Bundle id is `studio.stonemesa.wellkept`**, not the plan's `com.seidner.HealthyMac`.
-   Verified: scout=`studio.stonemesa.scout`, lode=`studio.stonemesa.tessera`,
-   travel=`studio.stonemesa.waypoint`. Only the three older App Store apps use `com.seidner`.
+2. **Bundle id is `studio.stonemesa.wellkept`**, not the personal reverse-DNS id the build plan
+   assumed. Verified: scout=`studio.stonemesa.scout`, lode=`studio.stonemesa.tessera`,
+   travel=`studio.stonemesa.waypoint`. Only the three older App Store apps still carry the
+   pre-studio prefix, and nothing new does.
 
 ---
 
@@ -21,9 +22,9 @@ questions go to him in chat, a few at a time, in this order. Answers get recorde
 
 | # | Question | Recommendation | Answer |
 |---|---|---|---|
-| A1 | Will anyone but John ever run this first version? | John only, for now | **No — John only.** Placeholder wording is acceptable in the shell |
+| A1 | Will anyone but the developer run this first version? | The developer only, for now | **No — the developer only.** Placeholder wording is acceptable in the shell |
 | A2 | Welcome page before anything, or land straight on Overview? | One short page, once | **Yes — welcome page** |
-| A3 | Permissions asked in a setup flow, or when a section needs them? | When needed | **SETUP FLOW** (John overruled the recommendation, 2026-08-26). The shell owns a real onboarding flow: welcome → permissions one at a time → land on Overview. Every step needs a skip that counts as an answer, and a way to re-run it from Help |
+| A3 | Permissions asked in a setup flow, or when a section needs them? | When needed | **SETUP FLOW** (the recommendation was overruled, 2026-08-26). The shell owns a real onboarding flow: welcome → permissions one at a time → land on Overview. Every step needs a skip that counts as an answer, and a way to re-run it from Help |
 | A4 | Does the app remember what it found last time? | Yes, with the date | **Remember** |
 | A5 | Does setup run again after an update or reinstall? | No | **No — unless the app was uninstalled first, then yes.** Uninstall removes the "setup finished" mark along with everything else |
 
@@ -31,12 +32,12 @@ questions go to him in chat, a few at a time, in this order. Answers get recorde
 
 | # | Question | Recommendation | Answer |
 |---|---|---|---|
-| B1 | Opening size, and how small can it be dragged? | ~1,100 × 760; floor ~1,020 × 640 | **Claude decides** (John, 2026-08-26 — "a decision you can make without me"). Set to 1,100 × 760 opening, 1,020 × 640 floor |
+| B1 | Opening size, and how small can it be dragged? | ~1,100 × 760; floor ~1,020 × 640 | **Claude decides** (decided 2026-08-26 — explicitly handed to Claude to settle alone). Set to 1,100 × 760 opening, 1,020 × 640 floor |
 | B2 | Normal title bar, or none with the name in the sidebar? | Normal | **Normal title bar** |
 | B3 | Seven sections do nothing yet: finished face with the verb greyed, or "not built yet"? | Finished face | **Finished face**, real verb greyed, one line underneath saying it is coming |
 | B4 | Overview: all seven every time, or only what needs you? | Only what needs you | **Only what needs you** |
 | B5 | Does Overview have its own button, and is it "Check my Mac"? | Yes and yes | **Yes and yes.** "Check my Mac" is the app's main verb |
-| B6 | What Overview says on a clean Mac | "Everything looks fine" + the date | **"Everything looks fine" + date — AND an audit trail** (John, 2026-08-26): the clean state must also show what was actually checked, for reassurance. Never a score |
+| B6 | What Overview says on a clean Mac | "Everything looks fine" + the date | **"Everything looks fine" + date — AND an audit trail** (decided 2026-08-26): the clean state must also show what was actually checked, for reassurance. Never a score |
 | B7 | Red counts on sidebar rows? | No | **No** |
 | B8 | Closing the window: quit, or stay running? | Quit until a menu-bar icon exists | **Quit while there is no menu-bar icon; once the icon exists and is on, closing hides instead.** The rule the user learns: if the icon is there, the app is still there |
 | B9 | Full screen allowed, and does content spread on a big display? | Full screen yes; column stays 700 pt, centred | |
@@ -47,17 +48,18 @@ questions go to him in chat, a few at a time, in this order. Answers get recorde
 |---|---|---|---|
 | C1 | Refused Full Disk Access — keep working reduced, or park? | Keep working | **Keep working**, each section says plainly what it could not see |
 | C2 | May Overview say "fine" when it could not see everything? | No | **No.** The headline says it could not check everything and names what it missed |
-| C3 | Where does "a permission is off" live? | Row in Overview + a line in the affected section | **Agreed, no stripe** — and John, 2026-08-26: it must say plainly that the results are compromised, carry a link to turn the permission on, and explain as much as it needs to. Explanation here is wanted, not clutter |
+| C3 | Where does "a permission is off" live? | Row in Overview + a line in the affected section | **Agreed, no stripe** — and, decided 2026-08-26, it must say plainly that the results are compromised, carry a link to turn the permission on, and explain as much as it needs to. Explanation here is wanted, not clutter |
 | C4 | Background helper installed in the shell, or when a feature needs root? | Wait | **Wait.** Setup asks for Full Disk Access with a working "Finish later"; the helper is never mentioned until a feature needs root. **The shell ships no helper code** |
 | C5 | Does the app ever raise a refused permission again on its own? | Never | **Never** |
-| C6 | Uninstall: what does it touch? | — | **Ask the user about quarantine at uninstall: restore, or move to a location of their choosing** (John, 2026-08-26 — never decide it for them, never leave it buried). Remove settings. **Never touch backups**, just say where they are |
+| C6 | Uninstall: what does it touch? | — | **Ask the user about quarantine at uninstall: restore, or move to a location of their choosing** (decided 2026-08-26 — never decide it for them, never leave it buried). Remove settings. **Never touch backups**, just say where they are |
 | C7 | Does anything leave the Mac? | — | **Nothing leaves unless the user presses something, except the update check.** Named on the welcome page. Update checking necessarily tells each vendor a copy exists here — unavoidable, so say it. Crowdsourced stability reports stay deferred to v2 |
 
-> ⚠️ **C7 was superseded on 2026-08-27.** John struck the absolute "nothing leaves your Mac"
-> wording as Claude's, not his: *"it is about not scraping user data, violating their privacy or
-> collecting contact information for marketing… Information leaving the computer to benefit their
-> experience and app functionality is disclosed and optional… **Inform and consent**."* The shape
-> is now: say what is never done, then name every departure with its switch and its cost. The
+> ⚠️ **C7 was superseded on 2026-08-27.** The absolute "nothing leaves your Mac" wording was
+> Claude's invention and it was struck. What the promise is actually about: not scraping user
+> data, not violating privacy, not collecting contact information for marketing. Information that
+> leaves the computer to benefit the person's experience and the app's functionality is disclosed
+> and optional — **inform and consent**. The shape is now: say what is never done, then name every
+> departure with its switch and its cost. The
 > canonical sentences live in `Core/Sources/WellkeptCore/Privacy.swift` and nowhere else. See
 > `APPS-QUESTIONS.md`, question 1.
 
@@ -65,7 +67,7 @@ questions go to him in chat, a few at a time, in this order. Answers get recorde
 
 | # | Question | Recommendation | Answer |
 |---|---|---|---|
-| D1 | System font, or Avenir like Lode and Waypoint? | — | **Avenir default, system font selectable in Settings** (John, 2026-08-26). Already the house pattern: Lode `App/Support/Theme.swift:331` and Waypoint `App/Shared/Theme.swift:221` both read `fontFamily` defaulting to "Avenir". Port it, including the Avenir button and segmented-control replacements — native controls ignore a custom font. Avoid Waypoint's wiring bug (`WaypointSettings.swift:31`): the setting was consulted app-wide and settable nowhere |
+| D1 | System font, or Avenir like Lode and Waypoint? | — | **Avenir default, system font selectable in Settings** (decided 2026-08-26). Already the house pattern: Lode `App/Support/Theme.swift:331` and Waypoint `App/Shared/Theme.swift:221` both read `fontFamily` defaulting to "Avenir". Port it, including the Avenir button and segmented-control replacements — native controls ignore a custom font. Avoid Waypoint's wiring bug (`WaypointSettings.swift:31`): the setting was consulted app-wide and settable nowhere |
 | D2 | One bronze, or a quiet colour per section? | One bronze | **One bronze** |
 | D3 | Where bronze actually appears | — | **Selected sidebar row · the main button · section headings. Nothing else** |
 | D4 | Ship petrol and slate on day one, or bronze only? | Bronze only | **Bronze only** |
@@ -75,10 +77,10 @@ questions go to him in chat, a few at a time, in this order. Answers get recorde
 
 | # | Question | Recommendation | Answer |
 |---|---|---|---|
-| E1 | The word for a thing Wellkept finds | — | **"Problem"** (John, 2026-08-26 — plainer than "issue"). Used ONLY where something is actually wrong. Things Wellkept merely reveals — a large folder, an old file — are never called problems and get no collective noun |
+| E1 | The word for a thing Wellkept finds | — | **"Problem"** (decided 2026-08-26 — plainer than "issue"). Used ONLY where something is actually wrong. Things Wellkept merely reveals — a large folder, an old file — are never called problems and get no collective noun |
 | E2 | The status words for a section | — | **Good · Needs attention · Not checked** |
 | E3 | The name beside the Apple logo (About…, Hide…, Quit…) | "Wellkept" | |
-| E4 | The seven one-line section sentences | Claude drafts all seven, John edits the words | |
+| E4 | The seven one-line section sentences | Claude drafts all seven, the words get edited on review | |
 
 ## F. Settings and help
 
@@ -96,7 +98,7 @@ questions go to him in chat, a few at a time, in this order. Answers get recorde
 |---|---|---|---|
 | G1 | A switch that fills the seven sections with invented sample results? | Yes | **Yes — build it.** Pattern exists in Scout `App/DemoData.swift` |
 | G2 | Where do "Ignore"d things go, and how are they taken back? | Its own list in Settings, restorable | |
-| G5 | **The app's own log** — John, 2026-08-26: the dated history of every check Wellkept has ever run exists, but NOT on Overview. Where does it live? | Undecided — park until a section needs it | |
+| G5 | **The app's own log** — raised 2026-08-26: the dated history of every check Wellkept has ever run exists, but NOT on Overview. Where does it live? | Undecided — park until a section needs it | |
 | G3 | Can the health report be printed, saved or sent? | — | **Save as PDF and Print**, once Overview has content |
 | G4 | Command-Q while a check is running | Stop and quit; nothing is ever mid-write in v1 | |
 
@@ -133,5 +135,6 @@ questions go to him in chat, a few at a time, in this order. Answers get recorde
   build whose signature is wrong — an unsigned build gets no Full Disk Access and would
   cheerfully report a healthy Mac) and Waypoint's ViewShots harness + `bin/make-shots.sh`.
 - `bin/preflight.sh` as the union of the four drifted house copies.
-- Permission and helper flows tested on a clean VM, never on John's upgraded M3.
+- Permission and helper flows tested on a clean VM, never on a machine carried across years of
+  macOS upgrades: grants and helper state accumulated there are not what a new user has.
 - No widget, daemon or menu-bar-extra target in the shell; shapes reserved in `project.yml`.

@@ -28,7 +28,7 @@ import WellkeptCore
 //
 //  ## Wellkept is in its own list
 //
-//  It holds Full Disk Access, which is how it read the list at all. John's call, 2026-08-27: say
+//  It holds Full Disk Access, which is how it read the list at all. Settled 2026-08-27: say
 //  so. An app that quietly filters itself out of the list of software that can read your disk is
 //  doing the thing this one exists to catch other software doing.
 

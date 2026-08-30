@@ -27,7 +27,7 @@ import WellkeptCore
 //
 //  3. ⛔ **15 of this Mac's 25 boots carried no update.** One restart proving that is a coincidence;
 //     twenty-five of them, ten of which carried an update, is the shape of the real record.
-//  4. ⭐ **John's answer 3, 2026-08-28.** On uninstall the settings record is asked about, with
+//  4. ⭐ **Answer 3, 2026-08-28.** On uninstall the settings record is asked about, with
 //     three buttons — leave, save, delete. `SnapshotStore` has held the words since it was written;
 //     what these tests check is that the uninstaller actually asks them.
 
@@ -527,7 +527,7 @@ struct ChangesMacWasOffEndToEndTests {
 
 // MARK: - ⭐ The uninstaller asks rather than assumes
 
-/// ⭐ **John, 2026-08-28: "On uninstall, ask."** Three buttons — leave them where they are, save
+/// ⭐ **Decided 2026-08-28: "On uninstall, ask."** Three buttons — leave them where they are, save
 /// them to a folder you pick, delete them.
 ///
 /// `SnapshotStore` has held the words and the three outcomes since it was written, and every one of

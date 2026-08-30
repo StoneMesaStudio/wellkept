@@ -24,7 +24,7 @@ import WellkeptCore
 //
 //  ## What is measured, and what each thing proves
 //
-//  Verified by hand on this Mac, 2026-08-27, all read-only and none of it raising a dialog:
+//  Verified by hand on one real Mac, 2026-08-27, all read-only and none of it raising a dialog:
 //
 //  - **Listening sockets** — `netstat -an`. Unprivileged, unlocalised, and it reports the *bind
 //    address*, which is the difference between "only this Mac can reach it" (127.0.0.1) and
@@ -50,9 +50,9 @@ import WellkeptCore
 //
 //  None of the nine conditions in `SecurityConcern` is about a sharing service, so this row cannot
 //  raise one — `SecurityRow.severity` is computed from concerns and there is no other route. That
-//  is deliberate and it is John's call, 2026-08-27: on his own Mac the honest output is *AirPlay
+//  is deliberate and it is settled 2026-08-27: on a real Mac the honest output is *AirPlay
 //  Receiver is listening* and *the Public folder is shared with guests*, and neither is a crisis.
-//  Both are plain facts with no colour. A tenth condition is a conversation with him.
+//  Both are plain facts with no colour. A tenth condition is a conversation with the developer.
 
 enum ReachableReader {
 
@@ -297,7 +297,7 @@ enum ReachableReader {
 
     /// The row's own sentence.
     ///
-    /// It states what was observed and nothing else. On John's Mac today it reads *"AirPlay
+    /// It states what was observed and nothing else. On one real Mac it reads *"AirPlay
     /// Receiver is listening, and one folder is set up to be shared with guests allowed."* — two
     /// true things, neither of them an alarm.
     static func headline(listening: [Observation],
@@ -601,7 +601,7 @@ enum ReachableReader {
     /// The folders this Mac is set up to share, read straight out of the local directory.
     ///
     /// `/var/db/dslocal/nodes/Default/sharepoints/` is root-only, but OpenDirectory serves the same
-    /// records to anybody — verified on this Mac. No subprocess, no privilege, no dialog.
+    /// records to anybody — verified on one real Mac. No subprocess, no privilege, no dialog.
     ///
     /// `nil` where the directory could not be queried at all, which is not the same as a Mac with
     /// nothing shared.

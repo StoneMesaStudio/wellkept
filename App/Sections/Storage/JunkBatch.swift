@@ -9,7 +9,7 @@ import WellkeptCore
 //
 //  ⭐ **Ceremony one: tick a batch, one press, done, never asked again.**
 //
-//  John, 2026-08-28: *"Junk: tick a batch, one press, done, and the row afterwards says '13 GB set
+//  Decided 2026-08-28: *"Junk: tick a batch, one press, done, and the row afterwards says '13 GB set
 //  aside'."*
 //
 //  ## Why this one gets ticks and nothing else on the screen does
@@ -28,7 +28,7 @@ import WellkeptCore
 //  ## ⚠️ What the press does not do
 //
 //  It moves files inside the disk. It returns **no room at all** — measured, 391 MB across 100,000
-//  files moved free space by −8 KiB. `SetAsideNotice` says so above the button, in John's words,
+//  files moved free space by −8 KiB. `SetAsideNotice` says so above the button, in the words settled
 //  and the sentence afterwards is `Quarantine.Report.sentence`, which says it again.
 
 struct JunkBatch: View {
@@ -37,7 +37,7 @@ struct JunkBatch: View {
     /// The classifier's own notes, so a thing it declined to tick can say why on its row.
     let judgements: [JunkClassifier.Classified]
     let model: StorageModel
-    /// Whether this Mac is short of room today. Drives John's "quarantine is the wrong button" line.
+    /// Whether this Mac is short of room today. Drives the "quarantine is the wrong button" line.
     let diskIsAlreadyFull: Bool
 
     /// ⭐ The classifier's own answer about what arrives ticked, read from the judgements rather
@@ -132,7 +132,7 @@ struct JunkBatch: View {
                     TwoNumbers(bytes: model.tickedBytes(in: row, arriving: arriving), alignment: .trailing)
                 }
 
-                // John's sentences, verbatim, from the file that owns them.
+                // The settled sentences, verbatim, from the file that owns them.
                 SetAsideNotice(bytes: model.tickedBytes(in: row, arriving: arriving).onDisk.bytes,
                                anyInICloud: model.tickedTouchICloud(in: row, arriving: arriving),
                                diskIsAlreadyFull: diskIsAlreadyFull)

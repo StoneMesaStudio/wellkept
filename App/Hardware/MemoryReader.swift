@@ -19,11 +19,11 @@ import WellkeptCore
 //
 //  ## ⚠️ What the measurement actually found, and why the wording is careful
 //
-//  The research said macOS force-quit three of John's apps in eight days. It did not. Every one of
-//  the three `JetsamEvent` reports on this Mac names exactly one process, and all three were
+//  The research said macOS force-quit three apps in eight days. It did not. Every one of
+//  the three `JetsamEvent` reports on one real Mac named exactly one process, and all three were
 //  killed for **`per-process-limit`** — the process exceeded *its own* memory cap, which macOS
 //  sets per program. The three were `ReportCrash` (twice) and `knowledgeconstructiond`: Apple's
-//  own crash reporter and an Apple background daemon. Not one of them was a thing John was using,
+//  own crash reporter and an Apple background daemon. Not one of them was a thing anybody was using,
 //  and the Mac was never short of memory.
 //
 //  That is the difference this file is built around:

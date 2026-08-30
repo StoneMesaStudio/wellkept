@@ -20,7 +20,7 @@ import WellkeptCore
 //     copy something other than a person's files, with the reason recorded here.
 //  2. **The debug-only door being used outside a test.** `RehearsalGate.passForTesting` exists so
 //     the engine can be exercised before the rehearsal makes it real. Called from the app it would
-//     hand a real copier a real pass in a Debug build, which is precisely the thing John's
+//     hand a real copier a real pass in a Debug build, which is precisely the thing the
 //     condition forbids.
 //
 //  Same instrument, and the same reasoning, as `ContainerGuardTests`, `ColorRuleGuardTests` and
@@ -223,7 +223,7 @@ struct RehearsalGateGuardTests {
 
     // MARK: ── The gate is visible, not just present ─────────────────────────────────────────────
 
-    /// John's condition was that the gate is **a shipped, visible thing**. A gate that refuses
+    /// The condition was that the gate is **a shipped, visible thing**. A gate that refuses
     /// silently is a feature that looks broken.
     @Test("The refusal is a sentence a person can read")
     func theGateSaysSomethingOutLoud() {

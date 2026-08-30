@@ -11,7 +11,13 @@ settings:
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
-    DEVELOPMENT_TEAM: "RD59TDS75G"
+    # ⭐ No DEVELOPMENT_TEAM is checked in, on purpose — a signing team is an account
+    # identifier, and this file is public. The gate never needs one: `bin/preflight.sh` builds
+    # and tests with `CODE_SIGNING_ALLOWED=NO`, so a fresh clone compiles and passes with no
+    # Apple account at all. The two scripts that DO need a real signature —
+    # `bin/rebuild-and-launch.sh` and `bin/release.sh` — read the team out of the Developer ID
+    # certificate already in the keychain, or out of `WELLKEPT_TEAM_ID`, and pass it to
+    # xcodebuild themselves.
     CODE_SIGN_STYLE: Automatic
     SWIFT_STRICT_CONCURRENCY: complete
     ENABLE_HARDENED_RUNTIME: YES
@@ -80,7 +86,7 @@ targets:
   # app LOOKS like what was agreed. Waypoint learned that the expensive way: its columns had no
   # ceiling, so what read correctly in a 680-point mockup put a row's buttons half a screen from
   # the town they acted on at 1900. Nothing in the suite could see it; the first person who did
-  # was John.
+  # was a human looking at the pictures.
   #
   # It compiles the view sources directly rather than hosting the app — hosting would launch the
   # real thing to take a picture, and this app's real thing reads the disk. `WellkeptApp.swift`

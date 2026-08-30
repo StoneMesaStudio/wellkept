@@ -22,8 +22,8 @@ import WellkeptCore
 //     whole state — every combination of findings, unchecked sections, partial sections, permissions
 //     and demo mode — rather than by looking at one screen. This is the rule the whole app is built
 //     on, and it is the one a page can break most quietly.
-//  2. **The audit trail lists all seven, always**, including the checks that never ran. John asked
-//     for it by name: *"an audit trail for reassurance of what was checked please."* A list that
+//  2. **The audit trail lists all seven, always**, including the checks that never ran. It was asked
+//     for by name: *"an audit trail for reassurance of what was checked please."* A list that
 //     silently omitted the checks that did not happen would be reassurance about nothing.
 //  3. **The caveats cannot be left off.** There is no initialiser that takes them.
 //  4. **Never a score.** There is nowhere in the type to put one, and no sentence it produces
@@ -34,7 +34,7 @@ import WellkeptCore
 private enum Mac {
 
     static let facts = MachineFacts(
-        name: "John's MacBook Air",
+        name: "Ada's MacBook Air",
         modelName: "MacBook Air (15-inch, M3, 2024)",
         modelIdentifier: "Mac15,13",
         chip: "Apple M3",
@@ -140,9 +140,9 @@ struct HealthReportCleanStateTests {
         let report = HealthReport(machine: Mac.facts, findings: [], records: Mac.allGood())
         #expect(report.isCleanBillOfHealth)
         #expect(report.headline == HealthReport.everythingLooksFine)
-        // John's clean state is the sentence AND the date. On a page read weeks later the date is
+        // The clean state is the sentence AND the date. On a page read weeks later the date is
         // the more load-bearing half.
-        #expect(report.subtitle.contains("John's MacBook Air"))
+        #expect(report.subtitle.contains("Ada's MacBook Air"))
     }
 
     /// ⚠️ A page with nothing checked at all is the likeliest one to be mistaken for good news:

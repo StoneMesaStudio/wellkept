@@ -9,7 +9,7 @@ import WellkeptCore
 //
 //  ⭐ **Every sentence a person reads about quarantine that is not already in the engine.**
 //
-//  `QuarantineWords` (App/Quarantine/Quarantine.swift) holds the four sentences John settled on
+//  `QuarantineWords` (App/Quarantine/Quarantine.swift) holds the four settled sentences
 //  himself, and `Report.sentence`, `RestoreReport.sentence`, `DeleteReport.sentence` and
 //  `Summary.rowSentence` are already written and ready to display. **Those are used verbatim and
 //  never re-composed here.** This file is only what a screen needs on top of them: a row's age

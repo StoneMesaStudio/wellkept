@@ -23,7 +23,29 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 APP_NAME="Wellkept"
 BUNDLE_ID="studio.stonemesa.wellkept"
-TEAM_ID="RD59TDS75G"
+
+# ⭐ The signing team is read off this Mac, never checked into the repo — it is an account
+# identifier and this file is public. Every codesigning identity is spelled
+# "…: Some Name (TEAMID1234)", so the team is already in the keychain listing.
+#
+# ⚠️ **Developer ID first, and that ordering is load-bearing.** A Mac signed into more than one
+# Apple account lists several identities, and taking whichever comes first would sign this build
+# under a team that is not the one Full Disk Access was granted to — so it would build, launch,
+# see almost nothing, and report a healthy Mac. The signature gate below catches it, but only
+# after a wasted build. `WELLKEPT_TEAM_ID` overrides both.
+TEAM_ID="${WELLKEPT_TEAM_ID:-}"
+if [[ -z "$TEAM_ID" ]]; then
+    IDENTITIES="$(security find-identity -v -p codesigning 2>/dev/null || true)"
+    TEAM_ID="$(printf '%s\n' "$IDENTITIES" \
+        | sed -nE 's/.*"Developer ID Application: .*\(([A-Z0-9]{10})\)".*/\1/p' | head -1)"
+    [[ -z "$TEAM_ID" ]] && TEAM_ID="$(printf '%s\n' "$IDENTITIES" \
+        | sed -nE 's/.*\(([A-Z0-9]{10})\)".*/\1/p' | head -1)"
+fi
+if [[ -z "$TEAM_ID" ]]; then
+    echo "There's no code-signing certificate on this Mac, so the build can't be signed."
+    echo "Open Xcode ▸ Settings ▸ Accounts and add one, then try again."
+    exit 1
+fi
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_ROOT" || { echo "Can't find the Wellkept project folder."; exit 1; }
@@ -64,6 +86,7 @@ if ! xcodebuild \
         -allowProvisioningUpdates \
         -derivedDataPath build/launch-derived \
         CONFIGURATION_BUILD_DIR="$BUILD_DIR" \
+        DEVELOPMENT_TEAM="$TEAM_ID" \
         build >"$LOG" 2>&1; then
     echo "The build failed."
     echo

@@ -10,7 +10,7 @@ import Foundation
 //  ⚠️ **A raw value is storage. A label is English. They are separate on purpose, in every enum
 //  below.** The raw values are written into UserDefaults and into the saved audit trail, so
 //  renaming one is a migration — a released build that reads `needsAttention` back as an unknown
-//  string forgets that a Mac had a problem. The labels are what a person reads, and John edits
+//  string forgets that a Mac had a problem. The labels are what a person reads, and anybody may edit
 //  those; making a word better must be a one-line change to `label`, never a schema change.
 //  This is why `SectionStatus.needsAttention.rawValue` is "needsAttention" and its label is
 //  "Needs attention", and why the two are allowed to drift apart forever.

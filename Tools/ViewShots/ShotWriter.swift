@@ -10,7 +10,7 @@
 //  said nothing at all about whether the day table LOOKED like what was agreed. It did not: the
 //  columns had no ceiling, so what read correctly in a 680-point mockup put a row's buttons half a
 //  screen from the town they acted on at 1900. Nothing in the suite could see that, and the first
-//  person who did was John.
+//  person who did was somebody looking at the pictures.
 //
 //  Built into Wellkept now, while there is only a sidebar and seven faces to photograph, because
 //  the harness is cheap to add to an empty app and expensive to retrofit onto a full one.

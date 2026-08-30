@@ -13,7 +13,7 @@ import WellkeptCore
 //  Two things live here and nothing else, and both earn the space by the rule in DESIGN §1.2: a
 //  preference gets a field only when the app must act without being asked.
 //
-//  1. **The thirty-day choice.** John, 2026-08-28: *remove them at thirty days* or *tell me at
+//  1. **The thirty-day choice.** Decided 2026-08-28: *remove them at thirty days* or *tell me at
 //     thirty days*, and **manual is the default**. It has to be a setting because the alternative is
 //     asking the same question every time somebody sets something aside.
 //  2. **The ignore list.** The fourth verb finally gets a home. Ignoring something is the one action
@@ -79,7 +79,7 @@ struct QuarantineSettings: View {
 /// what it is.
 struct ExpiryModeControl: View {
 
-    /// ⚠️ **Absent means manual**, which is what John chose. A missing key must never read as
+    /// ⚠️ **Absent means manual**, which is what was chosen. A missing key must never read as
     /// automatic removal of somebody's files.
     @AppStorage(StorageManifest.Keys.quarantineExpiry) private var raw = ExpiryMode.manual.rawValue
 

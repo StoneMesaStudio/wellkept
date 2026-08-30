@@ -26,8 +26,8 @@ import WellkeptCore
 //
 //  A folder's size on disk is the sum of its files' allocated blocks. What would come back today is
 //  the sum of its files' **own** answers to the snapshot arithmetic, computed one at a time by
-//  `StorageWalk` and never by applying the folder's modification date to the whole. On this Mac the
-//  two are 30× apart for `~/Documents/Media`, and the worksheet has a 150× case.
+//  `StorageWalk` and never by applying the folder's modification date to the whole. On one real Mac the
+//  two are 30× apart for one measured media folder, and the worksheet has a 150× case.
 //
 //  ## ⛔ The simulator runtimes come in here and carry no button
 //
@@ -65,7 +65,7 @@ enum JunkSweep {
     /// How far under a starting point the sweep goes.
     ///
     /// Four levels reaches `Library/Developer/Xcode/DerivedData/<project>` — the shape of the
-    /// largest honest win on this Mac, 13 GB — without walking a million files. Anything deeper is
+    /// largest honest win on one real Mac, 13 GB — without walking a million files. Anything deeper is
     /// somebody's own tree, and the classifier would say `.yours` about it anyway.
     static let howDeep = 4
 
@@ -114,7 +114,7 @@ enum JunkSweep {
                      progress: (String) -> Void = { _ in }) -> Found? {
 
         // Per thread, not per process. Without it a read materialises a dataless file, which during
-        // the research pulled 524 files down over the owner's internet.
+        // the research pulled 524 files down over somebody's internet.
         ScanPolicy.prepareThisThread()
 
         let held = snapshots ?? FreeSpace.localSnapshots(on: ScanPolicy.root(home: home))

@@ -274,7 +274,7 @@ struct AppsView: View {
 
     /// The section's own audit trail: when it ran, what it looked at, and what it changed.
     ///
-    /// John asked for this on a clean Overview — a check that says "nothing is wrong" is worth
+    /// The developer asked for this on a clean Overview — a check that says "nothing is wrong" is worth
     /// exactly as much as the list of what it actually looked at. The same argument holds one level
     /// down, and here it costs nothing.
     private func whatWasRead(_ answer: AppsAnswer) -> some View {

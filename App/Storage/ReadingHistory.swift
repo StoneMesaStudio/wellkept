@@ -15,7 +15,7 @@ import WellkeptCore
 //  eventually wants is subtraction against a number nobody kept:
 //
 //  - "This drive is slower than it used to be" — the only honest comparison available, since the
-//    shipped table of expected speeds John ruled out would have been a manufacturer's guess.
+//    shipped table of expected speeds ruled out would have been a manufacturer's guess.
 //  - "The battery has lost four points since March."
 //  - "This Mac runs hot more often than it did." (macOS reports thermal *pressure*, never a
 //    temperature we would trust — the die reading moved 62 → 79 → 58 °C in three minutes on an

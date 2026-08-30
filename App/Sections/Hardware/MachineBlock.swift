@@ -14,7 +14,7 @@ import WellkeptCore
 //  nothing here can be mistaken for something the app is telling you to act on.
 //
 //  The one line that genuinely tells a person something is the macOS support standing — whether
-//  Apple still ships security fixes for what this Mac can run. John, 2026-08-27: *"Not about fear,
+//  Apple still ships security fixes for what this Mac can run. Decided 2026-08-27: *"Not about fear,
 //  it is about security. Why not be honest? We are not selling them a new machine, we are
 //  protecting them."* So it is said plainly, framed as security, and it is the only line in this
 //  block that ever takes a colour — and only in the one state where the fixes have actually

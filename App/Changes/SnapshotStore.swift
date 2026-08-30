@@ -14,12 +14,12 @@ import WellkeptCore
 //
 //  Nothing in this version reads `Snapshot.settings` back. It is captured anyway, in full, from the
 //  first launch, because **a record cannot be back-filled.** It is the same argument that put
-//  `ReadingHistory` in before anything needed it, and it is the argument John settled the Changes
+//  `ReadingHistory` in before anything needed it, and it is the argument that settled the Changes
 //  scope on: version one *describes* about thirty things it understands, version two describes
 //  hundreds — and version two arrives with a year of history rather than an empty file, but only if
 //  version one was already writing.
 //
-//  ## What it actually costs, measured on this Mac on 2026-08-28
+//  ## What it actually costs, measured on one real Mac on 2026-08-28
 //
 //  | | |
 //  |---|---|
@@ -52,9 +52,9 @@ import WellkeptCore
 //  a file that names them. That is also why Safari, Mail, Photos, Messages and Notes cannot be
 //  covered by this section at all, and the face says so rather than implying it looked.
 //
-//  ## ⚠️ It is a record of the owner's machine, so uninstall asks
+//  ## ⚠️ It is a record of the person's machine, so uninstall asks
 //
-//  **John's answer 3, 2026-08-28:** three buttons — leave them where they are, save them to a
+//  **Answer 3, 2026-08-28:** three buttons — leave them where they are, save them to a
 //  folder you pick, or delete them. "Leave them" matters because somebody who reinstalls next month
 //  gets their history back. A saved copy is a **readable summary and the raw file**, so it is worth
 //  something without Wellkept. See `Farewell` and `saveOut(to:)`.
@@ -64,7 +64,7 @@ import WellkeptCore
 //
 //  ## What it never does
 //
-//  No network, no schedule, no notification, and **it never writes a setting.** John, 2026-08-28:
+//  No network, no schedule, no notification, and **it never writes a setting.** Decided 2026-08-28:
 //  Wellkept writes no setting, ever. This file only reads, and it adds no entry to
 //  `Privacy.Departure` because nothing leaves this Mac.
 
@@ -584,10 +584,10 @@ enum SnapshotStore {
 
     // MARK: - ⭐ Uninstall — asked about, never assumed
 
-    /// **John's three buttons, 2026-08-28.**
+    /// **The three buttons, 2026-08-28.**
     ///
     /// There is no fourth option and no default. The record belongs to the person whose Mac it
-    /// describes, and an uninstaller that decides for them is the "buried" outcome John ruled out
+    /// describes, and an uninstaller that decides for them is the "buried" outcome ruled out
     /// for the quarantine, applied to a different kind of file.
     enum Farewell: Sendable, Hashable {
         /// Leave it where it is. Somebody who reinstalls next month gets their history back.

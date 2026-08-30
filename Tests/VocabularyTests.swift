@@ -107,7 +107,7 @@ import WellkeptCore
         #expect(Severity.attention.rawValue   == "attention")
         #expect(Severity.information.rawValue == "information")
 
-        // John's word, chosen 2026-08-26: plainer than "issue".
+        // The word chosen, chosen 2026-08-26: plainer than "issue".
         #expect(Severity.problem.label == "Problem")
         #expect(Severity.attention.label == "Needs attention")
         #expect(Severity.information.label == "Information")
@@ -136,7 +136,7 @@ import WellkeptCore
     }
 
     /// The app's main verb, named in CONTRACTS and used on Overview's one button. It is the
-    /// sentence John chose; a rewrite of it is a product decision, not a tidy-up.
+    /// Sentence chosen; a rewrite of it is a product decision, not a tidy-up.
     @Test func overviewsButtonIsTheAppsMainVerb() {
         #expect(SectionID.overview.verb == "Check my Mac")
         #expect(SectionID.overview.question == "Is my Mac OK?")

@@ -8,10 +8,10 @@ import WellkeptCore
 //  ⭐ **The privacy wording, held by a machine, because the last version of it drifted apart across
 //  three screens without anybody noticing.**
 //
-//  On 2026-08-27 John struck the welcome page's "Nothing leaves your Mac." It was Claude's wording,
-//  not his, and by then it existed in three forms: with one exception on the welcome page, with a
-//  different exception in Help, and with none at all in Settings. Then Apps arrived needing to ask
-//  makers whether an app has a newer version, which the absolute form forbids outright.
+//  On 2026-08-27 the welcome page's "Nothing leaves your Mac." was struck. It was Claude's
+//  wording, nobody else's, and by then it existed in three forms: with one exception on the welcome
+//  page, with a different exception in Help, and with none at all in Settings. Then Apps arrived
+//  needing to ask makers whether an app has a newer version, which the absolute form forbids outright.
 //
 //  These tests hold the replacement in shape:
 //
@@ -39,9 +39,9 @@ import WellkeptCore
         }
     }
 
-    /// The never-list names the four things John actually cared about: collection, selling,
+    /// The never-list names the four things that actually mattered: collection, selling,
     /// accounts, and marketing.
-    @Test func theNeverListNamesWhatJohnNamed() {
+    @Test func theNeverListNamesWhatWasNamed() {
         let all = Privacy.neverDone.joined(separator: " ").lowercased()
         #expect(all.contains("collected"))
         #expect(all.contains("sold"))
@@ -51,8 +51,8 @@ import WellkeptCore
         #expect(all.contains("mailing list"))
     }
 
-    /// ⚠️ **The absolute claim must not come back.** This is the exact sentence that was struck, and
-    /// every variant of it a well-meaning edit would reach for.
+    /// ⚠️ **The absolute claim must not come back.** This is the exact sentence that was struck,
+    /// and every variant of it a well-meaning edit would reach for.
     @Test func theAbsoluteClaimIsGoneFromEveryCanonicalSentence() {
         let everything = ([Privacy.headline,
                            Privacy.departuresIntro,
@@ -102,8 +102,8 @@ import WellkeptCore
         }
     }
 
-    /// ⚠️ **The cost line is the half that usually goes missing.** A switch with no stated cost is a
-    /// switch people flip out of caution and then wonder why the app got worse.
+    /// ⚠️ **The cost line is the half that usually goes missing.** A switch with no stated cost is
+    /// a switch people flip out of caution and then wonder why the app got worse.
     @Test func everyCostLineSaysWhatIsLostAndWhatIsNot() {
         for departure in Privacy.Departure.allCases {
             let cost = departure.cost.lowercased()

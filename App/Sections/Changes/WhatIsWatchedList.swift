@@ -12,7 +12,7 @@ import WellkeptCore
 //  ## Why this list exists at all
 //
 //  Changes could very easily imply it watched every preference on the Mac. It does not, and the
-//  scope John settled on 2026-08-28 is narrower than the plan's: **Wellkept compares the things it
+//  scope settled on 2026-08-28 is narrower than the plan's: **Wellkept compares the things it
 //  already understands** — the protections, what can reach this Mac, what starts on its own, which
 //  apps hold which privacy permission, and the version of macOS. About thirty things, each with
 //  three sentences we wrote and can defend.

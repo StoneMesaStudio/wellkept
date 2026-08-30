@@ -14,7 +14,7 @@ import WellkeptCore
 //  to look in. Scout hit the general form of this: dragging it to the Trash left 349 MB of mail
 //  index behind, which is why its inventory was moved out of the uninstaller and made testable.
 //
-//  So the rule for every owner adding storage to Wellkept:
+//  So the rule for everybody adding storage to Wellkept:
 //
 //  1. Get the URL from this file. Never build a path to `Application Support` yourself.
 //  2. If it is a new kind of file, add one `Entry` to `entries` and say what it is in the user's
@@ -81,7 +81,7 @@ enum StorageManifest {
 
         /// What happens to a quarantined item at thirty days — `manual` or `auto`.
         ///
-        /// ⚠️ **Absent means manual, and manual is what John chose as the default.** A missing key
+        /// ⚠️ **Absent means manual, and manual is what was chosen as the default.** A missing key
         /// must never read as `auto`: that would opt somebody into automatic removal of their own
         /// files by a value nobody set. `Expiry.mode` is the only reader; see `Expiry.swift`.
         static let quarantineExpiry = "quarantineExpiry"
@@ -132,7 +132,7 @@ enum StorageManifest {
     ///
     /// Kept beside the files rather than inside them: an item's original path is the only thing
     /// that makes "Put Them Back" possible, and a folder of orphaned files with no record of where
-    /// they belong is exactly the "buried" outcome John ruled out.
+    /// they belong is exactly the "buried" outcome ruled out.
     static func quarantineLedger(home: URL = home()) -> URL {
         supportDirectory(home: home).appending(path: "Quarantine.json")
     }
@@ -184,8 +184,8 @@ enum StorageManifest {
     /// Every snapshot of this Mac's settings Wellkept has taken — one JSON object per line,
     /// appended from the first launch.
     ///
-    /// ⚠️ **It is a record of the owner's machine, not Wellkept's bookkeeping**, which is why its
-    /// entry below is `.ask` rather than `.delete`. John's answer, 2026-08-28: uninstall stops and
+    /// ⚠️ **It is a record of the person's machine, not Wellkept's bookkeeping**, which is why its
+    /// entry below is `.ask` rather than `.delete`. The answer, 2026-08-28: uninstall stops and
     /// offers three buttons — leave it, save it to a folder you pick, or delete it. See
     /// `SnapshotStore.Farewell`.
     static func snapshotStore(home: URL = home()) -> URL {
@@ -331,7 +331,7 @@ enum StorageManifest {
         // ⚠️ `.ask`, not `.delete`. This is a record of the person's own Mac — what their settings
         // were, going back to the first launch — and it cannot be back-filled. Somebody who
         // reinstalls next month gets their history back only if this survives, which is exactly
-        // why John made it a question rather than a policy.
+        // why it was made a question rather than a policy.
         add("Settings record",
             "What this Mac's settings were, at every launch, going back to the first one",
             snapshotStore(home: home), .ask)

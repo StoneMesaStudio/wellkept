@@ -187,7 +187,7 @@ enum FullDiskAccess {
     /// **Where macOS records a Full Disk Access grant.**
     ///
     /// Root-owned and mode 644, so its contents are ours only with the grant itself — but its
-    /// *modification date* is readable by anybody. Measured on this Mac, 2026-08-27: `stat`
+    /// *modification date* is readable by anybody. Measured on one real Mac, 2026-08-27: `stat`
     /// succeeds and returns a real timestamp while `open()` on the same file is refused.
     private static let privacyStore =
         URL(fileURLWithPath: "/Library/Application Support/com.apple.TCC/TCC.db")

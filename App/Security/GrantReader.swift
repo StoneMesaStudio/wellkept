@@ -32,7 +32,7 @@ import WellkeptCore
 //     this Mac.
 //
 //  Everything else is a plain fact with no colour. There is no third condition and adding one is a
-//  conversation with John, not a commit.
+//  conversation with the developer, not a commit.
 //
 //  ## ⚠️ Without Full Disk Access this screen is EMPTY, not partial
 //
@@ -66,7 +66,7 @@ import WellkeptCore
 //  ## Wellkept is in its own list
 //
 //  Wellkept holds Full Disk Access — that is how it read any of this — so Wellkept appears here
-//  like anything else. John's call, 2026-08-27: say so rather than filter ourselves out. An app
+//  like anything else. Settled 2026-08-27: say so rather than filter ourselves out. An app
 //  that quietly removes itself from the list of apps that can read your disk has answered the
 //  question of whether to trust it.
 //

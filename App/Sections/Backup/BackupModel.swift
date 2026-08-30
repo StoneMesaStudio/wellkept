@@ -22,7 +22,7 @@ import WellkeptCore
 //  after.
 //
 //  On the machine this was written on, that read says: *"Time Machine is switched off. It is still
-//  set up, and it last backed up 4 days ago."* Nobody had told him.
+//  set up, and it last backed up 4 days ago."* Nobody had told them.
 //
 //  ## The three reads, and what each costs
 //

@@ -7,8 +7,8 @@ import Foundation
 //
 //  ⭐ **One list of nine, and no second door into amber.**
 //
-//  `Tests/SecurityTests.swift` checks that the nine are the nine John kept, one example at a time.
-//  This file asks the harder question — **is there any other way in?** — and answers it by
+//  `Tests/SecurityTests.swift` checks that the nine are the nine that were kept, one example at a
+//  time. This file asks the harder question — **is there any other way in?** — and answers it by
 //  enumerating the whole space rather than by picking cases. Every `Protection` that can be built,
 //  every `Grant` that can be built, every row and every report, and then a count: the set of
 //  concerns reachable from any of them is exactly `SecurityConcern.allCases`, and the set of ways
@@ -34,8 +34,8 @@ import Foundation
     ]
 
     /// ⚠️ **`allCases` IS the list.** A tenth condition cannot be added anywhere else in the
-    /// codebase without failing here, which is what makes "a tenth is a conversation with John"
-    /// enforceable rather than aspirational.
+    /// codebase without failing here, which is what makes "a tenth is a conversation with the
+    /// developer" enforceable rather than aspirational.
     @Test func theListIsTheEnumAndTheEnumIsTheList() {
         #expect(Set(SecurityConcern.allCases) == Self.theNine)
         #expect(SecurityConcern.allCases.count == 9)

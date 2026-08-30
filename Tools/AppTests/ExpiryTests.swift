@@ -10,7 +10,7 @@ import WellkeptCore
 //
 //  ⭐ **Thirty CALENDAR days, manual by default, and nothing on a timer.**
 //
-//  John's answer, 2026-08-28. Three of these tests hold the parts somebody could undo in a single
+//  The answer, 2026-08-28. Three of these tests hold the parts somebody could undo in a single
 //  well-meaning line: that a missing preference is `manual` and not `auto`, that thirty days is
 //  calendar arithmetic and not `30 × 86,400`, and that an unreadable ledger removes nothing even
 //  when the user has asked for automatic removal.
@@ -35,8 +35,8 @@ private func record(_ home: URL, name: String = "thing.dmg", setAside: Date) -> 
 
 @Suite struct ExpiryModeTests {
 
-    /// ⚠️ **Absent means manual.** Reading a missing key as `auto` would opt somebody into automatic
-    /// removal of their own files by a value nobody set.
+    /// ⚠️ **Absent means manual.** Reading a missing key as `auto` would opt somebody into
+    /// automatic removal of their own files by a value nobody set.
     @Test func aFreshInstallIsManual() {
         let defaults = QuarantineSandbox.defaults("mode-fresh")
         defer { QuarantineSandbox.forget(defaults, named: "mode-fresh") }
@@ -68,8 +68,8 @@ private func record(_ home: URL, name: String = "thing.dmg", setAside: Date) -> 
         #expect(Expiry.settingsKey == "quarantineExpiry", "raw values are storage and are permanent")
     }
 
-    /// ⚠️ The automatic option **says out loud** that nothing happens while the app is closed. An app
-    /// that implied it was watching the clock would be lying about what it is.
+    /// ⚠️ The automatic option **says out loud** that nothing happens while the app is closed. An
+    /// app that implied it was watching the clock would be lying about what it is.
     @Test func bothOptionsExplainThemselvesHonestly() {
         // ⚠️ Updated 2026-08-29, when Wellkept took a login item. The old assertion required the
         // sentence to claim there was no background piece at all, which is no longer true — so the
@@ -109,9 +109,9 @@ private func record(_ home: URL, name: String = "thing.dmg", setAside: Date) -> 
         #expect(Expiry.isReady(item, now: Self.moment(2026, 7, 1), calendar: Self.losAngeles))
     }
 
-    /// ⚠️ **Calendar days, not `30 × 86,400`.** A period spanning a daylight-saving change is an hour
-    /// short or an hour long in seconds, and the naive arithmetic makes the item ready a day early
-    /// for somebody who set it aside just after midnight.
+    /// ⚠️ **Calendar days, not `30 × 86,400`.** A period spanning a daylight-saving change is an
+    /// hour short or an hour long in seconds, and the naive arithmetic makes the item ready a day
+    /// early for somebody who set it aside just after midnight.
     @Test func daylightSavingDoesNotMoveTheThirtiethDay() {
         // 2026-03-08 is the spring-forward date in Los Angeles.
         let setAside = Self.moment(2026, 3, 1, 12)
@@ -123,8 +123,8 @@ private func record(_ home: URL, name: String = "thing.dmg", setAside: Date) -> 
                 "which is exactly what a seconds count would have given, an hour out")
     }
 
-    /// The row counts day boundaries, because that is what a person means by "days ago". An item set
-    /// aside at 23:50 last night is one day old this morning.
+    /// The row counts day boundaries, because that is what a person means by "days ago". An item
+    /// set aside at 23:50 last night is one day old this morning.
     @Test func theRowCountsDaysTheWayAPersonDoes() {
         let lastNight = Self.moment(2026, 6, 1, 23)
         let thisMorning = Self.moment(2026, 6, 2, 8)
@@ -135,8 +135,8 @@ private func record(_ home: URL, name: String = "thing.dmg", setAside: Date) -> 
                 == "Set aside yesterday.")
     }
 
-    /// ⚠️ And the two ways of counting are deliberately not the same function. Day-boundary counting
-    /// would make an item set aside at 23:59 ready after twenty-nine days and one minute.
+    /// ⚠️ And the two ways of counting are deliberately not the same function. Day-boundary
+    /// counting would make an item set aside at 23:59 ready after twenty-nine days and one minute.
     @Test func theDisplayCountAndTheExpiryTestDisagreeOnPurpose() {
         let lateAtNight = Self.moment(2026, 6, 1, 23)
         let item = record(URL(filePath: "/Users/example"), setAside: lateAtNight)
@@ -162,8 +162,8 @@ private func record(_ home: URL, name: String = "thing.dmg", setAside: Date) -> 
                                    calendar: Self.losAngeles) == "Set aside today.")
     }
 
-    /// John's shape: at thirty days the item **rises to the top** and waits there. A list sorted only
-    /// by date would bury it under a week of newer ones.
+    /// The settled shape: at thirty days the item **rises to the top** and waits there. A list
+    /// sorted only by date would bury it under a week of newer ones.
     @Test func readyItemsRiseToTheTop() {
         let home = URL(filePath: "/Users/example")
         let now = Self.moment(2026, 7, 15)
@@ -203,8 +203,8 @@ private func record(_ home: URL, name: String = "thing.dmg", setAside: Date) -> 
         #expect(sweep.sentence?.contains("ready to remove") == true)
     }
 
-    /// Auto acts the next time Wellkept is opened, and **says what it removed** — which is what makes
-    /// it the user's own standing instruction rather than the app acting behind their back.
+    /// Auto acts the next time Wellkept is opened, and **says what it removed** — which is what
+    /// makes it the user's own standing instruction rather than the app acting behind their back.
     @Test func autoRemovesTheOverdueOnesAndSaysSo() throws {
         let sandbox = try QuarantineSandbox()
         defer { sandbox.tearDown() }

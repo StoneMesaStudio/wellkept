@@ -11,7 +11,7 @@ import WellkeptCore
 //
 //  ## ⚠️ Two numbers, always, and they are two different true answers
 //
-//  `~/Documents/Media` on this Mac: **14.8 GB on disk**, **0.5 GB back today**. Thirty times apart,
+//  One media folder on a real Mac: **14.8 GB on disk**, **0.5 GB back today**. Thirty times apart,
 //  and the worksheet has a 150× case. The difference is a stuck Time Machine snapshot: a file
 //  changed after the oldest snapshot comes back whole, one changed before it comes back not at all.
 //
@@ -195,7 +195,7 @@ struct OwnItemRow: View {
                     .multilineTextAlignment(.leading)
 
                 // ⚠️ Facts, in a line. "Last opened" is among them and is never a finding: it is
-                // blank for 61% of the large files on this Mac, and one batch job stamped 123 of
+                // blank for 61% of the large files on one real Mac, and one batch job stamped 123 of
                 // them with the same date.
                 Text(item.lineFacts.joined(separator: " · "))
                     .font(.appCaption)

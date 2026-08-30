@@ -176,7 +176,7 @@ struct AppsShot {
 
     /// ⭐ **The update-consent sheet — the moment this app asks before anything leaves the Mac.**
     ///
-    /// John, 2026-08-27: *"Inform and consent."* The sheet is the inform half made visible, and it
+    /// Decided 2026-08-27: *"Inform and consent."* The sheet is the inform half made visible, and it
     /// is the single most important picture in this file, because it is the screen that decides
     /// whether somebody trusts the rest of the app. What to look at: the register's own sentences,
     /// quoted rather than paraphrased; **"Don't check" first in reading order**, so the affirmative

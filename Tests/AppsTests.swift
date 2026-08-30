@@ -80,7 +80,7 @@ private enum Sample {
     }
 
     /// Raw values are written into the check history, which cannot be rebuilt. Renaming one is a
-    /// migration; renaming a label is a one-line edit John may make whenever he likes.
+    /// migration; renaming a label is a one-line edit anybody may make.
     @Test func rawValuesArePermanentAndLabelsAreSeparate() {
         #expect(AppsTopic.installed.rawValue == "installed")
         #expect(AppsTopic.macOS.rawValue == "macOS")
@@ -199,7 +199,7 @@ private enum Sample {
 
 @Suite struct UpdateCoverageTests {
 
-    /// ⚠️ **The rule John asked for on 2026-08-27.** A bare "4 apps are out of date" hides the
+    /// ⚠️ **The rule the developer asked for on 2026-08-27.** A bare "4 apps are out of date" hides the
     /// eleven we could not check, in the direction that makes the app look more capable than it is.
     /// The sentence has to name both numbers.
     @Test func theOverviewSentenceCarriesItsDenominator() {

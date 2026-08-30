@@ -9,11 +9,11 @@ import WellkeptCore
 //
 //  **Wellkept's own list of apps that keep themselves up to date.**
 //
-//  ## Why there is a list here at all, when John said no to the other one
+//  ## Why there is a list here at all, when the other one was declined
 //
-//  On 2026-08-27 John was asked whether Wellkept should ship a hand-maintained list of about
+//  On 2026-08-27 the question was whether Wellkept should ship a hand-maintained list of about
 //  fifteen makers' version pages, so the update check could reach apps that publish nothing
-//  machine-readable. He declined:
+//  machine-readable. It was declined, and the reason was the standing maintenance promise:
 //
 //  > *"I don't know that I want that responsibility. They frequently release updates."*
 //
@@ -28,7 +28,7 @@ import WellkeptCore
 //
 //  A wrong endpoint tells somebody their current app is out of date, or that an outdated one is
 //  fine. A wrong entry here swaps one truthful sentence for another truthful sentence. That is a
-//  maintenance burden worth taking, and the one John declined is not.
+//  maintenance burden worth taking, and the one declined is not.
 //
 //  ## Why not just say "cannot be checked" for all of them
 //
@@ -81,7 +81,7 @@ enum SelfUpdatingApps {
     /// updater is switched on out of the box and whose identifier is not in dispute. Several
     /// obvious candidates were left off for want of a bundle identifier somebody had actually
     /// checked. If this ever needs a hundred entries, the approach was wrong and the conversation to
-    /// have is with John, not a hundredth line.
+    /// have is with the developer, not a hundredth line.
     static let entries: [Entry] = [
         Entry(bundleID: "com.brave.Browser",             name: "Brave",              updater: "Sparkle, on by default"),
         Entry(bundleID: "com.anthropic.claudefordesktop", name: "Claude",            updater: "Electron's auto-updater"),

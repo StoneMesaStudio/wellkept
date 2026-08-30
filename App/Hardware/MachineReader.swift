@@ -20,7 +20,7 @@ import WellkeptCore
 //
 //  The one exception is not really an exception. `MachineFacts.standing(asOf:)` says whether Apple
 //  still ships security fixes for what this Mac can run, and only the case where those fixes have
-//  actually stopped is ever promoted to a problem. John, 2026-08-27: *"Not about fear, it is about
+//  actually stopped is ever promoted to a problem. Decided 2026-08-27: *"Not about fear, it is about
 //  security. Why not be honest? We are not selling them a new machine, we are protecting them."*
 //  So the sentence is framed as security, it never counts down to a month, and it never suggests
 //  buying anything. The promotion happens inside `HardwareReport`; this file only supplies the
@@ -84,10 +84,10 @@ enum MachineReader {
 
     // MARK: - Name
 
-    /// What the Mac calls itself: the name in Sharing settings, "John's MacBook Air".
+    /// What the Mac calls itself: the name in Sharing settings, "Ada's MacBook Air".
     ///
     /// `ProcessInfo.hostName` is the fallback rather than the first choice because it returns the
-    /// Bonjour name — "Johns-MacBook-Air.local" — which is the same fact with the apostrophes and
+    /// Bonjour name — "Adas-MacBook-Air.local" — which is the same fact with the apostrophes and
     /// spaces beaten out of it. The `.local` suffix is dropped so the fallback at least reads like
     /// a name.
     static func computerName() -> String {

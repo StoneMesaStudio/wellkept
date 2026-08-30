@@ -12,7 +12,7 @@ import WellkeptCore
 //
 //  ## Why this row is the smallest prize on the screen
 //
-//  Measured on this Mac, 2026-08-28. In `~/Documents` the entire prize is **387 MB spread over 633
+//  Measured on one real Mac, 2026-08-28. In `~/Documents` the entire prize is **387 MB spread over 633
 //  separate judgement calls** — about 600 KB per decision. Across the whole home folder there are
 //  **12,021 groups, and 94% of them are inside project folders**, where the two files are not a
 //  person's carelessness but a build system's output and deleting one breaks the build.
@@ -58,7 +58,7 @@ import WellkeptCore
 //  ⚠️ Steps 3 and 4 are the only place in this section that opens a file, and they run behind
 //  `ScanPolicy.mayReadContents(...)` — which refuses on a thread that has not set the I/O policy, so
 //  the guard is not "somebody remembered". A file that is in iCloud and not on this Mac is never
-//  opened at all: during the research, comparing files pulled **524** of them down over the owner's
+//  opened at all: during the research, comparing files pulled **524** of them down over somebody's
 //  internet and turned a 36-second scan into over nine minutes.
 
 // MARK: - Whether two copies are really two

@@ -21,10 +21,10 @@ import WellkeptCore
 //     firmlinks the sealed System volume publishes at `/Users`, `/Applications` and a dozen other
 //     names. See `root(home:)`.
 //  2. **A read can pull a file down from iCloud.** Comparing files during the research pulled
-//     **524 of them** over the owner's internet and turned a 36-second scan into over nine minutes —
-//     using his bandwidth to fill the disk we were there to empty. One flag makes such a read fail
-//     instantly instead. It is **per thread**, so it has to be set on every scanning thread.
-//     See `prepareThisThread()`.
+//     **524 of them** over somebody's internet and turned a 36-second scan into over nine minutes —
+//     using somebody's bandwidth to fill the disk we were there to empty. One flag makes such a
+//     read fail instantly instead. It is **per thread**, so it has to be set on every scanning
+//     thread. See `prepareThisThread()`.
 //  3. **Our own scan rewrote 2,012 "last accessed" dates.** Reading a file's contents updates its
 //     access time, so that field can never be evidence of anything here — our own looking poisons
 //     it. The resource key is absent from `resourceKeys` so nobody can reach for it by habit.
@@ -71,8 +71,8 @@ enum ScanPolicy {
     ///
     /// Without it, touching a file that lives in iCloud and is not on this Mac makes macOS
     /// *download it*. Measured during the research: 524 files pulled down, a 36-second scan turned
-    /// into over nine minutes, and the owner's bandwidth spent filling the disk we were there to
-    /// help him empty.
+    /// into over nine minutes, and somebody's bandwidth spent filling the disk we were there to
+    /// help them empty.
     ///
     /// `IOPOL_MATERIALIZE_DATALESS_FILES_OFF` makes such a read fail immediately with `EPERM`
     /// instead, which is exactly what a scanner wants: a dataless file occupies no space here, so
@@ -98,11 +98,11 @@ enum ScanPolicy {
 
     /// ⭐ **The one resource-key set. Every walk in the section uses it.**
     ///
-    /// `.totalFileAllocatedSizeKey` is the size on disk — allocated blocks, after compression, after
-    /// sparseness, after clones. `.fileSizeKey` is the apparent size, which was wrong by 56% on this
-    /// Mac and swung 11% between two runs minutes apart. Both are here because the difference is
-    /// itself a finding: a 72 GB apparent total against a zero on-disk total is how the section
-    /// knows to say "these are in iCloud".
+    /// `.totalFileAllocatedSizeKey` is the size on disk — allocated blocks, after compression,
+    /// after sparseness, after clones. `.fileSizeKey` is the apparent size, which was wrong by 56%
+    /// on this Mac and swung 11% between two runs minutes apart. Both are here because the
+    /// difference is itself a finding: a 72 GB apparent total against a zero on-disk total is how
+    /// the section knows to say "these are in iCloud".
     static let resourceKeys: Set<URLResourceKey> = [
         .isDirectoryKey,
         .isSymbolicLinkKey,
@@ -130,8 +130,8 @@ enum ScanPolicy {
     /// evidence, and there is no version of this that is fixable by being more careful.
     ///
     /// `Item.lastOpenedOn` is Spotlight's `kMDItemLastUsedDate`, which is a different reading that
-    /// nothing here writes. It is blank for 61% of large files on this Mac, and it is a fact on a
-    /// row rather than a finding.
+    /// nothing here writes. It is blank for 61% of large files on one real Mac, and it is a fact on
+    /// a row rather than a finding.
     static let whyLastAccessedIsNotHere =
         "Reading a file updates its last-accessed date, so our own scan would be the thing it "
         + "recorded."
@@ -139,8 +139,8 @@ enum ScanPolicy {
     /// The enumerator options every walk uses.
     ///
     /// ⚠️ `.skipsPackageDescendants` is **off**: a Photos library is a package and its size is the
-    /// single most useful number in this section. What we must not do is offer to reach *inside* it,
-    /// and that is `neverOffered`'s job, not the enumerator's.
+    /// single most useful number in this section. What we must not do is offer to reach *inside*
+    /// it, and that is `neverOffered`'s job, not the enumerator's.
     static let walkOptions: FileManager.DirectoryEnumerationOptions = [.skipsHiddenFiles]
 
     /// The same, for the walks that must see dot-files — the ones totalling a folder's size, where
@@ -175,8 +175,8 @@ enum ScanPolicy {
         case symbolicLink
 
         /// Another app's sandboxed data. ⛔ **Banned outright.** macOS gates it behind *"would like
-        /// to access data from other apps"*, which it raises on the **attempt**, not on the failure.
-        /// A speculative read to find out whether we are allowed IS the harm: it puts an
+        /// to access data from other apps"*, which it raises on the **attempt**, not on the
+        /// failure. A speculative read to find out whether we are allowed IS the harm: it puts an
         /// unexplained dialog on somebody's screen. Storage never goes there at all.
         case anotherAppsData
 
@@ -306,8 +306,8 @@ enum ScanPolicy {
         volume.flags & UInt32(bitPattern: MNT_LOCAL) == 0
     }
 
-    /// A mounted APFS snapshot. Its blocks are the live volume's blocks, so walking it double-counts
-    /// the whole disk.
+    /// A mounted APFS snapshot. Its blocks are the live volume's blocks, so walking it
+    /// double-counts the whole disk.
     static func isSnapshotMount(_ volume: VolumeReading) -> Bool {
         volume.mountPoint.hasPrefix("/Volumes/.timemachine")
             || volume.mountPoint.hasPrefix("/System/Volumes/Update/mnt")
@@ -419,11 +419,11 @@ enum ScanPolicy {
         /// deleting one returns nothing, and the pair is not a duplicate.
         case oneHalfOfAClone
 
-        /// Any member of a duplicate group. ⚠️ **There is no honest way to pick the original.** Four
-        /// real pairs on this Mac each defeat a different rule, including a photo whose dates a past
-        /// copy destroyed, so "keep the oldest" picks the wrong one. And 94% of the 12,021 groups in
-        /// this home folder are inside project folders, where deleting one breaks a build. We show
-        /// the group. **We never choose.**
+        /// Any member of a duplicate group. ⚠️ **There is no honest way to pick the original.**
+        /// Four real pairs on this Mac each defeat a different rule, including a photo whose dates
+        /// a past copy destroyed, so "keep the oldest" picks the wrong one. And 94% of the 12,021
+        /// groups in this home folder are inside project folders, where deleting one breaks a
+        /// build. We show the group. **We never choose.**
         case aDuplicateWeWouldHaveToChooseBetween
 
         var why: String {

@@ -9,7 +9,7 @@ import WellkeptCore
 //
 //  ⭐ **The two sentences that stop the app looking broken, as views, in one place.**
 //
-//  John, 2026-08-28. **Before** the button: *"Set aside 40 GB. Nothing is deleted and no space
+//  Decided 2026-08-28. **Before** the button: *"Set aside 40 GB. Nothing is deleted and no space
 //  comes back until you empty the quarantine."* **After**, permanently: *"40 GB set aside — the
 //  oldest is 12 days old"*, with the Empty button on it.
 //
@@ -22,13 +22,13 @@ import WellkeptCore
 //  not drop it in is visibly missing something rather than quietly saying the wrong thing.
 //
 //  ⚠️ **Nothing here composes a sentence about bytes on its own.** The figures come from
-//  `QuarantineWords.beforeSettingAside` and `Quarantine.Summary.rowSentence`, which are the ones
-//  John approved.
+//  `QuarantineWords.beforeSettingAside` and `Quarantine.Summary.rowSentence` — the two settled
+//  sentences, and the only place in the app allowed to put a number in front of a person here.
 //
 //  ## The three pieces
 //
 //  - `SetAsideNotice` — before. What the button will do, and what will *not* happen afterwards.
-//  - `ICloudLine` — John's one line, where the person is already looking. Not a dialog, not a
+//  - `ICloudLine` — the one line, where the person is already looking. Not a dialog, not a
 //    refusal.
 //  - `QuarantineSummaryRow` — after, and permanently. The row with Empty on it.
 
@@ -45,10 +45,10 @@ struct SetAsideNotice: View {
     /// What the chosen items add up to.
     let bytes: Int64
 
-    /// Whether anything chosen is somewhere iCloud syncs. Drives John's one line.
+    /// Whether anything chosen is somewhere iCloud syncs. Drives the one line.
     var anyInICloud = false
 
-    /// Whether this Mac is short of space *today*. The consequence John drew out: if the disk is
+    /// Whether this Mac is short of space *today*. The consequence drawn out: if the disk is
     /// already full, quarantine is the wrong button — the person wants quarantine and then empty,
     /// deliberately, in one sitting.
     var diskIsAlreadyFull = false
@@ -81,7 +81,7 @@ struct SetAsideNotice: View {
     }
 }
 
-/// **John's one line, verbatim, plus the fact it is really about.**
+/// **The one line, verbatim, plus the fact it is really about.**
 ///
 /// 2026-08-28: iCloud files are *allowed, with a warning* — never refused. Refusing would block the
 /// most ordinary finding in the product on any Mac with Desktop and Documents sync switched on.
@@ -114,7 +114,7 @@ struct ICloudLine: View {
 
 // MARK: - After, and permanently
 
-/// **The row John asked for: "40 GB set aside — the oldest is 12 days old", with Empty on it.**
+/// **The row asked for: "40 GB set aside — the oldest is 12 days old", with Empty on it.**
 ///
 /// ⚠️ **When the ledger could not be read, this shows `trouble.sentence` INSTEAD of a count.**
 /// Never a zero beside it and never a zero without it. Zero is the one number that means somebody's

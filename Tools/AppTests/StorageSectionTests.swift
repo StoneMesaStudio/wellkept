@@ -151,7 +151,7 @@ struct StorageLawTests {
 @MainActor
 struct StorageCeremonyTests {
 
-    /// John's sheet quotes **what comes back**, not the size on disk. On a Mac with a stuck
+    /// The sheet quotes **what comes back**, not the size on disk. On a Mac with a stuck
     /// snapshot the two are up to 150× apart.
     @Test func theSheetQuotesTheSecondNumber() {
         let held = Bytes(onDisk: SizeOnDisk(12_000_000_000), recoverableToday: .nothing)
@@ -252,7 +252,7 @@ struct StorageArithmeticTests {
         }
     }
 
-    /// ⚠️ John's ruling: the snapshot problem is said out loud, as one flat line, on the face.
+    /// ⚠️ The ruling: the snapshot problem is said out loud, as one flat line, on the face.
     @Test func theSnapshotProblemIsSaidOutLoud() {
         let answer = DemoData.storage(.problems)
         let line = answer.report.snapshotLine

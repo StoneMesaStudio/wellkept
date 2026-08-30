@@ -17,10 +17,10 @@ import WellkeptCore
 //  worth a page. Everything else they can discover by pressing a button.
 //
 //  ⚠️ **Until 2026-08-27 this page promised "Nothing leaves your Mac."** That was Claude's wording,
-//  and John struck it — see the header of `Privacy.swift` for his words. The promise was already
-//  carrying an "except" clause here, a different one in Help and none at all in Settings, and the
-//  Apps section then needed to ask makers whether an app has a newer version, which the absolute
-//  version forbids outright.
+//  and it was struck — see the header of `Privacy.swift` for the wording that replaced it. The
+//  promise was already carrying an "except" clause here, a different one in Help and none at all in
+//  Settings, and the Apps section then needed to ask makers whether an app has a newer version,
+//  which the absolute version forbids outright.
 //
 //  **An absolute promise the app breaks is worse than an honest conditional one.** So the page now
 //  has three parts, in this order:
@@ -35,9 +35,9 @@ import WellkeptCore
 //  there, and this page grows the line by itself. That is the point — nothing can be added quietly,
 //  and nothing can drift out of step with Help or Settings, because there is only one copy.
 //
-//  The page scrolls, and the button does not. The sheet is a fixed 560 × 520 and the text scale goes
-//  to 200%; a fixed-height page whose content has grown is how a Continue button ends up below the
-//  fold with nothing to say it is there.
+//  The page scrolls, and the button does not. The sheet is a fixed 560 × 520 and the text scale
+//  goes to 200%; a fixed-height page whose content has grown is how a Continue button ends up below
+//  the fold with nothing to say it is there.
 
 struct WelcomeView: View {
 
@@ -186,7 +186,7 @@ private struct BulletLine: View {
 ///
 /// ⚠️ **The cost line is not optional and is not smaller than the rest.** A switch with no stated
 /// cost is a switch people flip out of caution and then wonder why the app got worse — which is
-/// exactly what already happens with Full Disk Access, and the reason John's instruction was
+/// exactly what already happens with Full Disk Access, and the reason the instruction was
 /// "inform and consent" rather than "make it optional".
 private struct DepartureLine: View {
     let departure: Privacy.Departure

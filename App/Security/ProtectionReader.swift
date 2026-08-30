@@ -253,7 +253,7 @@ enum ProtectionReader {
 
     /// **The one piece of advice in this app that can cost somebody every file they own.**
     ///
-    /// It appears on the row itself, never behind Options, and it never says "you should". John's
+    /// It appears on the row itself, never behind Options, and it never says "you should". The
     /// decision, 2026-08-27. Turning FileVault on is the right move for most people, and it is also
     /// the move that loses a whole machine's worth of files when the key is gone — and we cannot
     /// see whether a key exists, because that needs an administrator password. So the sentence says
@@ -772,7 +772,7 @@ enum ProtectionReader {
         let concerns = block.protections.compactMap(\.concern)
         var reason = notes
 
-        // The audit sentence — John's addition, 2026-08-26. A clean result has to carry the
+        // The audit sentence — added 2026-08-26. A clean result has to carry the
         // evidence that it *is* a clean result, or it is indistinguishable from a check that never
         // ran.
         let silent = block.protections.filter { !$0.state.wasRead }.map(\.kind.label)
@@ -874,7 +874,7 @@ enum ProtectionReader {
     /// `system_profiler`, asked for several reporters at once.
     ///
     /// One spawn for two reporters: passing more than one data type returns one JSON object with
-    /// one top-level key each, verified on this Mac today. Two spawns for two facts is two chances
+    /// one top-level key each, verified on one real Mac today. Two spawns for two facts is two chances
     /// for a hardened-runtime app to be blocked, and twice the wait.
     static func systemProfiler(_ types: [String], timeout: TimeInterval) -> [String: Any]? {
         guard let data = run(URL(filePath: "/usr/sbin/system_profiler"),

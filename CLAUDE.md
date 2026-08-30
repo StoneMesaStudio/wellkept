@@ -10,7 +10,7 @@ Developer ID + notarized, direct download. Free, open source, **GPL-3.0**. Bundl
 |---|---|
 | How it should look and behave | `~/Sites/DESIGN.md` — the house standard, all six apps |
 | What the shell is built to | `docs/CONTRACTS.md` |
-| Every decision John made, in his words | `SHELL-QUESTIONS.md` |
+| Every product decision, in the words it was made in | `SHELL-QUESTIONS.md` |
 | The whole feature set and build order | `~/.claude/plans/i-have-an-idea-quirky-ripple.md` |
 | Design patterns | **Lode** `~/Sites/lode`, **Waypoint** `~/Sites/travel` — law |
 | Plumbing patterns | **Scout** `~/Sites/scout` — the only other shipped Developer ID app |
@@ -33,7 +33,7 @@ Waypoint.
   on a schedule. Backup is the single exception, and only because it writes to the backup drive.
 - **The verbs are fixed app-wide:** Quarantine · Restore · Delete · Ignore.
 - **Privacy is inform-and-consent, never an absolute promise.** "Nothing leaves your Mac" was
-  Claude's wording and John struck it on 2026-08-27. Say what is never done — nothing collected,
+  Claude's wording and it was struck on 2026-08-27. Say what is never done — nothing collected,
   nothing sold, no account, no identifier, no telemetry, nothing for marketing — then name every
   thing that does leave, with its switch and what switching it off costs. The canonical sentences
   live in `Core/Sources/WellkeptCore/Privacy.swift` and **nowhere else**; anything that leaves this
@@ -44,13 +44,13 @@ Waypoint.
 - **Bootable backups are dead.** Never propose one. The Recovery Plan replaces it.
 - **Entitlements are applied for AFTER shipping**, not before. The product depends on neither.
 
-## Working method — John's, and it is not negotiable
+## Working method — the developer's, and it is not negotiable
 
 One section at a time. Deep planning for that section, with **every** question asked, then
-agreement, then build, then the next. No coding runs ahead of approval — that has cost him
+agreement, then build, then the next. No coding runs ahead of approval — that has cost
 countless hours of rebuild before.
 
-He does not write code. Make technical calls yourself; ask him about user-visible product
+The developer does not write code. Make technical calls yourself; ask about user-visible product
 decisions. Replies are short: Summary · Work · Questions · Actions.
 
 ## Build
@@ -63,8 +63,8 @@ cd ~/Sites/wellkept && bin/preflight.sh
 XcodeGen. The scheme is declared explicitly so the test action is actually wired — Lode shipped
 19 builds whose gate never ran a test because the scheme was auto-generated.
 
-**John does not open Xcode.** His build interface is `~/Library/Scripts/Rebuild Wellkept.app`,
-beside his other Rebuild applets — double-click, wait, the new build is running. The applet is a
+**The developer does not open Xcode.** The build interface is `~/Library/Scripts/Rebuild Wellkept.app`,
+beside the other Rebuild applets — double-click, wait, the new build is running. The applet is a
 shim; the logic is `bin/rebuild-and-launch.sh`, so fixes need no applet rebuild. It **refuses to
 launch a build whose signature is wrong**: an unsigned Wellkept gets no Full Disk Access and would
 cheerfully report a healthy Mac. `bin/make-shots.sh` photographs every screen; `bin/make-icon.sh`

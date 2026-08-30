@@ -16,7 +16,7 @@ import WellkeptCore
 //  somebody their work, and it is the one every other Mac cleaner gets wrong in the same direction,
 //  because the wrong answer is a bigger number and a bigger number sells.
 //
-//  Measured on this Mac, 2026-08-27, read-only:
+//  Measured on one real Mac, 2026-08-27, read-only:
 //
 //  | How you decide what is a leftover | What it finds here | What is actually orphaned |
 //  |---|---|---|
@@ -27,9 +27,9 @@ import WellkeptCore
 //  traps on this one Mac:
 //
 //  - **`~/Library/Application Support/Herd` has no app, no Spotlight entry, and looks like textbook
-//    dead weight. It is the owner's PHP and Composer** — the thing his working day runs on. It is
-//    safe here for one reason: **"Herd" is not a bundle identifier**, so this file never looks at
-//    it. That is not luck, it is the rule.
+//    dead weight. It is a working PHP and Composer install** — the thing somebody's working day
+//    runs on. It is safe here for one reason: **"Herd" is not a bundle identifier**, so this file
+//    never looks at it. That is not luck, it is the rule.
 //  - **Six "orphaned browser profiles" belong to an extension that is installed and working.** They
 //    are filed under `com.khanov.BlockerX.…`, and the app is 1Blocker, whose identifier is
 //    `com.khanov.BlockerX`. Guard 4 catches them.
@@ -41,8 +41,8 @@ import WellkeptCore
 //  real figure is about 5.9 GB, in a folder called "Google" that matches neither the app's name nor
 //  its identifier.** There is therefore **no section-wide total anywhere in this file**, and
 //  `Leftover` in `WellkeptCore` deliberately offers none. A single number covering "this app and
-//  everything it owns" would be a guess dressed as a fact, and it is exactly the number that goes in
-//  a big font on somebody else's screen.
+//  everything it owns" would be a guess dressed as a fact, and it is exactly the number that goes
+//  in a big font on somebody else's screen.
 //
 //  ## The two-sided test
 //
@@ -59,10 +59,10 @@ import WellkeptCore
 //
 //  ## ⚠️ We would rather miss one than be wrong about one
 //
-//  Guard 5 (same publisher) is blunt. A genuinely removed Microsoft app will be missed on a Mac with
-//  Word installed. That is the intended error: the cost of missing one is a line nobody sees, and
-//  the cost of being wrong is Chrome's updater. The row says plainly that it only lists what it can
-//  prove, so the number is never presented as the whole truth.
+//  Guard 5 (same publisher) is blunt. A genuinely removed Microsoft app will be missed on a Mac
+//  with Word installed. That is the intended error: the cost of missing one is a line nobody sees,
+//  and the cost of being wrong is Chrome's updater. The row says plainly that it only lists what it
+//  can prove, so the number is never presented as the whole truth.
 //
 //  ## ⚠️ Nothing is offered for removal this round
 //
@@ -91,10 +91,10 @@ enum LeftoverReader {
     /// The eight places in `~/Library` where files are filed under an app's bundle identifier.
     ///
     /// ⚠️ **`provesAnAppWasHere` is the important column.** Four of these are folders macOS itself
-    /// creates on an app's behalf; the other four are places any process at all can write, including
-    /// a shell script and a command-line tool. A name appearing only in the second group is not
-    /// evidence that an app was ever installed, and treating it as evidence is how a health check
-    /// starts offering to delete Swift Package Manager.
+    /// creates on an app's behalf; the other four are places any process at all can write,
+    /// including a shell script and a command-line tool. A name appearing only in the second group
+    /// is not evidence that an app was ever installed, and treating it as evidence is how a health
+    /// check starts offering to delete Swift Package Manager.
     enum Place: String, Sendable, Hashable, CaseIterable, Identifiable, Codable {
 
         /// `~/Library/Containers/<id>` — the sandbox macOS builds for an app or its extensions.
@@ -173,10 +173,10 @@ enum LeftoverReader {
         ///
         /// This is not theoretical. It happened twice on 2026-08-27 while this file was being
         /// written, both times naming *Xcode*, because the code ran under the test harness. The
-        /// owner had to be told to press Don't Allow. **Wellkept must never be the cause of one.**
-        /// So: these places are visited only when Full Disk Access is ALREADY granted, and
-        /// otherwise skipped without being touched. Everything else here is the user's own Library
-        /// and needs no permission at all.
+        /// person at the keyboard had to be told to press Don't Allow. **Wellkept must never be the
+        /// cause of one.** So: these places are visited only when Full Disk Access is ALREADY
+        /// granted, and otherwise skipped without being touched. Everything else here is the user's
+        /// own Library and needs no permission at all.
         var needsFullDiskAccess: Bool {
             switch self {
             case .containers: true
@@ -184,8 +184,8 @@ enum LeftoverReader {
             }
         }
 
-        /// ⚠️ **Whether macOS only makes this for a real app.** See the type note. `false` here does
-        /// not mean the files are ignored — once an app is proven, everything filed under its
+        /// ⚠️ **Whether macOS only makes this for a real app.** See the type note. `false` here
+        /// does not mean the files are ignored — once an app is proven, everything filed under its
         /// identifier is listed. It means this place **on its own** is not proof.
         var provesAnAppWasHere: Bool {
             switch self {
@@ -228,7 +228,7 @@ enum LeftoverReader {
 
         /// The name is not a bundle identifier — "Herd", "Google", "Adobe".
         ///
-        /// ⚠️ **This one guard is what keeps the owner's PHP installation safe.** A folder named
+        /// ⚠️ **This one guard is what keeps a working PHP installation safe.** A folder named
         /// after a company or a product tells us nothing about which app, if any, put it there.
         case notAnIdentifier
 
@@ -251,8 +251,8 @@ enum LeftoverReader {
         /// 1Blocker is running.
         case partOfAnAppThatIsStillHere
 
-        /// An app from the same publisher is installed, so this may well be its updater, its helper,
-        /// or a second copy of its data under a different name.
+        /// An app from the same publisher is installed, so this may well be its updater, its
+        /// helper, or a second copy of its data under a different name.
         ///
         /// ⚠️ Chrome's updater is `com.google.Keystone.Agent` and Chrome is `com.google.Chrome`.
         /// Nothing else catches that. Deliberately blunt — see the file header.
@@ -319,9 +319,9 @@ enum LeftoverReader {
 
     /// Look at this Mac and build the row.
     ///
-    /// - Parameter appsOnThisMac: the bundle identifiers of the apps this section lists, lower-cased
-    ///   by this function. They are the first half of "is it gone"; LaunchServices is the second,
-    ///   and it catches apps that live outside the four folders the inventory walks.
+    /// - Parameter appsOnThisMac: the bundle identifiers of the apps this section lists,
+    ///   lower-cased by this function. They are the first half of "is it gone"; LaunchServices is
+    ///   the second, and it catches apps that live outside the four folders the inventory walks.
     /// ⚠️ `FullDiskAccess.isGranted` is read ONCE, here, and passed down. It probes a file we are
     /// allowed to attempt — it does not touch another app's container, which is the read that
     /// raises the privacy dialog. Never reverse that order.
@@ -340,9 +340,9 @@ enum LeftoverReader {
     /// fast.** The first version weighed every bundle-identifier-shaped folder in `~/Library` and
     /// then threw almost all of them away, which meant adding up Apple's own caches and every
     /// installed app's container: **it exceeded a two-minute test timeout on this Mac.** Only the
-    /// handful of folders that survive all seven guards is ever walked, and that is under a tenth of
-    /// a second. The default closure hands back whatever a test already put on the candidate, so the
-    /// pure path stays pure.
+    /// handful of folders that survive all seven guards is ever walked, and that is under a tenth
+    /// of a second. The default closure hands back whatever a test already put on the candidate, so
+    /// the pure path stays pure.
     static func answer(from survey: Survey,
                        appsOnThisMac: Set<String>,
                        runningBundleIDs: Set<String>,
@@ -648,8 +648,8 @@ enum LeftoverReader {
                                   + "so its size is left out rather than reported short."))
         }
 
-        // Every guard that fired, counted. A filter nobody can audit is a fudge — and on this screen
-        // the guards are the product.
+        // Every guard that fired, counted. A filter nobody can audit is a fudge — and on this
+        // screen the guards are the product.
         for why in Guard.allCases {
             guard let n = setAside[why], n > 0 else { continue }
             pairs.append(DetailPair("Left alone — \(n)", why.explanation))
@@ -682,8 +682,8 @@ enum LeftoverReader {
     ///
     /// - `Leftover.id` is the bundle identifier, so a selection is a `Set<Leftover.ID>` that
     ///   survives a re-scan. Nothing else in the section is stable enough to select against.
-    /// - `Plan` is what one quarantine job would take: the exact paths, already grouped by app, with
-    ///   the size where it is known.
+    /// - `Plan` is what one quarantine job would take: the exact paths, already grouped by app,
+    ///   with the size where it is known.
     /// - `promise` is the sentence the engine has to be able to keep. It is here rather than in the
     ///   engine because it is a product decision, and because writing it now means the engine is
     ///   built to it rather than described afterwards.
@@ -698,8 +698,8 @@ enum LeftoverReader {
             /// The same identity the row is keyed by, so a selection survives a re-scan.
             let leftoverID: String
             let appName: String
-            /// Exactly the paths listed on the row. **Never a folder we inferred**: quarantine moves
-            /// what was shown, and nothing else.
+            /// Exactly the paths listed on the row. **Never a folder we inferred**: quarantine
+            /// moves what was shown, and nothing else.
             let paths: [String]
             let bytes: Int64?
 
@@ -819,8 +819,8 @@ enum LeftoverReader {
     /// What is running right now, by identifier.
     ///
     /// ⚠️ Not surveillance and not a list anybody sees: it is asked once, used to answer "is this
-    /// dead", and thrown away. A folder belonging to something running is the most certain "leave it
-    /// alone" there is.
+    /// dead", and thrown away. A folder belonging to something running is the most certain "leave
+    /// it alone" there is.
     static func runningBundleIDs() -> Set<String> {
         Set(NSWorkspace.shared.runningApplications.compactMap(\.bundleIdentifier))
     }

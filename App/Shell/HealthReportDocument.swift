@@ -102,7 +102,7 @@ enum HealthReportDocument {
     ///    a list is a qualification most people never reach, and this page's failure mode is being
     ///    read as a clean bill of health.
     /// 3. **What needs you.**
-    /// 4. **What was checked**, all seven, which is the audit trail John asked for by name.
+    /// 4. **What was checked**, all seven, which is the audit trail the developer asked for by name.
     /// 5. **What this Mac is**, which is what a repair shop actually wants.
     static func blocks(for report: HealthReport) -> [Block] {
         var blocks: [Block] = [
@@ -389,8 +389,8 @@ enum HealthReportDocument {
     }
 
     /// **Write the page to a PDF the person chooses.** Offered beside Print because the print
-    /// panel's own PDF menu is a place people do not look, and because emailing a PDF is the thing
-    /// John actually described wanting.
+    /// panel's own PDF menu is a place people do not look, and because emailing a PDF — not
+    /// printing one — is what this feature was actually asked for.
     @MainActor
     static func savePDF(_ report: HealthReport) -> Outcome {
         let panel = NSSavePanel()

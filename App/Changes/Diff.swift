@@ -31,7 +31,7 @@ import WellkeptCore
 //  ## ⚠️ Undescribed changes are counted, never listed
 //
 //  A difference in the full capture that no `Watched` describes adds one to a number. It never
-//  becomes a row. John settled the scope on 2026-08-28: version one describes the thirty-odd things
+//  becomes a row. The scope was settled on 2026-08-28: version one describes the thirty-odd things
 //  Wellkept already understands, and the general settings journal — the part that needs a curated
 //  description for every key on the Mac — waits for version two. A row nobody can explain is a row
 //  that worries somebody for no reason, which is precisely the trap the deferred half is full of.
@@ -312,13 +312,13 @@ enum Diff {
         }
         .sorted { $0.key < $1.key }
         .reduce(into: [ChangesReport.Unread]()) { unique, item in
-            // One line per topic, not one per permission. **John's answer 4, 2026-08-28**: the
+            // One line per topic, not one per permission. **Answer 4, 2026-08-28**: the
             // Full Disk Access line is shown once and never repeated per permission.
             if !unique.contains(where: { $0.key.topic == item.key.topic }) { unique.append(item) }
         }
     }
 
-    /// ⭐ **John's answer 4, 2026-08-28** — the one line saying privacy permissions changed and we
+    /// ⭐ **Answer 4, 2026-08-28** — the one line saying privacy permissions changed and we
     /// could not see what, with the button that grants access.
     ///
     /// ## ⚠️ What this actually detects, and what it deliberately does not

@@ -16,7 +16,7 @@ import WellkeptCore
 //  ## ⭐ The line that decides everything here: *automatic means looking, manual means touching*
 //
 //  The house rule reads as one sentence and turns out to cover two different kinds of job. Of the
-//  three things John asked the background piece to do, **two write to a drive and one does not**.
+//  three things asked of the background piece, **two write to a drive and one does not**.
 //  Noticing that a backup has gone quiet is looking. So:
 //
 //  - The **notice** is produced on every wake, gate or no gate. It costs nothing and it is the
@@ -36,7 +36,7 @@ import WellkeptCore
 
 enum AgentSchedule {
 
-    /// Hourly, which is John's number.
+    /// Hourly, which is the settled number.
     static let betweenRuns: TimeInterval = 60 * 60
 
     /// ⚠️ **How often the background piece looks up from what it is doing.** The drive-appeared
@@ -51,7 +51,7 @@ enum AgentSchedule {
 
     // MARK: ── What it decides ───────────────────────────────────────────────────────────────────
 
-    /// Why a backup is starting. Carried so the record says which of John's three jobs fired.
+    /// Why a backup is starting. Carried so the record says which of the three jobs fired.
     enum Because: String, Sendable, Hashable, Codable {
         case theDriveWasPluggedIn
         case anHourHasPassed

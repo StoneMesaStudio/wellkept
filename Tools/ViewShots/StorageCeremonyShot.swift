@@ -22,7 +22,7 @@ import WellkeptCore
 //     with an empty tick set, so it shows a card that says "these arrive ticked" above four cleared
 //     boxes.
 //  2. ⭐ **The sheet on a Mac that is already full**, with something in iCloud and something already
-//     waiting — the version carrying John's second route, his iCloud line, and the sentence saying
+//     waiting — the version carrying the second route, the iCloud line, and the sentence saying
 //     quarantine is the wrong button today. All three lines are conditional and all three are off on
 //     a healthy demo Mac.
 //  3. ⭐ **The quarantine list with something genuinely past thirty days**, built by the real engine
@@ -199,7 +199,7 @@ struct StorageCeremonyShot {
 
     // MARK: - ⭐ 2. The sheet, in the state that carries every line
 
-    /// ⭐ **John's sheet with all three conditional lines showing at once**: a file iCloud also
+    /// ⭐ **The sheet with all three conditional lines showing at once**: a file iCloud also
     /// holds, a Mac that is short of room today, and something already waiting in the quarantine.
     ///
     /// This is the picture to read the words off. The figure in the arithmetic is **what comes back

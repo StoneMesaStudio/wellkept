@@ -19,27 +19,27 @@ import Foundation
 //
 //  ## ⭐ The two distinctions this file exists to keep
 //
-//  **1. Switched off is not failing.** On 2026-08-28 I told the owner "Time Machine cannot reach
-//  JDS Backup." It was wrong, and it was the exact wrong shape of wrong. Measured on his Mac the
-//  next day: `AutoBackup = 0` — automatic backups are simply **switched off**; the destination is
-//  configured and correct; the drive is just not plugged in; the last successful backup was
-//  25 August. Nothing is broken. Somebody turned it off, or it turned itself off, and nobody said
-//  so. **"Your backup is off and nobody told you" is both truer and more useful than "your backup
-//  is broken"** — and it is exactly the finding this section exists to produce. So
-//  `TimeMachineStanding` has a case for it, that case outranks every failure in
-//  `TimeMachineState.standing`, and a test holds the precedence.
+//  **1. Switched off is not failing.** On 2026-08-28 an early version of this reader said "Time
+//  Machine cannot reach the backup drive." It was wrong, and it was the exact wrong shape of
+//  wrong. Measured on the same Mac the next day: `AutoBackup = 0` — automatic backups are simply
+//  **switched off**; the destination is configured and correct; the drive is just not plugged in;
+//  the last successful backup was 25 August. Nothing is broken. Somebody turned it off, or it
+//  turned itself off, and nobody said so. **"Your backup is off and nobody told you" is both truer
+//  and more useful than "your backup is broken"** — and it is exactly the finding this section
+//  exists to produce. So `TimeMachineStanding` has a case for it, that case outranks every failure
+//  in `TimeMachineState.standing`, and a test holds the precedence.
 //
 //  **2. A file that also lives in iCloud is not a backup gap.** `Coverage.lives` splits three ways
 //  and **only `.onlyOnThisMac` can ever be a gap**. A photo that is on this Mac and in iCloud
 //  survives the disk dying. A file that is *only* in iCloud is not on the disk to copy and never
 //  was. Counting either as missing from a backup is how a health tool manufactures alarm out of a
-//  working arrangement — 72.2 GB of this Mac's files would have been reported missing on day one.
+//  working arrangement — 72.2 GB of one measured Mac's files would have been reported missing on day one.
 //
 //  ## ⚠️ The measurements this file is built around
 //
 //  Taken by hand on an M3 running macOS 26.6.2 on 2026-08-29, all read-only. Nothing was written to
-//  any drive, no volume was created or modified, and Time Machine was not touched. `BACKUP-QUESTIONS.md`
-//  has the whole survey; these are the findings that shaped the types below.
+//  any drive, no volume was created or modified, and Time Machine was not touched.
+//  `BACKUP-QUESTIONS.md` has the whole survey; these are the findings that shaped the types below.
 //
 //  - **Time Machine's full state reads with ZERO permissions** — on or off, destination, connected,
 //    last success, days since, the failure and its cause. So the first two rows of this section are
@@ -60,10 +60,10 @@ import Foundation
 //    arguing against it: *"Volume does not contain an installation of macOS or OS X."* The promise
 //    is **"all your files"**, and `RehearsalGate` is what stops that promise being offered to
 //    anybody before somebody has actually walked a restore.
-//  - **72.2 GB of this Mac's files are in the cloud and not on the disk.** Named and skipped, never
-//    downloaded by default. See `NotCopied.inTheCloudOnly`.
-//  - ⚠️ **A zero-byte cloud file "succeeds".** Completeness is judged by the file flag, never by the
-//    return code. See `Backup.whyTheReturnCodeIsNotEvidence`.
+//  - **72.2 GB of one measured Mac's files are in the cloud and not on the disk.** Named and
+//    skipped, never downloaded by default. See `NotCopied.inTheCloudOnly`.
+//  - ⚠️ **A zero-byte cloud file "succeeds".** Completeness is judged by the file flag, never by
+//    the return code. See `Backup.whyTheReturnCodeIsNotEvidence`.
 //  - **macOS 26 moved the FileVault recovery key out of Apple escrow into the Passwords app.**
 //    "I can get it back with my Apple ID" is no longer true. See `RecoveryPlan`.
 //  - ⛔ **The recorded snapshot fallback is dead twice over** — mounting a snapshot needs root, and
@@ -159,7 +159,7 @@ public enum BackupTopic: String, CaseIterable, Sendable, Identifiable, Codable, 
 
 /// How long ago a backup last actually worked.
 ///
-/// ⚠️ **Nine days is the owner's number**, not a round one somebody liked the look of: it is the
+/// ⚠️ **Nine days is a chosen number**, not a round one somebody liked the look of: it is the
 /// staleness the background piece was asked to notice, so the same line is used here rather than
 /// this section and that one disagreeing about when a backup has gone quiet.
 public enum BackupFreshness: String, Sendable, Codable, CaseIterable, Hashable {
@@ -252,7 +252,7 @@ public enum DestinationKind: String, Sendable, Codable, CaseIterable, Hashable, 
 /// otherwise modifies a volume, and no type here has a property that would express having done so.
 public struct BackupDestination: Sendable, Hashable, Codable, Identifiable {
 
-    /// The name a person would recognise — "JDS Backup".
+    /// The name a person would recognise — the words printed on the drive.
     public let name: String
 
     public let kind: DestinationKind
@@ -308,9 +308,9 @@ public struct BackupDestination: Sendable, Hashable, Codable, Identifiable {
 
 /// **The teardown noise in Apple's backup log, and the one safe direction to filter it in.**
 ///
-/// ⚠️ Measured 2026-08-29: roughly **95% of the error volume** in `backupd`'s log is XPC connections
-/// being torn down at the end of an operation — normal shutdown, written at error level. Print it
-/// raw and every Mac on earth reads as broken, including one whose backups all succeeded.
+/// ⚠️ Measured 2026-08-29: roughly **95% of the error volume** in `backupd`'s log is XPC
+/// connections being torn down at the end of an operation — normal shutdown, written at error
+/// level. Print it raw and every Mac on earth reads as broken, including one whose backups all succeeded.
 ///
 /// ## The direction of safety, and why it is this way round
 ///
@@ -350,9 +350,9 @@ public enum LogNoise {
 
     /// Whether a line is nothing but teardown noise.
     ///
-    /// It matches only when the message carries **no other content**: the pattern has to account for
-    /// the bulk of the line. A long message that merely mentions XPC on its way to naming a real
-    /// problem is not noise and is not dropped.
+    /// It matches only when the message carries **no other content**: the pattern has to account
+    /// for the bulk of the line. A long message that merely mentions XPC on its way to naming a
+    /// real problem is not noise and is not dropped.
     public static func isTeardownNoise(_ message: String) -> Bool {
         let text = message.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return true }
@@ -463,8 +463,8 @@ public struct TimeMachineFailure: Sendable, Hashable, Codable {
     /// never gets reworded between macOS versions.
     public let code: Int?
 
-    /// What macOS actually wrote. Shown behind **Options**, never as the headline — Apple's phrasing
-    /// is written for Apple's engineers.
+    /// What macOS actually wrote. Shown behind **Options**, never as the headline — Apple's
+    /// phrasing is written for Apple's engineers.
     public let message: String?
 
     public let cause: FailureCause
@@ -516,8 +516,8 @@ public struct TimeMachineFailure: Sendable, Hashable, Codable {
 /// two of them apart.
 ///
 /// ⚠️ **`.switchedOff` outranks `.failing`, always.** See the file header: this is the mistake that
-/// was made in front of the owner. A Mac with automatic backups off will accumulate errors in the
-/// log as a matter of course — of course it will, nothing is running — and reading those errors
+/// was made in front of a real person. A Mac with automatic backups off will accumulate errors in
+/// the log as a matter of course — of course it will, nothing is running — and reading those errors
 /// back as "your backup is broken" sends somebody to Disk Utility to fix a switch.
 public enum TimeMachineStanding: String, Sendable, Codable, CaseIterable, Hashable, Identifiable {
 
@@ -781,9 +781,9 @@ public struct TimeMachineState: Sendable, Hashable, Codable {
 /// **Where a thing actually lives.** Three answers, and only one of them can be a backup gap.
 ///
 /// ⚠️ This is the second of the two distinctions in the file header, and it is the one that decides
-/// whether this section is useful or hysterical. On this Mac, 72.2 GB of files are in the cloud and
-/// not on the disk. A tool that counted those as "missing from your backup" would open with a
-/// 72 GB alarm about an arrangement that is working exactly as designed.
+/// whether this section is useful or hysterical. On one measured Mac, 72.2 GB of files are in the
+/// cloud and not on the disk. A tool that counted those as "missing from your backup" would open
+/// with a 72 GB alarm about an arrangement that is working exactly as designed.
 public enum WhereItLives: String, Sendable, Codable, CaseIterable, Hashable, Identifiable {
 
     /// ⭐ **On this Mac and nowhere else. The only one that can be a gap.** If the disk dies, this
@@ -903,8 +903,8 @@ public struct Coverage: Sendable, Hashable, Codable, Identifiable {
         self.needsFullDiskAccess = needsFullDiskAccess
     }
 
-    /// ⭐ **The one rule of this type: only something that lives on this Mac alone, and is not in the
-    /// backup, is a gap.**
+    /// ⭐ **The one rule of this type: only something that lives on this Mac alone, and is not in
+    /// the backup, is a gap.**
     ///
     /// A thing we could not check is **not** a gap either — it is unknown, and unknown is reported
     /// as unknown. Guessing in either direction here is how a backup tool ends up either lying or
@@ -1074,8 +1074,8 @@ public struct BackupCompleteness: Sendable, Hashable, Codable {
 ///
 /// ⚠️ **`.inTheCloudOnly` is not a failure and never counts as one.** It is the designed behaviour
 /// of the one line that protects a person from the worst outcome available here: with the dataless
-/// materialise policy off, reading a cloud-only file **fails outright** rather than writing an empty
-/// file into a backup somebody will one day rely on.
+/// materialise policy off, reading a cloud-only file **fails outright** rather than writing an
+/// empty file into a backup somebody will one day rely on.
 public enum NotCopied: String, Sendable, Codable, CaseIterable, Hashable, Identifiable {
 
     /// In iCloud and not on the disk. Named, skipped, never downloaded.
@@ -1119,8 +1119,8 @@ public enum NotCopied: String, Sendable, Codable, CaseIterable, Hashable, Identi
 /// What one topic found. The same three facts, the same **Options** details and the same house
 /// sentence for a refusal as every other section in the app.
 ///
-/// ⚠️ **Severity is clamped in the initialiser, per topic.** Unlike Storage — where nothing may ever
-/// exceed `.information`, because revealing somebody's own files is not a fault — this section
+/// ⚠️ **Severity is clamped in the initialiser, per topic.** Unlike Storage — where nothing may
+/// ever exceed `.information`, because revealing somebody's own files is not a fault — this section
 /// genuinely can find something wrong. But two of its rows still cannot:
 ///
 /// | Topic | Ceiling | Why |
@@ -1136,7 +1136,7 @@ public struct BackupRow: Sendable, Hashable, Identifiable, Codable {
     /// The row's own sentence, in plain words. **Fact one of three.**
     public let headline: String
 
-    /// The measurement, already formatted for a person — "4 days ago", "489 GB". **Fact two.**
+    /// The measurement, already formatted for a person — "4 days ago", "480 GB". **Fact two.**
     public let measure: String?
 
     /// Why it says what it says. Shown on the row, never behind a disclosure. **Fact three.**
@@ -1427,7 +1427,7 @@ public enum Backup {
 
     /// ⭐ **The replacement for "the app quits when its window closes."**
     ///
-    /// ⚠️ That sentence was true until 2026-08-29, when John agreed to a Login Item — an
+    /// ⚠️ That sentence was true until 2026-08-29, when a Login Item was agreed to — an
     /// `SMAppService.agent`, no password, no root, listed in System Settings ▸ Login Items. It is
     /// still true for anybody who leaves the background piece off, which is why the replacement
     /// says both halves rather than simply deleting the old claim.

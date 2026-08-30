@@ -43,7 +43,7 @@ enum Uninstaller {
         case cancelled
     }
 
-    /// ⭐ **John's three buttons for the settings record, 2026-08-28** — plus backing out, which is
+    /// ⭐ **The three buttons for the settings record, 2026-08-28** — plus backing out, which is
     /// not one of them.
     ///
     /// The three are `SnapshotStore.Farewell`, and they are its cases rather than a second copy of
@@ -116,7 +116,7 @@ enum Uninstaller {
             }
         }
 
-        // ⭐ **John's answer 3, 2026-08-28.** The settings record is a record of the person's Mac,
+        // ⭐ **Answer 3, 2026-08-28.** The settings record is a record of the person's Mac,
         // not Wellkept's own bookkeeping, so removing the app does not get to decide its fate. Asked
         // after the quarantine and before the confirmation, for the same reason the quarantine
         // question comes first: somebody agreeing to remove an app is entitled to know what happens
@@ -210,7 +210,7 @@ enum Uninstaller {
     /// What the closing dialog says about the settings record, given what the person chose.
     ///
     /// ⚠️ **"Leave them" gets a sentence too.** Silence there would read as "it went with the app",
-    /// which is the opposite of what happened, and the whole reason John made this a question is
+    /// which is the opposite of what happened, and the whole reason this was made a question is
     /// that somebody reinstalling next month gets their history back.
     static func recordOutcome(_ farewell: SnapshotStore.Farewell, written: [URL]) -> String {
         switch farewell {
@@ -344,7 +344,7 @@ enum Uninstaller {
         }
     }
 
-    /// ⭐ **John's three buttons, on screen.**
+    /// ⭐ **The three buttons, on screen.**
     ///
     /// The words come from `SnapshotStore.farewellQuestion` so the question can be reviewed and
     /// tested without a dialog; the buttons come from `recordButtons` for the same reason.
@@ -479,7 +479,7 @@ enum Uninstaller {
             report += "\n[ Put Them Back ]   [ Move Them… ]   [ Cancel ]\n"
         }
 
-        // ⭐ John's answer 3. Reviewable in the same place as everything else the uninstaller says.
+        // ⭐ Answer 3. Reviewable in the same place as everything else the uninstaller says.
         report += "\nWOULD ALSO ASK ABOUT\n--------------------\n"
         if SnapshotStore.isEmpty() {
             report += "(no settings record — the question is skipped)\n"

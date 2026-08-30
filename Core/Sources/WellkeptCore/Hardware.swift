@@ -431,13 +431,13 @@ public struct Reading: Sendable, Hashable, Identifiable, Codable {
 /// A 2019 iMac is not broken for being a 2019 iMac.
 ///
 /// The one thing here that a person genuinely needs told is `standing`: whether Apple still ships
-/// security updates for what this Mac can run. John's instruction, 2026-08-27: say it plainly,
+/// security updates for what this Mac can run. The instruction, 2026-08-27: say it plainly,
 /// and frame it as security rather than as a reason to buy a machine. That sentence appears in
 /// this block as a statement of fact; only the case where the updates have actually stopped is
 /// ever promoted to a problem.
 public struct MachineFacts: Sendable, Hashable, Codable {
 
-    /// What the Mac calls itself — "John's MacBook Air".
+    /// What the Mac calls itself — "Ada's MacBook Air".
     public let name: String
     /// The marketing name: "MacBook Air (15-inch, M3, 2024)". Where the model is not in the
     /// shipped table, readers put the identifier here rather than inventing a name.
@@ -629,7 +629,7 @@ public struct HardwareReport: Sendable, Hashable {
                 .map { ($0.severity, $0.headline, $0.reason ?? $0.topic.explanation, $0.measure) }
 
         // Out of security updates is not a hardware fault, and it is the one thing in the "what
-        // this Mac is" block a person genuinely needs told. John, 2026-08-27: say it plainly, as
+        // this Mac is" block a person genuinely needs told. Decided 2026-08-27: say it plainly, as
         // security rather than as obsolescence.
         let standing = facts.standing(asOf: date)
         if standing.severity >= .attention {

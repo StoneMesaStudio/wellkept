@@ -10,11 +10,11 @@ import WellkeptCore
 //  ⭐ **The top of the Storage face: the real free-space number, Finder's underneath, and one line
 //  saying what the difference is.**
 //
-//  John, 2026-08-28: *"Lead with the real one. Ours has to add up. So: the real number leads, with
+//  Decided 2026-08-28: *"Lead with the real one. Ours has to add up. So: the real number leads, with
 //  Finder's printed underneath and one line saying what the difference is. We are not contradicting
 //  Finder, we are explaining it, which is the one thing no other tool on the Mac does."*
 //
-//  Measured on this Mac in the same second: **109.8 GB actually free, 177.9 GB printed by Finder.**
+//  Measured on one real Mac in the same second: **109.8 GB actually free, 177.9 GB printed by Finder.**
 //  Both correct. Finder's answers a different question — how much macOS believes it *could* free
 //  under pressure — and it is not a number arithmetic works on: delete 12 GB and it does not go up
 //  by 12, because the purgeable pool moves underneath.
@@ -27,7 +27,7 @@ import WellkeptCore
 //  the scan accounted for. That list is unconditional by construction, which is what makes it
 //  impossible to draw this section's totals without also saying what they do not cover.
 //
-//  ## ⚠️ John's snapshot line has no button, and that is deliberate
+//  ## ⚠️ The snapshot line has no button, and that is deliberate
 //
 //  It is the reason almost nothing on this screen returns any room today, so leaving it out would
 //  make our own numbers look broken. But Backup does not exist yet, and a button that opened

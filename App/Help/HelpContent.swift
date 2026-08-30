@@ -100,7 +100,7 @@ enum HelpLibrary {
                 .paragraph("**Nothing changes on your Mac unless you press a button.** Wellkept has no schedule, no scanning you did not ask for and no automatic tidying. Every section has one button, and one plain sentence above it saying what pressing it will do."),
                 // ⭐ Written once in Core and read here, so this page and the Backup face cannot
                 // end up describing the same background piece differently. It replaced "it quits
-                // when you close its window", which was true until John agreed to a Login Item on
+                // when you close its window", which was true until a Login Item was agreed to on
                 // 2026-08-29 and is now only half true — the worst state for a promise.
                 .paragraph(Backup.whatHappensWhenTheWindowCloses),
                 .paragraph("**Hardware is read once when the app opens**, because it is read-only — it asks the drive, the battery and the memory what they say about themselves and writes nothing. Every other section waits to be asked. There is no daily check, and with the background piece off there is nothing of Wellkept running at all once the window is shut."),
@@ -131,7 +131,7 @@ enum HelpLibrary {
                 .paragraph("That exception is the background piece, and you switch it on. It does three things and there is no fourth: backs up every hour while your drive is connected, starts a backup when you plug the drive in, and tells you when a backup has not worked in \(BackupFreshness.staleAfterDays) days. It needs no password and no administrator, it is listed as Wellkept in **System Settings ▸ General ▸ Login Items**, and switching it off leaves you a complete app."),
                 .note(Backup.whatTheBackgroundPieceMustProveFirst),
 
-                // ⛔ **John's condition, 2026-08-29: the gate is a shipped, visible thing, not a
+                // ⛔ **The condition, 2026-08-29: the gate is a shipped, visible thing, not a
                 // note in a document.** The face carries `RehearsalGate.faceLine` where the button
                 // would be; this is the same fact for somebody reading Help rather than the screen.
                 // Written once in `RehearsalGate` and read here, so the two cannot drift.
@@ -141,7 +141,7 @@ enum HelpLibrary {
                 // ⚠️ **This section is generated from `Privacy`, not written here.** It used to say
                 // "Nothing leaves this Mac" with one exception attached, while the welcome page said
                 // something narrower and Settings said something different again. Three copies of a
-                // promise is three promises. See the header of `Privacy.swift` for John's words on
+                // promise is three promises. See the header of `Privacy.swift` for the exact wording on
                 // 2026-08-27 and for why the absolute form went.
                 .heading("It never collects anything, and never sells anything"),
             ]

@@ -116,7 +116,7 @@ run_xcode() {  # $1 scheme  $2 dest  $3 action(build|test)
   # In Lode that cost most of 2026-08-09: an unsigned build has no entitlements, so on macOS it
   # loses its sandbox container, quietly moves to `~/Library/Application Support/default.store`,
   # and is refused by the data-protection keychain. Every fix was built, gated, launched — and the
-  # gate de-signed the very build being tested, so John was running an app against a different
+  # gate de-signed the very build being tested, so the app being run was pointed at a different
   # database from the one being inspected.
   #
   # ⚠️ It is WORSE in Wellkept, for the opposite reason. This app is deliberately unsandboxed and

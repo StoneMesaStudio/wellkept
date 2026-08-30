@@ -11,7 +11,7 @@ import WellkeptCore
 //  that tells the executable it is the background piece rather than the app, and the three things
 //  it is allowed to do. Everything else in this folder reads those from here.
 //
-//  ## What John agreed to, on 2026-08-29, in his words
+//  ## What was agreed on 2026-08-29
 //
 //  A small part of Wellkept that keeps running quietly — **`SMAppService.agent`, no password, no
 //  root**, listed in **System Settings ▸ Login Items** where it can be switched off, **and off is

@@ -58,7 +58,7 @@ import Foundation
 ///
 /// Raw values are storage and the labels are English, and they are allowed to drift apart for ever.
 /// `whoCanWatch` is the case in point: the raw value says what the row is *for*, and the label says
-/// what it *lists*. John's call, 2026-08-27 — "Who can watch you" tells someone they are being
+/// what it *lists*. Settled 2026-08-27 — "Who can watch you" tells someone they are being
 /// watched before they have read a line, and for almost everyone nothing is wrong.
 public enum SecurityTopic: String, CaseIterable, Sendable, Identifiable, Codable, Hashable {
 
@@ -123,7 +123,7 @@ public enum SecurityTopic: String, CaseIterable, Sendable, Identifiable, Codable
 /// **Every condition in Security that is allowed to raise the section, and there are exactly
 /// nine.**
 ///
-/// John kept all nine on 2026-08-27 and struck none. *"Everything else is a plain fact with no
+/// All nine were kept on 2026-08-27 and none was struck. *"Everything else is a plain fact with no
 /// colour."*
 ///
 /// ⚠️ **This enum is the enforcement, not a reference list.** `SecurityRow.severity` is computed
@@ -136,7 +136,7 @@ public enum SecurityTopic: String, CaseIterable, Sendable, Identifiable, Codable
 /// **Nothing in Security is ever `.problem`.** Every one of these is a setting a person may have
 /// chosen deliberately, or a machine their employer configured. Amber says "this is worth a look".
 /// Red would say "you have done something wrong", and this section is not in a position to know
-/// that. A tenth condition, or a red one, is a conversation with John, not a pull request.
+/// that. A tenth condition, or a red one, is a conversation with the developer, not a pull request.
 public enum SecurityConcern: String, CaseIterable, Sendable, Codable, Hashable, Identifiable {
 
     /// The disk is not encrypted, so anyone holding the machine can read it.
@@ -634,7 +634,7 @@ public struct Grant: Sendable, Hashable, Codable, Identifiable {
 
     /// **This is Wellkept itself.**
     ///
-    /// Wellkept holds Full Disk Access, so Wellkept appears in its own list. John's call,
+    /// Wellkept holds Full Disk Access, so Wellkept appears in its own list. Settled
     /// 2026-08-27: say so, rather than filter ourselves out. An app that quietly removes itself
     /// from the list of apps that can read your disk is doing the thing this app exists to catch
     /// other software doing.
@@ -894,7 +894,7 @@ public struct SecurityReport: Sendable, Hashable {
 
     /// **The clean sentence — and it never stands alone.**
     ///
-    /// John's rule, 2026-08-27: Good always carries its scope and its window. **The word "safe"
+    /// The rule, 2026-08-27: Good always carries its scope and its window. **The word "safe"
     /// never appears as a verdict** anywhere in this section: Wellkept is not watching in real time
     /// and must not imply that it is.
     public var summary: String {

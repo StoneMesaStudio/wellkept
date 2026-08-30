@@ -33,7 +33,7 @@ import Foundation
 //     `Cause.unknown`, and the face has to read as calm when they do. `Confidence.noEvidence` is
 //     the default value of the field for exactly that reason.
 //
-//  ## ⚠️ The scope, settled by John on 2026-08-28, and it is smaller than it looks
+//  ## ⚠️ The scope, settled on 2026-08-28, and it is smaller than it looks
 //
 //  Changes **describes** only what Wellkept already reads elsewhere — the Security section's
 //  protections, sharing services, startup items, configuration profiles and privacy grants, plus
@@ -176,7 +176,7 @@ public struct WatchedKey: Sendable, Hashable, Codable, Identifiable, Comparable 
 ///
 /// The prior art everybody points at — SetShot's knowledge base — is 787 one-line descriptions,
 /// 383 of them flagged AI-generated, and none of them attempt the two things a person actually
-/// needs. John's instruction on 2026-08-28 was *"let's show him up and do it better"*, and better
+/// needs. The instruction on 2026-08-28 was *"let's show him up and do it better"*, and better
 /// was defined concretely: every description says **what the setting does**, **what turning it off
 /// actually costs you**, and **why it might have changed**.
 ///
@@ -209,7 +209,7 @@ public struct Watched: Sendable, Hashable, Codable, Identifiable {
         ///
         /// The length floor is deliberately low — it catches "N/A", "See above" and an empty
         /// field, which is what actually goes wrong — and the distinctness check is what catches
-        /// the copy-paste. Neither is a judgement about quality; that is a human's job, and John's.
+        /// the copy-paste. Neither is a judgement about quality; that is a human's job.
         public var isComplete: Bool {
             let parts = [does, costOfTurningItOff, whyItMightHaveChanged]
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -242,7 +242,7 @@ public struct Watched: Sendable, Hashable, Codable, Identifiable {
     /// one file in the app layer, because Apple renames them without notice and a wrong anchor
     /// still opens *a* pane, so the rot would be invisible.
     ///
-    /// **This is a destination, not a verb.** John, 2026-08-28: Wellkept writes no setting, ever.
+    /// **This is a destination, not a verb.** Decided 2026-08-28: Wellkept writes no setting, ever.
     /// There is no fifth verb; Changes shows what changed and opens the right pane.
     public let settingsPane: String?
 
@@ -727,7 +727,7 @@ public struct ChangesReport: Sendable, Hashable {
     /// The watched things we could not read this time.
     public let unreadable: [Unread]
 
-    /// **John's answer 4, 2026-08-28.** Without Full Disk Access we can see *that* the privacy
+    /// **Answer 4, 2026-08-28.** Without Full Disk Access we can see *that* the privacy
     /// grants changed and not *what*. This is the one line that says so, with the button that
     /// grants access — shown once, never repeated per permission.
     ///
@@ -843,8 +843,8 @@ public struct ChangesReport: Sendable, Hashable {
 
 //  **About thirty things, each with three sentences we wrote and can defend.**
 //
-//  ⚠️ **Nothing goes in this list that Wellkept does not already read somewhere else.** John's
-//  answer 2, 2026-08-28: our descriptions, only for settings the app already reads across Security,
+//  ⚠️ **Nothing goes in this list that Wellkept does not already read somewhere else.**
+//  Answer 2, 2026-08-28: our descriptions, only for settings the app already reads across Security,
 //  Apps and Storage. A few dozen sentences we can stand behind, not 787 we cannot maintain — and
 //  no line of anybody else's material, because the prior art's descriptions sit in a repository
 //  with no licence at all and folding them into a GPL-3.0 app would pass on a right we never had.

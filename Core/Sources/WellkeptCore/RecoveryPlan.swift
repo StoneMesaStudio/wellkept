@@ -51,9 +51,9 @@ import Foundation
 /// carried as an optional rather than as a third case, so nothing else in the app has to grow a
 /// branch for a state only this page has.
 ///
-/// ⚠️ **Intel is untested.** The owner's 2015 iMac cannot run macOS 14, so nothing in this app has
-/// ever been run on an Intel Mac. The instruction below is Apple's published one, not a measured
-/// one.
+/// ⚠️ **Intel is untested.** The only Intel Mac to hand, a 2015 iMac, cannot run macOS 14, so
+/// nothing in this app has ever been run on an Intel Mac. The instruction below is Apple's
+/// published one, not a measured one.
 extension MacArchitecture {
 
     /// **How to start up in Recovery on this Mac**, and only on this Mac.
@@ -197,7 +197,7 @@ public struct RecoveryPlan: Sendable, Hashable, Codable {
     /// `nil` when we could not tell which kind of Mac this is.
     public let architecture: MacArchitecture?
 
-    /// Where the backup lives, in the words on the drive: "JDS Backup". `nil` when there is no
+    /// Where the backup lives, in the words on the drive — "Backup Drive", say. `nil` when there is
     /// backup — in which case the page says so, loudly, rather than pretending.
     public let destinationName: String?
 

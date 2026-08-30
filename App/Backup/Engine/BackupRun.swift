@@ -15,7 +15,7 @@ import WellkeptCore
 //  `start(_:)` asks `RehearsalGate.permissionToWrite(to:)` and returns the refusal when the answer
 //  is no. `RehearsalGate.performed` is `nil` today, so **the answer is no today**, on every Mac,
 //  including this one. That is not a bug and it is not a placeholder: a backup is proven by erasing
-//  a drive and restoring from it, nobody has done that with this code, and John's condition was that
+//  a drive and restoring from it, nobody has done that with this code, and the condition was that
 //  the gate be a shipped, visible thing rather than a note in a document.
 //
 //  Opening it is one edit in one place — the four facts in `RehearsalGate.performed`. Nothing in
@@ -26,18 +26,18 @@ import WellkeptCore
 //  1. **Ask the gate.** Before anything is read, let alone written.
 //  2. **Judge the drive again.** It was judged when the person chose it; drives get unplugged,
 //     remounted read-only, and filled up by something else in between.
-//  3. **Read Full Disk Access before the copy, not after.** ⚠️ Without it a backup contains no mail,
-//     messages, photos, contacts, Safari data or Trash — *nothing*, not partial — and macOS refuses
-//     **silently, with no error at all**. There is no failure to detect afterwards, because there is
-//     no failure: the folders simply enumerate empty. So the grant is read up front and carried into
-//     `BackupCompleteness`, which refuses to call the run complete without it.
+//  3. **Read Full Disk Access before the copy, not after.** ⚠️ Without it a backup contains no
+//     mail, messages, photos, contacts, Safari data or Trash — *nothing*, not partial — and macOS refuses
+//     **silently, with no error at all**. There is no failure to detect afterwards, because there
+//     is no failure: the folders simply enumerate empty. So the grant is read up front and carried
+//     into `BackupCompleteness`, which refuses to call the run complete without it.
 //  4. **Take the journal mark before the walk**, never after. Anything that changes while the copy
 //     runs then lands in the next run rather than falling into the gap between the two.
 //  5. **Walk, or replay.** The journal replays in about five seconds; the fallback walk is about
 //     thirty-four. Any doubt at all about the journal and it is the walk — see `JournalDoubt`.
-//  6. **Move the old copy aside before writing the new one.** `AtomicMove` — the app's one safe move
-//     — on the drive's own volume. ⛔ Never an overwrite: the thing being overwritten is the only
-//     other copy of somebody's file.
+//  6. **Move the old copy aside before writing the new one.** `AtomicMove` — the app's one safe
+//     move — on the drive's own volume. ⛔ Never an overwrite: the thing being overwritten is the
+//     only other copy of somebody's file.
 //  7. **Copy**, with the four repairs. `CopyOne`.
 //  8. **Check**, at the level asked for, and say which level ran.
 //  9. **Write the record**, on the drive, appended.
@@ -46,10 +46,10 @@ import WellkeptCore
 //
 //  - **It never deletes anything from the drive to make room.** If the drive is full, the run stops
 //    and says so, with both figures. Retention is a proposal a person presses; see `Retention`.
-//  - **It never downloads a file from iCloud in order to back it up.** 72.2 GB of this Mac's files
-//    are placeholders, and copying them would mean pulling 72 GB onto a Mac with 95 GB free, over
-//    somebody's own internet, to make a second copy of files that already have one. They are named
-//    and skipped, every run, out loud. Time Machine has the same hole and never mentions it.
+//  - **It never downloads a file from iCloud in order to back it up.** 72.2 GB of one measured
+//    Mac's files are placeholders, and copying them would mean pulling 72 GB onto a Mac with 95 GB
+//    free, over somebody's own internet, to make a second copy of files that already have one. They
+//    are named and skipped, every run, out loud. Time Machine has the same hole and never mentions it.
 
 // MARK: - What to do
 
@@ -187,9 +187,9 @@ enum BackupRun {
     /// ⚠️ **The background piece asks a harder question and has to clear both proofs.**
     ///
     /// A scheduled backup that silently contains no mail is worse than a manual one, because nobody
-    /// is watching when it runs and nobody is told when it holds nothing. Until somebody has watched
-    /// an `SMAppService.agent` read a Full-Disk-Access-protected folder with the app not running,
-    /// this refuses. See `Backup.whatTheBackgroundPieceMustProveFirst`.
+    /// is watching when it runs and nobody is told when it holds nothing. Until somebody has
+    /// watched an `SMAppService.agent` read a Full-Disk-Access-protected folder with the app not
+    /// running, this refuses. See `Backup.whatTheBackgroundPieceMustProveFirst`.
     static func startInTheBackground(_ plan: BackupPlan) -> BackupResult {
         let name = (plan.driveMountPoint as NSString).lastPathComponent
         switch RehearsalGate.permissionForTheBackgroundPiece(to: name) {
@@ -265,9 +265,9 @@ enum BackupRun {
         var cloudOnly = 0
         var bytes: Int64 = 0
 
-        // ⚠️ Labelled, because the ENOSPC arm below has to leave the LOOP and not merely the switch.
-        // A bare `break` inside a `switch` inside a `for` breaks the switch, and the run would carry
-        // on producing a backup missing everything that came after the drive filled up.
+        // ⚠️ Labelled, because the ENOSPC arm below has to leave the LOOP and not merely the
+        // switch. A bare `break` inside a `switch` inside a `for` breaks the switch, and the run
+        // would carry on producing a backup missing everything that came after the drive filled up.
         eachFile: for path in paths {
             guard let item = SourceReader.read(path, rules: plan.rules) else { continue }
 
@@ -331,8 +331,8 @@ enum BackupRun {
         // 8. The check. ⚠️ It always runs — the question is never "was it checked" but "to what
         // level", and a run that reports no check at all is one a person has to interpret.
         //
-        // Hard-linked second names are left out: they were not copied, they were linked, and reading
-        // the same inode back twice would report a number larger than the number of files.
+        // Hard-linked second names are left out: they were not copied, they were linked, and
+        // reading the same inode back twice would report a number larger than the number of files.
         //
         // ⚠️ **Folders are left out too**, and that was found by the suite rather than reasoned:
         // `st_size` on a directory is the filesystem's own bookkeeping about how many entries it
@@ -427,9 +427,9 @@ enum BackupRun {
 
     /// Whether the copy on the drive is already this file.
     ///
-    /// ⚠️ Size **and** modification time to the second, which is what every incremental backup uses.
-    /// It is not proof — a file changed in place, in the same second, to the same length, reads as
-    /// unchanged — and that is why `.readBack` exists and why the word "verified" is reserved for it.
+    /// ⚠️ Size **and** modification time to the second, which is what every incremental backup
+    /// uses. It is not proof — a file changed in place, in the same second, to the same length,
+    /// reads as unchanged — and that is why `.readBack` exists and why the word "verified" is reserved for it.
     static func isUnchanged(_ item: SourceItem, comparedTo destinationPath: String) -> Bool {
         var copy = stat()
         guard lstat(destinationPath, &copy) == 0 else { return false }
@@ -441,8 +441,8 @@ enum BackupRun {
     /// Move the copy on the drive into this run's `Previous versions` folder, and record it.
     ///
     /// ⭐ `AtomicMove` — the app's one safe move, on the drive's own volume. `RENAME_EXCL` so it can
-    /// never write over something already there, `RENAME_NOFOLLOW_ANY` so it can never act through a
-    /// symbolic link.
+    /// never write over something already there, `RENAME_NOFOLLOW_ANY` so it can never act through
+    /// a symbolic link.
     static func putAside(_ destinationPath: String,
                          relativePath: String,
                          into versionsRoot: URL,

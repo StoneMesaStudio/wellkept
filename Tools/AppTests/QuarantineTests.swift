@@ -11,8 +11,8 @@ import WellkeptCore
 //  ⭐ **The four verbs, exercised on real files in a sandbox that is thrown away afterwards.**
 //
 //  The tests that matter most are the ones that prove something did **not** happen: that a rename
-//  cannot write over a file, that a restore refuses an occupied path rather than destroying whatever
-//  is there now, and that no sentence anywhere claims a quarantine returned space it did not return.
+//  cannot write over a file, that a restore refuses an occupied path rather than destroying
+//  whatever is there now, and that no sentence anywhere claims a quarantine returned space it did not return.
 
 // MARK: - ⭐ The one safe move
 
@@ -230,9 +230,9 @@ import WellkeptCore
         #expect(!sandbox.exists(record.holderURL), "the empty holder folder goes with it")
     }
 
-    /// ⚠️ **The refusal that makes restore safe.** Between the quarantine and the restore the person
-    /// may have re-downloaded the installer or saved the document again. Moving over it destroys the
-    /// newer one — the opposite of what they asked for.
+    /// ⚠️ **The refusal that makes restore safe.** Between the quarantine and the restore the
+    /// person may have re-downloaded the installer or saved the document again. Moving over it
+    /// destroys the newer one — the opposite of what they asked for.
     @Test func anOccupiedOriginalPathIsARefusalAndNeverAnOverwrite() throws {
         let sandbox = try QuarantineSandbox()
         defer { sandbox.tearDown() }
@@ -356,8 +356,8 @@ import WellkeptCore
         #expect(Ledger.read(home: sandbox.home).records.count == 2)
     }
 
-    /// ⚠️ **Free space is an estimate even after a real delete** — a local snapshot keeps the blocks
-    /// allocated. The figure is measured before and after, never promised.
+    /// ⚠️ **Free space is an estimate even after a real delete** — a local snapshot keeps the
+    /// blocks allocated. The figure is measured before and after, never promised.
     @Test func whatCameBackIsMeasuredAndNeverCalledFreed() throws {
         let sandbox = try QuarantineSandbox()
         defer { sandbox.tearDown() }
@@ -377,8 +377,8 @@ import WellkeptCore
         #expect(report.sentence.contains("Removed"))
     }
 
-    /// When nothing comes back the sentence says why, rather than reporting the file sizes as though
-    /// they were space returned.
+    /// When nothing comes back the sentence says why, rather than reporting the file sizes as
+    /// though they were space returned.
     @Test func nothingComingBackIsExplainedRatherThanHidden() {
         let report = Quarantine.DeleteReport(
             deleted: [], refused: [], trouble: nil, freeBefore: 1_000, freeAfter: 1_000)
@@ -477,8 +477,8 @@ import WellkeptCore
 
 @Suite struct QuarantineStoreTests {
 
-    /// ⚠️ The store lives on the same volume as the file, always. Every hazard measured — split hard
-    /// links, sparse files inflating six thousand times, partial copies, running out of space
+    /// ⚠️ The store lives on the same volume as the file, always. Every hazard measured — split
+    /// hard links, sparse files inflating six thousand times, partial copies, running out of space
     /// mid-batch — exists only on the cross-volume path.
     @Test func theStoreIsOnTheSameVolumeAsTheFile() throws {
         let sandbox = try QuarantineSandbox()
@@ -492,8 +492,8 @@ import WellkeptCore
         #expect(store.root == StorageManifest.quarantineDirectory(home: sandbox.home))
     }
 
-    /// Each item gets its own folder named by the record's id, so a collision is not merely unlikely
-    /// — it is impossible, and the file keeps its exact name.
+    /// Each item gets its own folder named by the record's id, so a collision is not merely
+    /// unlikely — it is impossible, and the file keeps its exact name.
     @Test func namingCannotCollideAndTheNameIsKept() {
         let store = QuarantineStore(root: URL(filePath: "/tmp/store"),
                                     volume: VolumeReading(mountPoint: "/", device: "/dev/disk1",
@@ -541,8 +541,8 @@ import WellkeptCore
         #expect(summary.rowSentence() == "Nothing is set aside.")
     }
 
-    /// John's shape, 2026-08-28: *"40 GB set aside — oldest is 12 days old"*, with the Empty button
-    /// on it.
+    /// The settled shape, 2026-08-28: *"40 GB set aside — oldest is 12 days old"*, with the Empty
+    /// button on it.
     @Test func theRowIsSizeSetAsideAndTheAgeOfTheOldest() throws {
         let sandbox = try QuarantineSandbox()
         defer { sandbox.tearDown() }
@@ -590,7 +590,7 @@ import WellkeptCore
     }
 }
 
-// MARK: - The words John settled on
+// MARK: - The settled words
 
 @Suite struct QuarantineWordingTests {
 

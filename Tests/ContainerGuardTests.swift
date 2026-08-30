@@ -10,9 +10,9 @@
 //  itself the harm: it puts a dialog on somebody's screen naming a process they did not start.
 //
 //  This happened twice on 2026-08-27 while the Apps section was being written, both times naming
-//  *Xcode* because the code was running under the test harness, and the owner had to be told to
-//  press Don't Allow. The fix is `LeftoverReader.Place.needsFullDiskAccess`: those places are
-//  visited only when the grant is ALREADY held, and skipped untouched otherwise.
+//  *Xcode* because the code was running under the test harness, and the person at the keyboard had
+//  to be told to press Don't Allow. The fix is `LeftoverReader.Place.needsFullDiskAccess`: those
+//  places are visited only when the grant is ALREADY held, and skipped untouched otherwise.
 //
 //  This test is what stops the fix being undone by a later file that means well. It is deliberately
 //  a source scan rather than a behaviour test, because the failure it guards against is a dialog on
@@ -78,7 +78,7 @@ struct ContainerGuardTests {
     /// This is the one the two incidents on 2026-08-27 actually needed. The gate was in place both
     /// times; what walked into the sandbox folder was code that passed the grant in as a constant —
     /// under `xctest`, where the dialog names **Xcode** and the owner has to press Don't Allow on a
-    /// prompt about a process he did not start.
+    /// prompt about a process they did not start.
     ///
     /// The app itself never writes the literal either: `read(appsOnThisMac:)` passes
     /// `FullDiskAccess.isGranted`, which is a probe of a file we are permitted to attempt. So a

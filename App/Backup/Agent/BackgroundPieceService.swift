@@ -56,7 +56,7 @@ enum BackgroundPieceService {
 
     /// ⚠️ **`.requiresApproval` is not an error and must never be reported as one.** It means macOS
     /// accepted the registration and is waiting for the person to allow it in System Settings —
-    /// which is exactly the arrangement John asked for. An app that showed a failure here would send
+    /// which is exactly the arrangement asked for. An app that showed a failure here would send
     /// somebody hunting for a problem that is a checkbox.
     static var needsTheirApproval: Bool { status == .requiresApproval }
 

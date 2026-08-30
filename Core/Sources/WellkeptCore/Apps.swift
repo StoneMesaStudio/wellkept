@@ -97,7 +97,7 @@ public enum AppsTopic: String, CaseIterable, Sendable, Identifiable, Codable, Ha
     /// ⚠️ **Removed apps only, and never totalled as one number.** Name-matched "leftovers" on this
     /// Mac come to 7.6 GB; genuinely orphaned is about 350 MB, because 95% of it belongs to software
     /// that is running right now. `~/Library/Application Support/Herd` has no app and no Spotlight
-    /// entry and looks like textbook dead weight — it is the owner's PHP and Composer.
+    /// entry and looks like textbook dead weight — it is a working PHP and Composer install.
     case removedLeftovers
 
     public var id: String { rawValue }
@@ -312,7 +312,7 @@ public enum UpdateUnknown: String, Sendable, Codable, Hashable, CaseIterable, Id
 
     /// Nobody publishes a current version for this app in a form we can read.
     ///
-    /// This is the honest cost of John's decision on 2026-08-27 to **not** ship a hand-maintained
+    /// This is the honest cost of the decision on 2026-08-27 to **not** ship a hand-maintained
     /// list of makers' version pages: *"I don't know that I want that responsibility. They
     /// frequently release updates."* A stale endpoint gives a wrong answer, and a wrong answer is
     /// worse than none. Coverage on this Mac drops from 13 apps to about 9, and the section says so
@@ -922,7 +922,7 @@ public struct CrashedApp: Sendable, Hashable, Codable, Identifiable {
 /// Mac produces 7.6 GB; genuinely orphaned is about 350 MB, because 95% of that belongs to software
 /// running right now. Six "orphaned browser profiles" here belong to an extension that is installed
 /// and working, and `~/Library/Application Support/Herd` — no app, no Spotlight entry, textbook dead
-/// weight — is the owner's PHP and Composer.
+/// weight — is a working PHP and Composer install.
 ///
 /// A single headline number would be wrong by a factor of twenty, and it is exactly the number a
 /// cleaner puts in a big font. So the section lists the items and lets a person read them.
@@ -984,7 +984,7 @@ public struct Leftover: Sendable, Hashable, Codable, Identifiable {
 /// ⚠️ **`severity` is a computed constant. There is no argument, anywhere, that can raise it.**
 /// Without vulnerability data an old app is not dangerous, and a version behind is not something
 /// wrong. Apps reports facts this round; it does not raise concerns. A reader that wants a colour
-/// has to change this line, in this file, with John — not pass a different value.
+/// has to change this line, in this file, with the developer — not pass a different value.
 public struct AppsRow: Sendable, Hashable, Identifiable, Codable {
 
     public let topic: AppsTopic

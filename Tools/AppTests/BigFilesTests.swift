@@ -147,7 +147,7 @@ struct BigFilesTests {
     // MARK: - ⭐ Two numbers, never one
 
     /// **A stuck snapshot means deleting an old file returns nothing**, and the row has to say so.
-    /// Measured on this Mac: `~/Documents/Media` is 14.8 GB on disk and 0.5 GB back today.
+    /// Measured on one real Mac: one media folder was 14.8 GB on disk and 0.5 GB back today.
     @Test func aStuckSnapshotTakesTheSecondNumberToZero() throws {
         let sandbox = try QuarantineSandbox()
         defer { sandbox.tearDown() }
@@ -330,7 +330,7 @@ struct BigFilesTests {
 
 /// **A source scan, for the same reason as `ContainerGuardTests`.**
 ///
-/// The realistic version of this mistake is not a deliberate one. It is a later owner adding
+/// The realistic version of this mistake is not a deliberate one. It is a later maintainer adding
 /// `origin: .machineJunk` to a scanner that reveals somebody's own files, because a batch sweep is
 /// so much nicer to use — and every behaviour test still passes, because the classifier is where
 /// everyone looks. By the time a test could observe the harm, a person's documents have arrived

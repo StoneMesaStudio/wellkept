@@ -198,7 +198,7 @@ enum SpeedTest {
     /// How many times the read is repeated. **The fastest pass wins.**
     ///
     /// ⚠️ This is the whole reason the read figure is allowed to be called firm and the write
-    /// figure is not. A single pass on this Mac gave 2,964, 2,326 and 2,972 MB/s — a 22% spread,
+    /// figure is not. A single pass on one real Mac gave 2,964, 2,326 and 2,972 MB/s — a 22% spread,
     /// caused by whatever else the machine happened to be doing during the slow one. The best of
     /// three gave 3,101, 3,092, 3,148 and 3,152 across four rounds: **under 2%.** Interference
     /// only ever makes a pass slower, so the fastest one is the closest to the truth about the

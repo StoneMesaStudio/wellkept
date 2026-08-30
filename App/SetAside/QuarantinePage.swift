@@ -259,7 +259,7 @@ struct QuarantineItemRow: View {
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                // John's one line, on the row it is true of. Never a dialog and never a refusal.
+                // The one line, on the row it is true of. Never a dialog and never a refusal.
                 if record.wasInICloud { ICloudLine(showsTheGap: false) }
 
                 if isMissing {

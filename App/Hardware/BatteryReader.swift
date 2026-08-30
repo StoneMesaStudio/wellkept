@@ -361,7 +361,7 @@ enum BatteryReader {
         return "Below 80% is where Apple starts calling a battery worn."
     }
 
-    /// Everything more exact than the headline, behind **Options**. John's rule, 2026-08-27:
+    /// Everything more exact than the headline, behind **Options**. The rule, 2026-08-27:
     /// Apple's figure on the row, the arithmetic underneath it.
     private static func details(_ facts: Facts) -> [DetailPair] {
         var pairs: [DetailPair] = []

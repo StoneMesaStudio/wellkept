@@ -6,14 +6,14 @@
 //  organisation configures.**
 //
 //  `SecurityShot.swift` photographs the four screens demo mode can reach — never checked, both demo
-//  Macs, Options open. Demo mode offers two machines because that is a product decision John made,
+//  Macs, Options open. Demo mode offers two machines because that is a product decision,
 //  and these two states are not machines: one is a permission this app was refused, and the other is
 //  a Mac whose settings belong to somebody else. Neither has anywhere to live in `DemoData`, and
 //  both are screens somebody will actually see.
 //
 //  ## ⚠️ The refusal is the likeliest real screen in the whole section
 //
-//  Measured on this Mac, 2026-08-27: without Full Disk Access, **eleven of the twelve permissions
+//  Measured on one real Mac, 2026-08-27: without Full Disk Access, **eleven of the twelve permissions
 //  read exactly zero.** Not "fewer" — zero. So the camera / microphone / screen row collapses to one
 //  sentence rather than printing a near-empty list, and Location, which reads fine without the
 //  grant, is hidden with the rest. One populated row surrounded by refusals reads as *"we checked

@@ -17,13 +17,13 @@ contradicted each other on it and the whole section hangs on the answer.
 | **Disk speed** | ⚠️ Read speed repeats to within 1.3%. Write speed swung 1,500 → 3,200 MB/s in an hour. macOS filed a report against the benchmark for exceeding the ~2 GB/day write budget it allows a well-behaved app. |
 | **Full Disk Access** | ✅ **Nothing in Hardware needs it.** The section works completely for someone who taps "Finish later". |
 
-## Asked of John
+## Decided
 
-| # | Question | Answer |
+| # | Question | Decision |
 |---|---|---|
-| 1 | Tell someone their Mac is near the end of Apple's security updates? | **Yes, plainly.** John, 2026-08-27: *"Not about fear, it is about security. Why not be honest? We are not selling them a new machine, we are protecting them."* Frame it as security, not obsolescence. Say what it means — no more security patches — not "time to upgrade" |
-| 2 | Ship for Intel untested, or Apple Silicon only until someone can test one? | **Ship Intel.** macOS 26 Tahoe is the last release supporting Intel; those Macs get security patches to roughly 2029, so the audience exists for three more years. Intel is also *additive* — real NVMe SMART and SMC temperature both work there and neither works on Apple Silicon. **John's ~2015 iMac cannot be the test machine: macOS 14 needs a 2019 or later iMac.** The Intel Macs that can run Wellkept are 2018–2020, plus iMac Pro 2017 and Mac Pro 2019 |
-| 3 | Does the demo Mac — the one in every screenshot — look healthy, or have problems? | **Both.** John, 2026-08-27: *"I would give them both. The goal is a healthy mac."* Demo mode offers two machines — **A healthy Mac** and **A Mac with problems** — and the screenshots show both. The healthy one is the point of the product, not a boring case to skip |
+| 1 | Tell someone their Mac is near the end of Apple's security updates? | **Yes, plainly** (2026-08-27). Not about fear, about security: we are not selling anybody a new machine, we are protecting the one they have, so there is no reason not to be honest. Frame it as security, not obsolescence. Say what it means — no more security patches — not "time to upgrade" |
+| 2 | Ship for Intel untested, or Apple Silicon only until someone can test one? | **Ship Intel.** macOS 26 Tahoe is the last release supporting Intel; those Macs get security patches to roughly 2029, so the audience exists for three more years. Intel is also *additive* — real NVMe SMART and SMC temperature both work there and neither works on Apple Silicon. **The Intel Mac available here cannot be the test machine — it is a ~2015 iMac, and macOS 14 needs a 2019 or later iMac.** The Intel Macs that can run Wellkept are 2018–2020, plus iMac Pro 2017 and Mac Pro 2019 |
+| 3 | Does the demo Mac — the one in every screenshot — look healthy, or have problems? | **Both** (2026-08-27). The goal of the product is a healthy Mac, so the healthy machine has to be one of the pictures. Demo mode offers two machines — **A healthy Mac** and **A Mac with problems** — and the screenshots show both. The healthy one is the point of the product, not a boring case to skip |
 
 ## Decided without asking
 

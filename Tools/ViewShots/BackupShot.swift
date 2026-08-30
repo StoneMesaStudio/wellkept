@@ -347,7 +347,7 @@ private enum PrintedPage {
 ///
 /// ⚠️ Everything is built from the real vocabulary rather than from finished sentences, so a
 /// picture can never show wording the app is no longer capable of producing. The figures are the
-/// ones measured on this Mac on 2026-08-29 — 65.4 GB in iCloud, 6.5 GB in a Google Drive folder —
+/// ones measured on one real Mac on 2026-08-29 — 65.4 GB in iCloud, 6.5 GB in a Google Drive folder —
 /// because a made-up number in a picture is how a made-up number reaches a screen.
 @MainActor
 enum BackupShotMac {

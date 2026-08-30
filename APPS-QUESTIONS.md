@@ -40,17 +40,18 @@ Applications folder" is not true and is not to be said anywhere in the app or it
 ## Two live examples of why we do not sweep
 
 - `~/Library/Application Support/Herd` has no app, no Spotlight entry, and looks like textbook
-  dead weight. **It is John's PHP and Composer.** "No app owns it" does not mean "nothing needs it".
+  dead weight. **It is a working PHP and Composer install, in daily use.** "No app owns it" does not
+  mean "nothing needs it".
 - Chrome's provable files come to 5.8 MB. The real figure is about 5.9 GB, in a folder called
   "Google" that matches neither the app's name nor its identifier. A single "this app and
   everything it owns" total would be a guess dressed as a fact.
 
-## Asked of John
+## Decided
 
-| # | Question | Answer |
+| # | Question | Decision |
 |---|---|---|
-| 1 | Update checking, and the "Nothing leaves your Mac" wording | **The absolute promise was MY wording and it is wrong.** John, 2026-08-27: *"it is about not scraping user data, violating their privacy or collecting contact information for marketing. No data is collected and sold. Information leaving the computer to benefit their experience and app functionality is disclosed and optional, but just like not granting whole disc access, you lose functionality. **Inform and consent**."* So: update checking ships. The welcome page says what is never done — no collection, no selling, no account, no marketing — and names each thing that does leave, with a switch. |
-| 2 | A hardcoded list of ~15 makers' version pages | **No — skipped, and disclosed.** John: *"I don't know that I want that responsibility. They frequently release updates."* Coverage drops from 13 apps to about 9 on this Mac, and the section says so plainly rather than implying it looked everywhere. |
+| 1 | Update checking, and the "Nothing leaves your Mac" wording | **The absolute promise was Claude's wording, and it was struck 2026-08-27.** The thing being promised is about not scraping user data, not violating privacy, not collecting contact information for marketing: no data is collected and sold. Information that leaves the computer to benefit the person's experience and the app's functionality is disclosed and optional — and, exactly like refusing Full Disk Access, switching it off costs functionality. **Inform and consent**, not an absolute. So: update checking ships. The welcome page says what is never done — no collection, no selling, no account, no marketing — and names each thing that does leave, with a switch. |
+| 2 | A hardcoded list of ~15 makers' version pages | **No — skipped, and disclosed** (2026-08-27). Makers release updates frequently, so a hardcoded list of their version pages is a standing maintenance promise, and that is a responsibility we are not taking on. Coverage drops from 13 apps to about 9 on this Mac, and the section says so plainly rather than implying it looked everywhere. |
 | 3 | Abandoned apps as a finding | **Dropped.** Shown as plain facts on the app's own line, where a blank is harmless and nothing is being accused. |
 
 ## Decided without asking
@@ -69,9 +70,9 @@ Applications folder" is not true and is not to be said anywhere in the app or it
   old app is dangerous, and a version behind is not something wrong.
 - **The Overview line always carries its denominator**: "4 of the 13 apps we could check have a
   newer version", never a bare count that hides the 11 we could not check.
-- **The self-updating list survives John's "no" to the maker list, and the distinction is the
+- **The self-updating list survives that "no" to the maker list, and the distinction is the
   maintenance cost.** A vendor version endpoint breaks often — a changed URL or format means a
-  wrong answer or none — which is the responsibility he declined. A list of apps *known to update
+  wrong answer or none — which is the responsibility that was declined. A list of apps *known to update
   themselves* changes rarely (an app seldom stops self-updating) and fails soft. Keep the second,
   drop the first.
 - **Update checking is inform-and-consent, not silently on.** The first time Apps runs it says
@@ -87,7 +88,7 @@ Applications folder" is not true and is not to be said anywhere in the app or it
 - **Apps does not run on launch.** The inventory call alone takes 7–8 seconds.
 - ⚠️ **CORRECTED 2026-08-27: the leftovers row DOES need Full Disk Access.** A build agent walking
   `~/Library/Containers` and `~/Library/Group Containers` raised the macOS *"would like to access
-  data from other apps"* prompt on John's screen — attributed to Xcode, because the code was running
+  data from other apps"* prompt on a real screen — attributed to Xcode, because the code was running
   under the test harness. That gate is real and it applies to Wellkept too.
   **So: Wellkept never touches another app's container unless Full Disk Access is already granted.**
   Without it the leftovers row reports the house sentence and offers the button; with it, the row

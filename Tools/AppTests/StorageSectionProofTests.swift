@@ -19,7 +19,7 @@ import WellkeptCore
 //
 //  So `PretendMac` below builds a home folder containing every near-miss that was measured on the
 //  real machine on 2026-08-28 — the audiobook filed under a store number inside `Caches`, the
-//  owner's PHP with no app and no receipt and no activity for months, an APFS clone pair, a
+//  a working PHP install with no app and no receipt and no activity for months, an APFS clone pair, a
 //  duplicate pair inside a project, a folder that will not open, a file that claims half a gigabyte
 //  and occupies nothing — and every test here runs the real code over all of it in one pass.
 //
@@ -76,7 +76,7 @@ struct PretendMac {
         try ground.file("\(Self.audiobookStore)/cover.jpg", bytes: Self.noise(9_000, seed: 12))
 
         // ⚠️ The trap that is live on the real Mac: no app, no receipt, no Spotlight entry,
-        // untouched for four and a half months — and it is the owner's PHP.
+        // untouched for four and a half months — and it is a working PHP install.
         try ground.file("\(Self.orphanFolder)/bin/php", bytes: Self.noise(120_000, seed: 21))
         try ground.file("\(Self.orphanFolder)/config/php.ini", "memory_limit = 512M")
         try ground.file("\(Self.orphanFolder)/composer.phar", bytes: Self.noise(80_000, seed: 22))
@@ -237,7 +237,7 @@ struct PretendMac {
 
 // MARK: - ⭐ The near-misses, on one disk, in one run
 
-@Suite("A whole pretend Mac, and nothing of the owner's is ever ticked", .serialized)
+@Suite("A whole pretend Mac, and nothing of the person's own is ever ticked", .serialized)
 struct StorageSectionProofTests {
 
     /// ⭐ **The audiobook.** `~/Library/Caches/com.apple.bookassetd/1442759222/Track 1.m4b`, 1.3 GB,
@@ -276,7 +276,7 @@ struct StorageSectionProofTests {
 
     /// ⚠️ **The orphan trap.** 90 MB in Application Support, no app that claims it, no receipt, no
     /// Spotlight entry, and untouched for four and a half months. Every heuristic built on an
-    /// absence fires, and it is the owner's PHP.
+    /// absence fires, and it is a working PHP install.
     ///
     /// This is safe because no rule in the classifier reasons from an absence — not because
     /// somebody wrote an exception for one vendor. The test names none either.
@@ -530,7 +530,7 @@ struct SnapshotAgreementTests {
         #expect(SnapshotStanding.couldNotBeRead != SnapshotStanding.none)
     }
 
-    /// John's answer 4, 2026-08-28: **Storage says the Time Machine problem out loud** — one flat
+    /// Answer 4, 2026-08-28: **Storage says the Time Machine problem out loud** — one flat
     /// line on the face, no button. It appears only where the snapshot is genuinely stuck, so a Mac
     /// whose backups are working says nothing about them here.
     @Test func theStuckSnapshotGetsOneFlatLineAndNoButton() throws {

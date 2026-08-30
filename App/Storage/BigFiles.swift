@@ -27,7 +27,7 @@ import WellkeptCore
 //     list built on the claimed size puts a column of files that are not here above the things
 //     actually filling the drive. They are counted once, in `CloudHolding`, and left off the list.
 //  2. **"How big is it" and "what would I get back" are different true numbers.**
-//     `~/Documents/Media`: 14.8 GB on disk, **0.5 GB back today**, because a stuck Time Machine
+//     One media folder: 14.8 GB on disk, **0.5 GB back today**, because a stuck Time Machine
 //     snapshot still references the older blocks. Every row carries both, and the arithmetic is
 //     `SnapshotStanding.recoverable(onDisk:modifiedOn:)` — done per file and summed, never applied
 //     to a folder's total in one go.
@@ -665,7 +665,7 @@ enum BigFiles {
     /// ⚠️ **Spotlight's `kMDItemLastUsedDate`, and never the filesystem's access time.** Our own
     /// research scan rewrote 2,012 access times by reading the files, so that field records us.
     ///
-    /// Blank for 61% of the large files on this Mac. A blank is absent from `Item.lineFacts` rather
+    /// Blank for 61% of the large files on one real Mac. A blank is absent from `Item.lineFacts` rather
     /// than drawn as a dash, because a blank is not a value.
     static func lastOpened(_ path: String) -> Date? {
         guard let item = MDItemCreate(nil, path as CFString) else { return nil }

@@ -496,7 +496,7 @@ extension EnvironmentValues {
 ///
 /// ⚠️ **Raw values are permanent.** They are written into the user's defaults; renaming one is a
 /// migration, and a released build that reads back an unknown string silently reverts the user's
-/// setting. The labels live on `label`, and John may edit those freely.
+/// setting. The labels live on `label`, and they may be edited freely.
 ///
 /// The three keys this app stores that are *not* about looks — `setupFinished`, `demoMode`,
 /// `fullDiskAccessAsked` — belong to the onboarding and settings work and are not declared here.

@@ -26,9 +26,9 @@ import Foundation
 //  `STORAGE-QUESTIONS.md`; these are the findings that shaped the types below.
 //
 //  - **"How big is it" and "what would I get back" are different true numbers, up to 150× apart.**
-//    `~/Documents/Media` reads 80 GB by name, **14.8 GB on disk**, and **0.5 GB comes back today**.
-//    So there is no type here called `size`. There are two, they are different types, and the
-//    compiler will not add one to the other. See `SizeOnDisk`, `Recoverable`, `Bytes`.
+//    one measured media folder reads 80 GB by name, **14.8 GB on disk**, and **0.5 GB comes back
+//    today**. So there is no type here called `size`. There are two, they are different types, and
+//    the compiler will not add one to the other. See `SizeOnDisk`, `Recoverable`, `Bytes`.
 //  - **Free space has two answers, 68 GB apart.** Measured here: 109.8 GB actually free, 177.9 GB
 //    printed by Finder. Finder's figure counts room macOS believes it *could* make under pressure —
 //    a promise, not a count. Free 12 GB and it does not rise by 12. **It is not a number arithmetic
@@ -163,7 +163,7 @@ public enum StorageTopic: String, CaseIterable, Sendable, Identifiable, Codable,
     /// that ignores it is doing something a reviewer can see in one line.
     public var mayArrivePreSelected: Bool { self == .machineJunk }
 
-    /// Which of John's two ceremonies this row uses. See `Ceremony`.
+    /// Which of the two ceremonies this row uses. See `Ceremony`.
     public var ceremony: Ceremony {
         switch self {
         case .machineJunk:  .batch
@@ -214,10 +214,10 @@ public struct SizeOnDisk: Sendable, Hashable, Codable, Comparable, AdditiveArith
 /// **What deleting a thing would actually give back today.**
 ///
 /// ⚠️ **This is a different number from `SizeOnDisk`, and on this Mac it is up to 150× smaller.**
-/// `~/Documents/Media` occupies 14.8 GB and returns 0.5 GB, because a local Time Machine snapshot
-/// dated 25 August still references the blocks of everything written before it. Printing the first
-/// number where the second belongs is the single most misleading thing this section could do, and
-/// it is why these are two types rather than two properties on one.
+/// one measured media folder occupies 14.8 GB and returns 0.5 GB, because a local Time Machine
+/// snapshot dated 25 August still references the blocks of everything written before it. Printing
+/// the first number where the second belongs is the single most misleading thing this section could
+/// do, and it is why these are two types rather than two properties on one.
 ///
 /// The only way to make one is `SnapshotStanding.recoverable(onDisk:modifiedOn:)` or the two named
 /// constructors below, each of which states its assumption in its name.
@@ -321,7 +321,7 @@ public struct Bytes: Sendable, Hashable, Codable {
 /// number.** Delete 12 GB and it does not rise by 12, because the purgeable pool moves underneath.
 ///
 /// So the byte count is `private`. There is no `+`, no `<`, and no way out except `text` and one
-/// named subtraction. John's ruling on 2026-08-28: the real number leads, this one is printed
+/// named subtraction. The ruling on 2026-08-28: the real number leads, this one is printed
 /// underneath, and one line says what the difference is. We are not contradicting Finder, we are
 /// explaining it — which is the one thing no other tool on this Mac does.
 public struct FinderFigure: Sendable, Hashable, Codable {
@@ -360,9 +360,9 @@ public struct FinderFigure: Sendable, Hashable, Codable {
 /// classified as disposable by inference. Adobe's updater deleted the alphabetically-first hidden
 /// folder at the disk root. Pearcleaner's orphan detector matched vendor names and flagged live
 /// data. Apple Music deleted 122 GB of local originals because a cloud copy was inferred. And on
-/// this Mac, `~/Library/Application Support/Herd` has no app, no receipt, no Spotlight entry and
-/// has not been touched in four and a half months — every orphan heuristic fires at once, and it is
-/// the owner's PHP.
+/// one measured Mac, `~/Library/Application Support/Herd` has no app, no receipt, no Spotlight
+/// entry and has not been touched in four and a half months — every orphan heuristic fires at once,
+/// and it is a working PHP install.
 ///
 /// **Identity, never absence of evidence. Location is never evidence.**
 public enum Origin: String, Sendable, Codable, CaseIterable, Identifiable {
@@ -397,7 +397,7 @@ public enum Origin: String, Sendable, Codable, CaseIterable, Identifiable {
     }
 }
 
-/// **John's two ceremonies, 2026-08-28: same four verbs, different weight.**
+/// **The two ceremonies, 2026-08-28: same four verbs, different weight.**
 ///
 /// > *"Junk: tick a batch, one press, done, and the row afterwards says 13 GB set aside. A person's
 /// > own file: one at a time, never pre-ticked, with a sheet stating the arithmetic before the
@@ -530,7 +530,7 @@ public enum CloudStanding: String, Sendable, Codable, CaseIterable, Identifiable
     /// Whether it is using room here at all.
     public var occupiesSpaceHere: Bool { self != .inTheCloudOnly }
 
-    /// **John's line, 2026-08-28, used verbatim or not at all.**
+    /// **The settled line, 2026-08-28, used verbatim or not at all.**
     ///
     /// The engine's copy is `Movable.iCloudWarning`; this one is for a row that has not been
     /// through the engine yet. They must stay identical, and `Tools/AppTests` asserts it.
@@ -617,9 +617,9 @@ public struct Item: Sendable, Hashable, Codable, Identifiable {
     /// Last changed. The date the recoverable arithmetic is done against.
     public let modifiedOn: Date?
 
-    /// ⚠️ **A fact on a row. Never a finding.** It is blank for 61% of large files on this Mac, and
-    /// 123 files in one sample share a single timestamp a batch job stamped on them. The sentence
-    /// "you have not opened this in seven years" is not in this app, at any threshold.
+    /// ⚠️ **A fact on a row. Never a finding.** It is blank for 61% of large files on one real Mac,
+    /// and 123 files in one sample share a single timestamp a batch job stamped on them. The
+    /// sentence "you have not opened this in seven years" is not in this app, at any threshold.
     ///
     /// ⚠️ **This is `kMDItemLastUsedDate`, never the filesystem's access time.** Our own research
     /// scan rewrote 2,012 access times by reading the files, which is exactly why that field can
@@ -707,9 +707,9 @@ public struct LocalSnapshot: Sendable, Hashable, Codable, Identifiable {
 /// **What the local snapshots are holding, and the arithmetic every recoverable figure comes from.**
 ///
 /// ⚠️ **This is the reason Wellkept's numbers look pessimistic beside everyone else's, and it is
-/// the reason they are right.** Time Machine cannot reach this Mac's backup drive, so one snapshot
+/// the reason they are right.** Time Machine could not reach the backup drive, so one snapshot
 /// from 25 August is stuck. Deleting any file older than that returns **zero bytes** — the blocks
-/// are still referenced. Measured on this Mac: a file written today returns 98% of itself,
+/// are still referenced. Measured on one real Mac: a file written today returns 98% of itself,
 /// yesterday 74%, May 12%, a July video folder 3.6%.
 ///
 /// ## The model, and why it is a line rather than a curve
@@ -787,7 +787,7 @@ public struct SnapshotStanding: Sendable, Hashable, Codable {
         Bytes(onDisk: onDisk, recoverableToday: recoverable(onDisk: onDisk, modifiedOn: modifiedOn))
     }
 
-    /// ⚠️ **John's ruling, 2026-08-28: Storage says this out loud, on the face, as one flat line
+    /// ⚠️ **The ruling, 2026-08-28: Storage says this out loud, on the face, as one flat line
     /// with no button.** Backup does not exist yet, and there is nothing here for a person to
     /// press — but it is the reason almost nothing on this screen returns space, so leaving it out
     /// would make our own numbers look broken.
@@ -937,8 +937,8 @@ extension String {
 ///
 /// ⚠️ Measured 2026-08-28: our scan of live files totalled **244 GB**; macOS reports **357 GB**
 /// used. The missing 113 GB is the local snapshot, the folders we were not allowed to read, and the
-/// filesystem's own bookkeeping. **Every competitor invents an "Other" slice to hide this.** A slice
-/// labelled Other is a number with no explanation attached, which is the same as no number.
+/// filesystem's own bookkeeping. **Every competitor invents an "Other" slice to hide this.** A
+/// slice labelled Other is a number with no explanation attached, which is the same as no number.
 ///
 /// This type cannot be omitted from a report: `StorageReport` computes it in its initialiser, from
 /// figures it already holds, and there is no argument for it to leave out.
@@ -1063,9 +1063,9 @@ public enum DiskPressure: String, Sendable, Codable, CaseIterable, Identifiable 
 
 /// **The two answers to "how much room is left", and the one line that explains the difference.**
 ///
-/// John's ruling, 2026-08-28: the real number leads, Finder's is printed underneath, and one line
-/// says what the gap is. Measured on this Mac — 109.8 GB actually free, 177.9 GB in Finder, 68.1 GB
-/// apart.
+/// The ruling, 2026-08-28: the real number leads, Finder's is printed underneath, and one line
+/// says what the gap is. Measured on one real Mac — 109.8 GB actually free, 177.9 GB in Finder,
+/// 68.1 GB apart.
 ///
 /// The reading is taken by `App/Storage/FreeSpace.swift`; this type is the answer it hands back.
 public struct FreeSpacePicture: Sendable, Hashable, Codable {
@@ -1113,7 +1113,7 @@ public struct FreeSpacePicture: Sendable, Hashable, Codable {
         return "Finder says \(finderShows.text)."
     }
 
-    /// ⭐ **The one line that explains the difference.** This is the sentence John asked for, and
+    /// ⭐ **The one line that explains the difference.** This is the sentence asked for, and
     /// the thing no other tool on this Mac does: we are not contradicting Finder, we are saying
     /// what its number counts.
     public var differenceLine: String? {
@@ -1282,7 +1282,7 @@ public struct StorageReport: Sendable, Hashable {
     /// ⭐ **Computed, never passed in.**
     public let gap: MeasuredGap
 
-    /// ⚠️ **John's ruling: one flat line on the face, no button.** `nil` when there is nothing to
+    /// ⚠️ **The ruling: one flat line on the face, no button.** `nil` when there is nothing to
     /// say.
     public let snapshotLine: String?
 

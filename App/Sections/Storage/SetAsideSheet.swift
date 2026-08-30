@@ -9,7 +9,7 @@ import WellkeptCore
 //
 //  ⭐ **Ceremony two: one file, never pre-ticked, and the arithmetic stated before the press.**
 //
-//  John, 2026-08-28: *"A person's own file: one at a time, never pre-ticked, with a sheet stating
+//  Decided 2026-08-28: *"A person's own file: one at a time, never pre-ticked, with a sheet stating
 //  the arithmetic before the press — 'this will not make your Mac emptier today; to get the 12 GB
 //  back you also have to empty the quarantine' — and both buttons on that sheet."*
 //
@@ -24,7 +24,7 @@ import WellkeptCore
 //
 //  - **Set aside** — the ordinary route. Nothing is deleted, nothing on the Mac gets smaller, and
 //    there are thirty days to change your mind.
-//  - **Set aside, then empty the quarantine** — the answer to the consequence John drew out on
+//  - **Set aside, then empty the quarantine** — the answer to the consequence drawn out on
 //    2026-08-28: *if the disk is full today, quarantine is the wrong button.* Wanting the room now
 //    means both halves, deliberately, in one sitting.
 //
@@ -96,7 +96,7 @@ struct SetAsideSheet: View {
         .softCard()
     }
 
-    /// ⭐ **John's sentence.** Never re-composed, never abbreviated.
+    /// ⭐ **The settled sentence.** Never re-composed, never abbreviated.
     private var arithmetic: some View {
         Text(FreeSpace.Says.arithmetic(for: item.bytes))
             .font(.appBody)

@@ -8,38 +8,38 @@ import Foundation
 //
 //  ⭐ **The thirty days.**
 //
-//  John's answer, 2026-08-28: **thirty CALENDAR days**, not days the app happened to be open. And
+//  The answer, 2026-08-28: **thirty CALENDAR days**, not days the app happened to be open. And
 //  **the user chooses**, in Settings, between *remove them at thirty days* and *tell me at thirty
 //  days*. **Manual is the default.**
 //
 //  ## Why "auto" does not break "nothing changes the Mac on a schedule"
 //
 //  ⚠️ **Wellkept took a login item on 2026-08-29, and it changes nothing here.** The background
-//  piece backs up and does exactly three things, none of which is quarantine: hourly while the drive
-//  is connected, on connect, and noticing a backup that has gone quiet. Nothing on a timer may ever
-//  reach into the quarantine, which holds the person's own files.
+//  piece backs up and does exactly three things, none of which is quarantine: hourly while the
+//  drive is connected, on connect, and noticing a backup that has gone quiet. Nothing on a timer
+//  may ever reach into the quarantine, which holds the person's own files.
 //
-//  So automatic removal can still only ever happen **the next time Wellkept is opened**, and when it
-//  does the app **says what it removed**.
+//  So automatic removal can still only ever happen **the next time Wellkept is opened**, and when
+//  it does the app **says what it removed**.
 //
 //  That is the whole reason it is allowed. It is not the app acting unbidden on a timer; it is the
 //  person's own standing instruction being carried out in front of them, the first moment they are
-//  there to see it. *Automatic means looking. Manual means touching* — and this is the one place the
-//  user is permitted to convert a manual verb into a standing one, because they said so, by name, in
-//  Settings.
+//  there to see it. *Automatic means looking. Manual means touching* — and this is the one place
+//  the user is permitted to convert a manual verb into a standing one, because they said so, by
+//  name, in Settings.
 //
 //  ⚠️ **Nothing here may ever be moved onto a timer, a scheduled task, or a launch agent.** There
-//  is a launch agent now, and this rule survived it deliberately: `BackgroundPieceProcess` has three
-//  jobs and quarantine is not one of them. Adding a fourth is a conversation with John, not an
-//  edit — the whole quarantine exists so that nobody's file is removed by a machine while they were
-//  busy.
+//  is a launch agent now, and this rule survived it deliberately: `BackgroundPieceProcess` has
+//  three jobs and quarantine is not one of them. Adding a fourth is a conversation with the
+//  developer, not an edit — the whole quarantine exists so that nobody's file is removed by a
+//  machine while they were busy.
 //
 //  ## Manual, which is the default
 //
 //  At thirty days the item **rises to the top of the quarantine screen, marked ready to remove, and
-//  waits.** An item nobody acknowledges waits for ever. That is not an oversight: the alternative is
-//  an app that eventually deletes somebody's file because they were busy, which is the failure the
-//  whole quarantine exists to prevent.
+//  waits.** An item nobody acknowledges waits for ever. That is not an oversight: the alternative
+//  is an app that eventually deletes somebody's file because they were busy, which is the failure
+//  the whole quarantine exists to prevent.
 //
 //  ## Two different ways of counting, on purpose
 //
@@ -49,12 +49,12 @@ import Foundation
 //    means by "days ago". An item set aside at 23:50 last night is "1 day old" this morning and not
 //    "0 days old", which would read as a bug.
 //
-//  They are deliberately not the same function. Using day-boundary counting for expiry would make an
-//  item set aside at 23:59 ready after twenty-nine days and one minute.
+//  They are deliberately not the same function. Using day-boundary counting for expiry would make
+//  an item set aside at 23:59 ready after twenty-nine days and one minute.
 
 // MARK: - The setting
 
-/// What happens at thirty days. **Manual is the default and John chose it.**
+/// What happens at thirty days. **Manual is the default and that was the choice.**
 enum ExpiryMode: String, CaseIterable, Sendable, Identifiable {
 
     /// The item is marked ready and waits. Nothing is removed until somebody presses the button.
@@ -159,8 +159,8 @@ enum Expiry {
             : calendarDays(from: now, to: readyOn(record, calendar: calendar), calendar: calendar)
     }
 
-    /// The age line on the row. **Never a countdown for something already ready** — a person looking
-    /// at "0 days left" cannot tell it from a bug.
+    /// The age line on the row. **Never a countdown for something already ready** — a person
+    /// looking at "0 days left" cannot tell it from a bug.
     static func ageSentence(_ record: QuarantineRecord, now: Date = Date(),
                             calendar: Calendar = .current) -> String {
         if isReady(record, now: now, calendar: calendar) {
@@ -177,8 +177,8 @@ enum Expiry {
 
     /// The screen's order: **ready first, oldest first within each group.**
     ///
-    /// John's shape — at thirty days the item *rises to the top* and waits there. A list that sorted
-    /// only by date would bury a ready item under a week of newer ones.
+    /// The settled shape — at thirty days the item *rises to the top* and waits there. A list that
+    /// sorted only by date would bury a ready item under a week of newer ones.
     static func sortedForTheScreen(_ records: [QuarantineRecord],
                                    now: Date = Date(),
                                    calendar: Calendar = .current) -> [QuarantineRecord] {
@@ -227,7 +227,7 @@ enum Expiry {
     /// ⚠️ **This is the only automatic destructive action in Wellkept, and it exists only because
     /// the user asked for it by name in Settings.** In `manual` — the default — it removes nothing
     /// and only counts. Anything that makes this run from a timer, a notification, or a background
-    /// task is a change John has to agree to first.
+    /// task is a change the developer has to agree to first.
     @discardableResult
     static func sweepOnOpening(home: URL = StorageManifest.home(),
                                now: Date = Date(),

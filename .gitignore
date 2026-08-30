@@ -8,3 +8,7 @@ xcuserdata/
 Wellkept.app
 *.dmg
 dist/
+
+# Per-machine tool settings. Untracked on purpose: this file accumulates absolute paths from
+# whoever's Mac ran the tool, and this repo is public.
+.claude/settings.local.json

@@ -83,7 +83,7 @@ public struct CheckRecord: Sendable, Hashable {
 }
 ```
 
-### The seven sentences — Claude's draft, John edits the words
+### The seven sentences — Claude drafts them, the developer edits the words
 
 | Section | Question | Sentence on the face | Button |
 |---|---|---|---|

@@ -168,14 +168,14 @@ struct OneMoveOnlyGuardTests {
 
     /// Automatic removal has one entry point, and nothing else in the app deletes on a clock.
     @Test("Only the sweep on opening ever removes anything by itself")
-    func theOnlyAutomaticRemovalIsTheOneJohnAgreedTo() {
+    func theOnlyAutomaticRemovalIsTheOneAgreedTo() {
         let root = Self.repositoryRoot
             .appendingPathComponent("App/Quarantine/Expiry.swift")
         let text = (try? String(contentsOf: root, encoding: .utf8)) ?? ""
         let deletes = Self.codeLines(of: text).filter { $0.line.contains("Quarantine.delete(") }
         #expect(deletes.count == 1,
                 "Expiry removes things from more than one place: \(deletes.map(\.number))")
-        #expect(!text.contains("Timer("), "expiry is on a timer, which John did not agree to")
+        #expect(!text.contains("Timer("), "expiry is on a timer, which was never agreed to")
         #expect(!text.contains("DispatchSourceTimer"), "expiry is on a timer")
     }
 }

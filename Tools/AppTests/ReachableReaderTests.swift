@@ -119,15 +119,15 @@ import WellkeptCore
 
 @Suite struct ReachableReaderRowTests {
 
-    /// **John's own Mac, 2026-08-27.** AirPlay Receiver listening on the network, the Public folder
+    /// **A real Mac, 2026-08-27.** AirPlay Receiver listening on the network, the Public folder
     /// set up to be shared with guests, File Sharing not seen. Neither is a crisis, and the row
     /// says both plainly with no colour on either.
-    @Test func johnsMacReadsAsTwoPlainFacts() {
+    @Test func sampleMacReadsAsTwoPlainFacts() {
         let survey = ReachableReader.Survey(
             sockets: [ReachableReader.Socket(port: 7000, address: "*", isUDP: false)],
             guestLoginEnabled: false,
-            sharedFolders: [ReachableReader.SharedFolder(name: "John's Public Folder",
-                                                         path: "/Users/jds/Public",
+            sharedFolders: [ReachableReader.SharedFolder(name: "Ada's Public Folder",
+                                                         path: "/Users/ada/Public",
                                                          guestAccess: true)]
         )
         let row = ReachableReader.row(from: survey)

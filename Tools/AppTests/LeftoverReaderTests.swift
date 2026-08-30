@@ -13,7 +13,7 @@ import WellkeptCore
 //
 //  This is the screen where being wrong costs somebody their work. So the suite is written the other
 //  way round from a normal one: most of it proves that something is **not** reported. Three of them
-//  name the actual traps measured on 2026-08-27 — the owner's PHP installation, an ad blocker that
+//  name the actual traps measured on 2026-08-27 — a working PHP installation, an ad blocker that
 //  is installed and running, and Chrome's updater.
 //
 //  Nothing here reads this Mac except the two live tests at the end, which assert shape and not
@@ -43,7 +43,7 @@ private func noAppRegistered(_: String) -> Bool { false }
 @Suite struct LeftoverTrapTests {
 
     /// ⚠️ **The trap that defines the file.** `~/Library/Application Support/Herd` has no app, no
-    /// Spotlight entry, and is the owner's PHP and Composer. It is safe because "Herd" is not a
+    /// Spotlight entry, and is a working PHP and Composer install. It is safe because "Herd" is not a
     /// bundle identifier — and that is the rule, not luck.
     @Test func aFolderNamedAfterAProductIsNeverEvidence() {
         for name in ["Herd", "Google", "Adobe", "Firefox", "MobileSync"] {

@@ -76,7 +76,7 @@ import WellkeptCore
 //  Everything is read-only: no drive is opened for writing, nothing is mounted or unmounted, and
 //  the one ATA call that would change a device's own settings — `SMARTEnableDisableOperations` —
 //  is deliberately never made. If a drive has SMART switched off, this file reports that it could
-//  not read it rather than switching it on behind the owner's back.
+//  not read it rather than switching it on behind the person's back.
 
 // MARK: - One drive
 

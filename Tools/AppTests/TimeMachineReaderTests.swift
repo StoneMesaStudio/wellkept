@@ -42,19 +42,19 @@ struct TimeMachineReaderTests {
     /// ⭐ **This Mac's own record, as `cfprefsd` handed it over on 2026-08-29.** The keys and the
     /// shapes are copied from the real read; only the dates are moved onto the fixed clock so the
     /// "days since" sentences can be asserted.
-    static func johnsMac(result: Int = 0,
+    static func sampleMac(result: Int = 0,
                          lastSuccess: Double = 4,
                          lastAttempt: Double = 4.05) -> TimeMachineReader.Preferences.Destination {
         TimeMachineReader.Preferences.Destination(
-            id: "9B081F90-EBE4-40A8-B6CE-F76456896027",
-            volumeName: "JDS Backup",
-            volumeUUIDs: ["34DD966B-07D3-432C-AA90-EF1151ECC2C2"],
+            id: "11111111-2222-3333-4444-555555555555",
+            volumeName: "Backup Drive",
+            volumeUUIDs: ["66666666-7777-8888-9999-AAAAAAAAAAAA"],
             networkURL: nil,
             result: result,
             attempts: [daysAgo(87), daysAgo(60), daysAgo(32), daysAgo(lastAttempt)],
             successes: [daysAgo(87), daysAgo(72), daysAgo(60), daysAgo(lastSuccess)],
-            bytesAvailable: 1_510_329_090_048,
-            bytesUsed: 489_560_231_936,
+            bytesAvailable: 1_500_000_000_000,
+            bytesUsed: 480_000_000_000,
             filesystem: "apfs",
             encryptionState: "NotEncrypted",
             referenceSnapshot: daysAgo(lastSuccess))
@@ -73,15 +73,15 @@ struct TimeMachineReaderTests {
 
     /// The whole point of the section, exercised through the reader rather than through the type.
     ///
-    /// This is John's Mac to the letter: a configured destination, the drive in a drawer, the last
+    /// This is a real Mac to the letter: a configured destination, the drive in a drawer, the last
     /// backup four days old, and the switch off. The row must say **off**, not broken, and it must
     /// not use the word "failing" anywhere on it.
     @Test("A configured Mac with the switch off says off, not broken")
     func switchedOffReadsAsSwitchedOff() {
-        let record = Self.johnsMac()
+        let record = Self.sampleMac()
         let state = TimeMachineState(isConfigured: true,
                                      automaticBackupsOn: false,
-                                     destination: BackupDestination(name: "JDS Backup",
+                                     destination: BackupDestination(name: "Backup Drive",
                                                                     kind: .localDrive,
                                                                     isConnected: false),
                                      lastSuccess: record.lastSuccess,
@@ -111,7 +111,7 @@ struct TimeMachineReaderTests {
         func state(daysSince: Double) -> TimeMachineState {
             TimeMachineState(isConfigured: true,
                              automaticBackupsOn: true,
-                             destination: BackupDestination(name: "JDS Backup",
+                             destination: BackupDestination(name: "Backup Drive",
                                                             kind: .localDrive,
                                                             isConnected: false),
                              lastSuccess: Self.daysAgo(daysSince))
@@ -127,18 +127,18 @@ struct TimeMachineReaderTests {
     @Test("A failure recorded before a later success is not reported")
     func aLaterSuccessBuriesAnOlderFailure() {
         // Attempt 4.05 days ago, success 4 days ago: the success came after.
-        let recovered = Self.johnsMac(result: 45, lastSuccess: 4, lastAttempt: 4.05)
+        let recovered = Self.sampleMac(result: 45, lastSuccess: 4, lastAttempt: 4.05)
         #expect(TimeMachineReader.failure(for: recovered, isConnected: false) == nil)
 
         // Attempt 3 days ago, success 4 days ago: the attempt is the last word, and it failed.
-        let stillBroken = Self.johnsMac(result: 45, lastSuccess: 4, lastAttempt: 3)
+        let stillBroken = Self.sampleMac(result: 45, lastSuccess: 4, lastAttempt: 3)
         #expect(TimeMachineReader.failure(for: stillBroken, isConnected: false) != nil)
     }
 
     /// ⭐ "Plug the drive in" is the wrong thing to say to somebody who just did.
     @Test("A missing-drive failure is dropped once the drive is attached")
     func aResolvedAbsenceIsNotAFailure() {
-        let record = Self.johnsMac(result: 18, lastSuccess: 4, lastAttempt: 3)
+        let record = Self.sampleMac(result: 18, lastSuccess: 4, lastAttempt: 3)
 
         #expect(TimeMachineReader.failure(for: record, isConnected: true) == nil,
                 "the drive is here now — the recorded complaint is about a moment that has passed")
@@ -150,10 +150,10 @@ struct TimeMachineReaderTests {
     /// Nothing is hidden by that drop: the row still says nothing has finished.
     @Test("Dropping the resolved absence still leaves an overdue Mac reading as overdue")
     func nothingIsHiddenByTheDrop() {
-        let record = Self.johnsMac(result: 18, lastSuccess: 40, lastAttempt: 3)
+        let record = Self.sampleMac(result: 18, lastSuccess: 40, lastAttempt: 3)
         let state = TimeMachineState(isConfigured: true,
                                      automaticBackupsOn: true,
-                                     destination: BackupDestination(name: "JDS Backup",
+                                     destination: BackupDestination(name: "Backup Drive",
                                                                     kind: .localDrive,
                                                                     isConnected: true),
                                      lastSuccess: record.lastSuccess,
@@ -164,7 +164,7 @@ struct TimeMachineReaderTests {
 
     @Test("A result of zero is never a failure")
     func successIsNotAFailure() {
-        #expect(TimeMachineReader.failure(for: Self.johnsMac(result: 0), isConnected: false) == nil)
+        #expect(TimeMachineReader.failure(for: Self.sampleMac(result: 0), isConnected: false) == nil)
         #expect(TimeMachineReader.failure(for: nil, isConnected: false) == nil)
     }
 
@@ -291,8 +291,8 @@ struct TimeMachineReaderTests {
                                                           takenOn: date)])
     }
 
-    /// ⭐ On this Mac the stuck snapshot and `ReferenceLocalSnapshotDate` are the same instant to
-    /// the second — 2026-08-25 06:25:03 MDT and 2026-08-25 12:25:03 UTC. That is what lets the
+    /// ⭐ On one real Mac the stuck snapshot and `ReferenceLocalSnapshotDate` are the same instant
+    /// to the second — 2026-08-25 06:25:03 MDT and 2026-08-25 12:25:03 UTC. That is what lets the
     /// sentence say what the snapshot is **for**, and give somebody an action.
     @Test("When the stuck snapshot is Time Machine's reference point, the sentence says so")
     func theReferencePointIsNamed() {
@@ -353,16 +353,16 @@ struct TimeMachineReaderTests {
 
     // MARK: - Reading the preferences
 
-    /// The record is parsed out of the keys Apple actually writes, copied from this Mac's own read.
-    @Test("This Mac's recorded destination parses")
+    /// The record is parsed out of the keys Apple actually writes, copied from a real Time Machine read.
+    @Test("A real recorded destination parses")
     func theRealShapeParses() {
         let raw: [String: Any] = [
-            "DestinationID": "9B081F90-EBE4-40A8-B6CE-F76456896027",
-            "LastKnownVolumeName": "JDS Backup",
-            "DestinationUUIDs": ["34DD966B-07D3-432C-AA90-EF1151ECC2C2"],
+            "DestinationID": "11111111-2222-3333-4444-555555555555",
+            "LastKnownVolumeName": "Backup Drive",
+            "DestinationUUIDs": ["66666666-7777-8888-9999-AAAAAAAAAAAA"],
             "RESULT": 0,
-            "BytesAvailable": 1_510_329_090_048,
-            "BytesUsed": 489_560_231_936,
+            "BytesAvailable": 1_500_000_000_000,
+            "BytesUsed": 480_000_000_000,
             "FilesystemTypeName": "apfs",
             "LastKnownEncryptionState": "NotEncrypted",
             "SnapshotDates": [Self.daysAgo(87), Self.daysAgo(4), Self.daysAgo(60)],
@@ -371,7 +371,7 @@ struct TimeMachineReaderTests {
         ]
         let record = TimeMachineReader.Preferences.destination(from: raw)
 
-        #expect(record.displayName == "JDS Backup")
+        #expect(record.displayName == "Backup Drive")
         #expect(record.kind == .localDrive)
         #expect(record.result == 0)
         #expect(record.successes.count == 3)
@@ -411,9 +411,9 @@ struct TimeMachineReaderTests {
         let other = TimeMachineReader.Preferences.destination(from: ["DestinationID": "OTHER"])
         let reading = TimeMachineReader.Preferences.Reading(answered: true,
                                                             automaticBackupsOn: true,
-                                                            destinations: [other, Self.johnsMac()],
-                                                            lastDestinationID: Self.johnsMac().id)
-        #expect(reading.chosenDestination?.volumeName == "JDS Backup")
+                                                            destinations: [other, Self.sampleMac()],
+                                                            lastDestinationID: Self.sampleMac().id)
+        #expect(reading.chosenDestination?.volumeName == "Backup Drive")
     }
 
     // MARK: - The details behind Options
@@ -422,18 +422,18 @@ struct TimeMachineReaderTests {
     /// attached. It is labelled as such rather than printed as if it were today's figure.
     @Test("Stale capacity figures say when they were taken")
     func staleFiguresAreLabelled() {
-        let whileAway = TimeMachineReader.historyDetails(Self.johnsMac(), isConnected: false)
+        let whileAway = TimeMachineReader.historyDetails(Self.sampleMac(), isConnected: false)
         #expect(whileAway.contains { $0.label.contains("when it was last connected") })
 
-        let whileHere = TimeMachineReader.historyDetails(Self.johnsMac(), isConnected: true)
+        let whileHere = TimeMachineReader.historyDetails(Self.sampleMac(), isConnected: true)
         #expect(whileHere.contains { $0.label.contains("when it was last connected") } == false,
                 "with the drive attached the live figures are on the destination itself")
     }
 
-    /// Four backups in three months — the fact that made the owner's Mac legible.
+    /// Four backups in three months — the fact that made the measured Mac legible.
     @Test("The backup history is reported with its span")
     func theHistoryCarriesItsSpan() {
-        let pairs = TimeMachineReader.historyDetails(Self.johnsMac(), isConnected: false)
+        let pairs = TimeMachineReader.historyDetails(Self.sampleMac(), isConnected: false)
         let backups = pairs.first { $0.label == "Backups recorded" }
         #expect(backups?.value.hasPrefix("4, from ") == true)
     }
@@ -449,7 +449,7 @@ struct TimeMachineReaderTests {
         #expect(TimeMachineReader.Words.encryption("Encrypted") == "Encrypted")
         #expect(TimeMachineReader.Words.encryption("SomethingNew") == "SomethingNew")
 
-        let pairs = TimeMachineReader.historyDetails(Self.johnsMac(), isConnected: false)
+        let pairs = TimeMachineReader.historyDetails(Self.sampleMac(), isConnected: false)
         #expect(pairs.first { $0.label == "Backup drive format" }?.value == "APFS")
         #expect(pairs.first { $0.label == "Backup drive encryption" }?.value == "Not encrypted")
     }
@@ -458,7 +458,7 @@ struct TimeMachineReaderTests {
     /// repair shop" button can show what is about to leave.
     @Test("The destination ID is marked sensitive")
     func theDestinationIDIsMarkedSensitive() {
-        let pairs = TimeMachineReader.historyDetails(Self.johnsMac(), isConnected: false)
+        let pairs = TimeMachineReader.historyDetails(Self.sampleMac(), isConnected: false)
         #expect(pairs.first { $0.label == "Destination ID" }?.sensitive == true)
     }
 
@@ -484,7 +484,7 @@ struct TimeMachineReaderTests {
     @Test("The row's button is a destination, and the pane exists")
     func theButtonIsADestination() {
         let state = TimeMachineState(isConfigured: true, automaticBackupsOn: false,
-                                     destination: BackupDestination(name: "JDS Backup",
+                                     destination: BackupDestination(name: "Backup Drive",
                                                                     kind: .localDrive,
                                                                     isConnected: false),
                                      lastSuccess: Self.daysAgo(4))
@@ -515,12 +515,12 @@ struct TimeMachineReaderTests {
     @Test("The snapshot line joins the reason rather than replacing it")
     func theSnapshotLineJoinsTheReason() {
         let state = TimeMachineState(isConfigured: true, automaticBackupsOn: false,
-                                     destination: BackupDestination(name: "JDS Backup",
+                                     destination: BackupDestination(name: "Backup Drive",
                                                                     kind: .localDrive,
                                                                     isConnected: false),
                                      lastSuccess: Self.daysAgo(4))
         let row = TimeMachineReader.row(from: state,
-                                        prefs: Self.reading(Self.johnsMac(), automaticBackupsOn: false),
+                                        prefs: Self.reading(Self.sampleMac(), automaticBackupsOn: false),
                                         snapshots: .none,
                                         snapshotLine: "A snapshot is holding space.",
                                         now: Self.now)
@@ -532,7 +532,7 @@ struct TimeMachineReaderTests {
 
     /// ⚠️ **This test reads the real machine**, the way `AppleWordsTests` does, because a reader
     /// that compiles and reads nothing is exactly the failure a fixture cannot catch. Every
-    /// expectation below is true of any Mac — nothing here depends on John's drive existing.
+    /// expectation below is true of any Mac — nothing here depends on that drive existing.
     ///
     /// ⛔ Read-only. It mounts nothing, changes nothing, and needs no permission — which is the
     /// claim it is really testing.

@@ -108,7 +108,7 @@ struct ChangesSectionTests {
 
     // MARK: - ⛔ Nothing here changes anything
 
-    /// ⛔ **John, 2026-08-28: Wellkept writes no setting, ever.** The row's only control is a
+    /// ⛔ **Decided 2026-08-28: Wellkept writes no setting, ever.** The row's only control is a
     /// destination, so the row Overview gets carries no verb at all — Overview is not where
     /// somebody should be sent to System Settings.
     @Test("The row that reaches Overview offers no verb")
@@ -276,7 +276,7 @@ struct ChangesSectionTests {
 
     // MARK: - Every change is worth reading
 
-    /// ⭐ **John, 2026-08-28: our descriptions, and better than the prior art.** Every change the
+    /// ⭐ **Decided 2026-08-28: our descriptions, and better than the prior art.** Every change the
     /// face can draw carries all three sentences — what it does, what turning it off costs you, and
     /// why it might have changed — and they are three different sentences.
     @Test("Every change on either demo Mac carries all three sentences")

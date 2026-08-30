@@ -21,7 +21,7 @@ import WellkeptCore
 //  `~/Library/Caches/com.apple.bookassetd/1442759222/Track 1.m4b` — Apple Books put it there, filed
 //  under its store number, inside a folder named with a perfectly genuine Apple bundle identifier.
 //
-//  Measured on this Mac, 2026-08-28: **the whole of `~/Library/Caches` is 4.6 GB, and 1.5 GB of it
+//  Measured on one real Mac, 2026-08-28: **the whole of `~/Library/Caches` is 4.6 GB, and 1.5 GB of it
 //  is those audiobooks.** A cleaner that offers "Caches — 4.6 GB" is offering a third of somebody's
 //  audiobook library as part of the prize, and it will be right about the number and wrong about
 //  the thing.
@@ -37,13 +37,13 @@ import WellkeptCore
 //
 //  `~/Library/Application Support/Herd` is 90 MB, has no app, no receipt, no Spotlight entry, and
 //  has not been touched in four and a half months. Every orphan heuristic ever written fires on it
-//  at once. **It is the owner's PHP interpreter — the thing his working day runs on.**
+//  at once. **It is a working PHP interpreter — the thing somebody's working day runs on.**
 //
 //  It is safe from this file for a reason that is not luck: **nothing here ever concludes anything
 //  from an absence.** There is no rule below of the form "no app claims it", "nobody has opened it",
 //  or "it is not in any receipt". Every category is a positive claim about the thing itself.
 //
-//  ## What qualifies, measured on this Mac
+//  ## What qualifies, measured on one real Mac
 //
 //  | Category | Found here | Ticked | What puts it back |
 //  |---|---|---|---|

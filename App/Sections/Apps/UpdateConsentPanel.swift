@@ -6,7 +6,7 @@ import WellkeptCore
 //
 //  ⭐ **The ask, in the page rather than over it.**
 //
-//  John, 2026-08-27: *"Inform and consent."* This is the inform half made visible, and it is
+//  Decided 2026-08-27: *"Inform and consent."* This is the inform half made visible, and it is
 //  arguably the most important thing on this screen — it is the moment that decides whether
 //  somebody trusts the rest of the app.
 //

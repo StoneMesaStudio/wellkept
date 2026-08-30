@@ -16,7 +16,7 @@ import WellkeptCore
 //  update changed it" into a row, because both of those are *working code* that does exactly what
 //  it says.
 //
-//  1. ⛔ **Wellkept writes no setting, ever.** John, 2026-08-28, with no exception — not even the
+//  1. ⛔ **Wellkept writes no setting, ever.** Decided 2026-08-28, with no exception — not even the
 //     default browser, which is the one write macOS actually permits. There is no fifth verb;
 //     "Open Settings" is a destination. So the scan below fails the build on any preference-writing
 //     API, any privileged tool, and any path into the system that is not one of the three this
@@ -120,7 +120,7 @@ enum ChangesSource {
 
 // MARK: - ⛔ Nothing in this section writes anything to this Mac
 
-/// ⭐ **John, 2026-08-28: "Wellkept writes no setting, ever."**
+/// ⭐ **Decided 2026-08-28: "Wellkept writes no setting, ever."**
 ///
 /// The temptation is specific and it will arrive. Somebody looks at a row saying the firewall went
 /// off, sees that macOS publishes a documented call to put it back, and adds a button. The measured
@@ -139,8 +139,8 @@ struct ChangesWritesNothingGuardTests {
     ///
     /// Split in two because they fail differently: an API call is a silent write, and a tool is a
     /// password dialog on somebody's screen. Both are banned; only the second has ever actually
-    /// happened here, when `sfltool dumpbtm` put a system password box in front of John on
-    /// 2026-08-27.
+    /// happened here, when `sfltool dumpbtm` put a system password box on the
+    /// screen on 2026-08-27.
     static let writingAPIs = [
         "CFPreferencesSetValue", "CFPreferencesSetAppValue", "CFPreferencesSetMultiple",
         "CFPreferencesAppSynchronize", "CFPreferencesSynchronize",
@@ -388,7 +388,7 @@ struct ChangesComparesValuesGuardTests {
 
 // MARK: - ⛔ A description has three parts or it does not exist
 
-/// ⭐ **John, 2026-08-28: "Let's show him up and do it better."**
+/// ⭐ **Decided 2026-08-28: "Let's show him up and do it better."**
 ///
 /// Better was defined concretely, against prior art that is 787 one-line descriptions with 383 of
 /// them flagged AI-generated: every description says **what the setting does**, **what turning it

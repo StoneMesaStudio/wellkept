@@ -31,7 +31,7 @@ import WellkeptCore
 
 /// The exhaustive version of the one rule this section exists to keep.
 ///
-/// John's ruling, 2026-08-28: **machine junk regenerates and may be pre-selected; a person's own
+/// The ruling, 2026-08-28: **machine junk regenerates and may be pre-selected; a person's own
 /// files are revealed, sized and sorted, and never pre-selected or swept.** Everything below walks
 /// the whole product of the states an item can be in and asserts that no path through them puts a
 /// tick on something whose `Origin` is `.yours`.
@@ -152,9 +152,9 @@ struct PreSelectionStateSpaceTests {
 
 /// **`SizeOnDisk` and `Recoverable` are two types precisely so that a swap is a compile error.**
 ///
-/// Measured on this Mac: `~/Documents/Media` is 14.8 GB on disk and 0.5 GB back today — 30× apart,
-/// and the worksheet carries a 150× case. Printing the first where the second belongs is the single
-/// most misleading thing this section could do.
+/// Measured on one real Mac: one media folder was 14.8 GB on disk and 0.5 GB back today — 30×
+/// apart, and the worksheet carries a 150× case. Printing the first where the second belongs is the
+/// single most misleading thing this section could do.
 ///
 /// A test cannot assert that something does not compile. What it can assert is that the guardrails
 /// which make the swap impossible are still standing: no literal turns into either type by
@@ -174,9 +174,9 @@ struct TwoNumbersTests {
     }
 
     /// ⭐ **A `Recoverable` is a conclusion, and it is reached in one place.** The memberwise
-    /// initialiser is deliberately internal to `WellkeptCore`; the two named constructors each state
-    /// their assumption in their own name. This reads the source, because "no public init" is a
-    /// property of the text and not of any value the test could hold.
+    /// initialiser is deliberately internal to `WellkeptCore`; the two named constructors each
+    /// state their assumption in their own name. This reads the source, because "no public init" is
+    /// a property of the text and not of any value the test could hold.
     @Test func recoverableHasNoPublicInitialiserForAnybodyToReachFor() {
         let text = StorageSource.core
         let struckRegion = StorageSource.region(of: "public struct Recoverable", in: text)
@@ -309,9 +309,9 @@ struct MachineJunkAuthorityTests {
     }
 
     /// ⚠️ **No rule anywhere may conclude junk from an absence.** The Herd trap is live on this
-    /// Mac: 90 MB in Application Support, no app, no receipt, no Spotlight entry, untouched four and
-    /// a half months — and it is the owner's PHP. Every orphan heuristic fires at once and every one
-    /// of them is wrong.
+    /// Mac: 90 MB in Application Support, no app, no receipt, no Spotlight entry, untouched four
+    /// and a half months — and it is a working PHP install. Every orphan heuristic fires at once
+    /// and every one of them is wrong.
     ///
     /// The defence is that no such rule exists, so this looks for the shape of one arriving.
     @Test func nothingConcludesJunkFromAnAbsence() {
@@ -328,7 +328,7 @@ struct MachineJunkAuthorityTests {
         #expect(offenders.isEmpty, """
             These reason from an absence of evidence: \(offenders.joined(separator: ", ")).
             The 90 MB folder in Application Support with no app, no receipt, no Spotlight entry \
-            and no activity for four and a half months is the owner's PHP. Identity, never absence.
+            and no activity for four and a half months is a working PHP install. Identity, never absence.
             """)
     }
 }

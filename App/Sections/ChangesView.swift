@@ -27,7 +27,7 @@ import WellkeptCore
 //
 //  ## ⛔ Three things this screen may never do
 //
-//  - **Change a setting.** John, 2026-08-28: Wellkept writes no setting, ever, not even the default
+//  - **Change a setting.** Decided 2026-08-28: Wellkept writes no setting, ever, not even the default
 //    browser. Every button here opens Apple's own pane and says which one. There is no fifth verb.
 //  - **Name an app as the cause.** Nothing an unprivileged app can read records which process wrote
 //    a setting. `Cause` has no case for it and `ChangesCauseGuardTests` fails the build on one.
@@ -179,12 +179,12 @@ struct ChangesView: View {
         }
     }
 
-    // MARK: John's answer 4 — said once, never per permission
+    // MARK: Answer 4 — said once, never per permission
 
     /// **The one Full Disk Access line**, where the privacy permissions changed and we could not
     /// see what.
     ///
-    /// John, 2026-08-28: show it, once, as a single line with the button that grants access, and
+    /// Decided 2026-08-28: show it, once, as a single line with the button that grants access, and
     /// never repeated per permission. Saying nothing would be reporting zero because we could not
     /// look, which this app has banned everywhere else.
     private var privacyWentDark: some View {

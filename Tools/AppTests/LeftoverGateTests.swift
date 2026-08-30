@@ -18,7 +18,7 @@ import WellkeptCore
 //     naming Xcode, because the code was running under the test harness.
 //
 //  2. **A folder with no app, no Spotlight entry and a name matching nothing is not a leftover.**
-//     On this Mac that folder is the owner's PHP and Composer.
+//     On this Mac that folder is a working PHP and Composer install.
 //
 //  ⚠️ **Nothing here calls `survey(fullDiskAccess: true)`, and nothing ever should.** Passing `true`
 //  from a test would walk the gated place under whatever process is hosting the run — which is the
@@ -113,7 +113,7 @@ private enum LeftoverReaderSource {
 
 // MARK: - ⭐ 2. The Herd regression
 
-/// ⚠️ **The named case. `~/Library/Application Support/Herd` is the owner's PHP and Composer.**
+/// ⚠️ **The named case. `~/Library/Application Support/Herd` is a working PHP and Composer install.**
 ///
 /// It has no app, no Spotlight entry, and its name matches nothing installed — every signal a
 /// name-matching cleaner uses to decide a folder is dead weight. It is 100% safe here for exactly
@@ -146,7 +146,7 @@ struct HerdRegressionTests {
     @Test func herdIsNeverReported() {
         let answer = Self.answer([Self.candidate("Herd", .applicationSupport)])
         #expect(answer.leftovers.isEmpty, """
-            Herd was reported as a removed app's leftovers. On the owner's Mac that folder is his \
+            Herd was reported as a removed app's leftovers. On one real Mac that folder is a working \
             PHP and Composer, and the row would have offered to set aside 1.4 GB of working \
             software with no app, no Spotlight entry and no name to check it against.
             """)

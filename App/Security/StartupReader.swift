@@ -31,7 +31,9 @@ import WellkeptCore
 //  The list in **System Settings ▸ General ▸ Login Items & Extensions** comes out of the
 //  background task management store at `/var/db/com.apple.backgroundtaskmanagement`, which is
 //  root-only. The one tool that prints it, `sfltool dumpbtm`, **puts an authorization password box
-//  on the screen** — banned outright in this project after it happened to John once.
+//  on the screen** — banned outright in this project after a research probe did exactly that,
+//  unannounced, on the machine being measured. A health check that demands a password to read
+//  something has already lost the argument.
 //
 //  So we build our own list from what is on disk and **say that ours can differ from Apple's by an
 //  item or two**, and point at Apple's rather than pretending to replace it. That is the honest
@@ -248,7 +250,7 @@ enum StartupReader {
     }
 
     /// Everything one run found, before it is turned into words. Exposed so the Apps section can
-    /// reuse the work instead of writing this again — John's call, 2026-08-27.
+    /// reuse the work instead of writing this again — settled 2026-08-27.
     static func survey(userAgents: URL = userAgents,
                        globalAgents: URL = globalAgents,
                        globalDaemons: URL = globalDaemons,
@@ -851,7 +853,7 @@ enum StartupReader {
     /// "we could not identify a signer" is the sentence that decides whether this app reads as a
     /// health check or as an accusation.
     ///
-    /// What the certificate actually says, measured on this Mac:
+    /// What the certificate actually says, measured on one real Mac:
     ///
     ///     Developer ID Application: Microsoft Corporation (UBF8T346G9)  → Microsoft Corporation
     ///     macOS Software Signing                                        → Apple

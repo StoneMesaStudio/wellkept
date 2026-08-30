@@ -191,17 +191,17 @@ import WellkeptCore
 
 @Suite struct ReachTests {
 
-    /// ⚠️ A plain `hasPrefix` gets two things wrong: it folds nothing, and it says `/Users/jdsmith`
-    /// is inside `/Users/jds`.
+    /// ⚠️ A plain `hasPrefix` gets two things wrong: it folds nothing, and it says `/Users/adams`
+    /// is inside `/Users/ada`.
     @Test func aLongerNameIsNotInsideAShorterOne() {
-        #expect(!Movable.isInside("/Users/jdsmith/Documents", any: ["/Users/jds"]))
-        #expect(Movable.isInside("/Users/jds/Documents", any: ["/Users/jds"]))
+        #expect(!Movable.isInside("/Users/adams/Documents", any: ["/Users/ada"]))
+        #expect(Movable.isInside("/Users/ada/Documents", any: ["/Users/ada"]))
     }
 
     /// The filesystem folds case, so the containment test has to as well — otherwise reach is a
     /// guard that a differently-spelled path walks straight past.
     @Test func containmentFoldsCase() {
-        #expect(Movable.isInside("/USERS/JDS/Documents/x", any: ["/Users/jds"]))
+        #expect(Movable.isInside("/USERS/ADA/Documents/x", any: ["/Users/ada"]))
     }
 
     /// And normalisation. An NFD spelling opens the NFC file, so it has to land in the same place.
@@ -212,7 +212,7 @@ import WellkeptCore
     }
 
     @Test func aRootIsInsideItself() {
-        #expect(Movable.isInside("/Users/jds", any: ["/Users/jds"]))
+        #expect(Movable.isInside("/Users/ada", any: ["/Users/ada"]))
     }
 
     @Test func theStandardReachIsTheHomeFolderAndApplications() {
@@ -270,7 +270,7 @@ import WellkeptCore
 
 @Suite struct ICloudWarningTests {
 
-    /// John's answer, 2026-08-28: allowed, **with** the warning. Never refused.
+    /// The answer, 2026-08-28: allowed, **with** the warning. Never refused.
     @Test func theWarningIsOneLineAndNamesBothDevices() {
         #expect(Movable.iCloudWarning == "This also removes it from your iPhone and iPad.")
         #expect(QuarantineWords.iCloud == Movable.iCloudWarning,

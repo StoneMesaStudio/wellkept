@@ -1,8 +1,9 @@
 # Wellkept — the Security section: findings and decisions
 
 2026-08-27. Six agents, all read-only. ⛔ Note for future rounds: an earlier run put a system
-password box on John's screen with `sfltool dumpbtm`. Banned, along with everything else that can
-raise an authorization dialog. **If a fact needs elevation, that is the finding.**
+password box on the screen of the machine being measured, with `sfltool dumpbtm`. Banned, along
+with everything else that can raise an authorization dialog. **If a fact needs elevation, that is
+the finding.**
 
 ## What was measured (M3, macOS 26.6.2, English, administrator account)
 
@@ -18,10 +19,11 @@ raise an authorization dialog. **If a fact needs elevation, that is the finding.
 | **Lockdown Mode** | ❌ No readable state anywhere. That row says "this Mac does not report it", never "off". |
 | **emond · periodic** | ❌ Gone entirely in macOS 26. Shipping those checks would mean two rows that always say clean because there is nothing to find. |
 
-**On John's Mac today, honestly:** AirPlay Receiver listening and reachable on the local network ·
-the Public folder shared with guest access · one XProtect Remediator plugin (KeySteal) cancelled
-part-way this morning. None is a crisis. Two browser extensions he installed on purpose — Claude
-and iCloud Passwords — can both read every site he visits.
+**What a real, ordinary Mac produced on the day of this research:** a sharing service listening and
+reachable on the local network · a shared folder with guest access · one XProtect Remediator plugin
+cancelled part-way through that morning's scan. None is a crisis, and the copy has to read that way.
+Two browser extensions installed deliberately, and wanted, could both read every site visited — which
+is the point of that row: the answer is usually "this is fine, and you should know about it".
 
 ## Two bugs found in code already shipped — **both fixed 2026-08-27**
 
@@ -44,9 +46,9 @@ and iCloud Passwords — can both read every site he visits.
    or for nobody: complete, no button). Raw values were **added, not renumbered**. Kernel panics
    and memory reports on a standard account moved to `.notGrantable`.
 
-## Asked of John — answered 2026-08-27, all agreed
+## Settled — 2026-08-27
 
-| # | Question | Answer |
+| # | Question | Decision |
 |---|---|---|
 | 1 | Malware scan this round, or after quarantine exists? | **After.** A scan that finds something today has nowhere to put it. |
 | 2 | Startup items and browser extensions in Security now, or wait for Apps? | **Now**, as two read-only rows. Apps reuses the work later. |
@@ -94,7 +96,7 @@ and iCloud Passwords — can both read every site he visits.
 - Not one line of this research ran on a **standard (non-administrator) account** — the account
   type on exactly the family and work Macs this section is for.
 - The whole boot-security block is **Apple-silicon only** and nobody has run any of it on Intel,
-  which John decided to ship to.
+  which we decided to ship to.
 - A new Full Disk Access grant **does not apply to an already-running app** — macOS offers
   "Quit & Reopen". Someone who taps Finish later, grants it, and comes back finds the section
   still saying it was not allowed. It reads as a broken app, and the app is right.

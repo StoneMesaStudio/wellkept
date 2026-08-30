@@ -18,11 +18,11 @@ import WellkeptCore
 //  everything Wellkept might one day do about it comes after.
 //
 //  ⚠️ **"Switched off" is worded differently from "failing", and the difference is the point.** On
-//  the machine this was built on, the honest headline is *"Your backup is switched off. The last one
-//  finished on 25 August."* The earlier draft of this section said "Time Machine cannot reach the
-//  drive", which was misleading: the destination is configured, the drive is simply in a drawer, and
-//  automatic backups are off. **"Your backup is off and nobody told you" is both truer and more
-//  useful than "your backup is broken."**
+//  the machine this was built on, the honest headline is *"Your backup is switched off. The last
+//  one finished on 25 August."* The earlier draft of this section said "Time Machine cannot reach
+//  the drive", which was misleading: the destination is configured, the drive is simply in a
+//  drawer, and automatic backups are off. **"Your backup is off and nobody told you" is both truer
+//  and more useful than "your backup is broken."**
 //
 //  ## The shape, top to bottom
 //
@@ -43,8 +43,8 @@ import WellkeptCore
 //    "all your files". `RehearsalGateGuardTests` fails the build on the other one.
 //  - **Offer Wellkept's own backup.** Not until somebody has erased a drive and restored from it on
 //    real hardware. The row still draws and still says why, in `RehearsalGate`'s own words.
-//  - **Count the cloud as missing.** 72.2 GB of this Mac's files are in the cloud and not on the
-//    disk. That is an arrangement, not a gap, and only `Coverage.isGap` may say otherwise.
+//  - **Count the cloud as missing.** 72.2 GB of one measured Mac's files are in the cloud and not
+//    on the disk. That is an arrangement, not a gap, and only `Coverage.isGap` may say otherwise.
 //
 //  ## ⚠️ This section does not run on launch
 //
@@ -244,8 +244,8 @@ struct BackupView: View {
 
     /// **Two kinds of button, and neither of them changes a setting.**
     ///
-    /// A remedy with a pane opens Apple's own settings. The Recovery Plan's opens the page — the one
-    /// button in this section that produces something, and what it produces is paper.
+    /// A remedy with a pane opens Apple's own settings. The Recovery Plan's opens the page — the
+    /// one button in this section that produces something, and what it produces is paper.
     @MainActor private func press(_ remedy: Remedy, on row: BackupRow, answer: BackupAnswer) {
         guard live else { return }
         if let raw = remedy.settingsPane, let pane = SystemSettingsPane(rawValue: raw) {
@@ -347,8 +347,8 @@ struct BackupView: View {
 
     // MARK: Nothing checked yet
 
-    /// ⚠️ **The ordinary state, not an edge case.** Backup never runs by itself, so this is what the
-    /// screen looks like on every launch until somebody presses the button.
+    /// ⚠️ **The ordinary state, not an edge case.** Backup never runs by itself, so this is what
+    /// the screen looks like on every launch until somebody presses the button.
     private var notCheckedYet: some View {
         EmptyStateView(
             symbol: "externaldrive.badge.timemachine",

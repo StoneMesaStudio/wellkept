@@ -28,7 +28,7 @@ import WellkeptCore
 //    `Expiry.sortedForTheScreen`, and it is the one list in this app that is not worst-first.
 //  - **The summary row never says a figure came back.** "40 GB set aside — the oldest is 12 days
 //    old", and Empty sits on it.
-//  - **The iCloud row carries one line** — John's line, on the row it is true of, not in a dialog.
+//  - **The iCloud row carries one line** — the settled line, on the row it is true of, not in a dialog.
 //  - **At 200% text** the row's two verbs and its size stay in the right-hand column while the path
 //    wraps, rather than the buttons being pushed off the readable column.
 //

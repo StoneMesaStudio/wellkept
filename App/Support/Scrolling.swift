@@ -22,8 +22,8 @@ enum SheetMetrics {
     /// default), ~15 pt with the legacy ones.
     ///
     /// ⚠️ **This is not hypothetical.** System Settings ▸ Appearance ▸ Show scroll bars ▸ *Always*
-    /// switches the whole Mac to legacy scrollers, and John runs it that way — so on his machine an
-    /// appearing scroller really does steal width. Reserved up front rather than discovered later.
+    /// switches the whole Mac to legacy scrollers, and some people run it that way — so on such a
+    /// Mac an appearing scroller really does steal width. Reserved up front rather than discovered later.
     ///
     /// `@MainActor` because both AppKit statics are. Without it this compiles with a concurrency
     /// warning that only appears in a **Release** build, which is how it survives every Debug build

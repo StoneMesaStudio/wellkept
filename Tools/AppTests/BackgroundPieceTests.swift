@@ -71,7 +71,7 @@ struct BackgroundPieceIdentityTests {
         #expect(!BackgroundPiece.isTheBackgroundPiece([BackgroundPiece.launchArgument]))
     }
 
-    /// John's number, and there is no fourth job.
+    /// The settled number, and there is no fourth job.
     @Test func itDoesExactlyThreeThings() {
         #expect(BackgroundPiece.Job.allCases.count == 3)
         #expect(BackgroundPiece.Job.allCases.filter(\.copiesFiles).count == 2)
@@ -169,7 +169,7 @@ struct AgentScheduleTests {
         #expect(decision.action == .backUpNow(.theDriveWasPluggedIn))
     }
 
-    /// Nine days is John's number, and it is taken from Core rather than repeated here.
+    /// Nine days is the settled number, and it is taken from Core rather than repeated here.
     @Test func nineDaysIsWhereItSaysSomething() {
         let now = Date()
         #expect(AgentSchedule.quietAfterDays == BackupFreshness.staleAfterDays)

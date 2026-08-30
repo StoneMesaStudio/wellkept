@@ -27,7 +27,7 @@ import WellkeptCore
 //  Worst-first is right for a list of findings and wrong for a fixed panel. Somebody who learns
 //  that Battery is the second row should still find it there next week, on a Mac where the drive
 //  happens to have gone quiet — and **seeing that it looked is the point**, which is the same
-//  argument John made for keeping the audit trail on a clean Overview. A panel that reshuffles
+//  argument for keeping the audit trail on a clean Overview. A panel that reshuffles
 //  between runs is a panel you have to re-read every time you open it.
 //
 //  ## ⚠️ There is no daily check, and nothing on this screen may imply one
@@ -198,9 +198,9 @@ struct HardwareView: View {
 
     /// The section's own audit trail: when it ran, whether it saw everything, and what it did not.
     ///
-    /// John asked for this on a clean Overview — that a check saying "nothing is wrong" is only
-    /// worth as much as the list of what it actually looked at. The same argument holds one level
-    /// down, and this is where it costs nothing.
+    /// The developer asked for this on a clean Overview — that a check saying "nothing is wrong" is
+    /// only worth as much as the list of what it actually looked at. The same argument holds one
+    /// level down, and this is where it costs nothing.
     private func whatWasRead(_ report: HardwareReport) -> some View {
         VStack(alignment: .leading, spacing: Space.row) {
             Text("This check")

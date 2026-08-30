@@ -16,13 +16,13 @@ import WellkeptCore
 //  Measured on an M3 running macOS 26.6.2, 2026-08-27. `system_profiler` reports **422** app
 //  bundles on this Mac. Broken up by where they live:
 //
-//      30   /Applications and ~/Applications          the apps John would name
+//      30   /Applications and ~/Applications          the apps a person would name
 //       0   /Applications/Utilities                   empty here, and not on every Mac
 //      65   /System/Applications (+ its Utilities)     the apps that come with macOS
 //      327  everywhere else                           components, helpers, build products
 //
 //  117 of that last group are in `/System/Library/CoreServices`, 18 are input methods, 11 are
-//  Automator droplets in the owner's Documents folder, 6 live inside `Xcode.app`, 5 inside
+//  Automator droplets in a Documents folder, 6 live inside `Xcode.app`, 5 inside
 //  `Finder.app`. Not one of them is a thing anybody installed or would think to remove. **A section
 //  that opened with "422 apps installed" would be wrong by a factor of three on its first line, and
 //  wrong in the direction that sells cleaners.**
@@ -74,7 +74,7 @@ import WellkeptCore
 //     nothing the person presses changes the answer is a warning that teaches them to ignore
 //     warnings — and the next one might matter.
 //
-//  Do not "fix" this by promoting it. The ruling is John's, dated 2026-08-27, and it is in
+//  Do not "fix" this by promoting it. The ruling is dated 2026-08-27, and it is in
 //  `APPS-QUESTIONS.md`.
 //
 //  ## ⚠️ "Last opened" is a fact, never a finding

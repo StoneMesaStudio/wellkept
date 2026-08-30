@@ -57,7 +57,7 @@ enum SystemSettingsPane: String, CaseIterable, Sendable {
 
     // ── Added 2026-08-28 for the Changes section ────────────────────────────────────────────────
     //
-    //  ⚠️ **These are destinations, not verbs.** John, 2026-08-28: Wellkept writes no setting,
+    //  ⚠️ **These are destinations, not verbs.** Decided 2026-08-28: Wellkept writes no setting,
     //  ever. Changes shows what changed and opens the pane where a person can change it back
     //  themselves. There is no fifth verb; "Open Settings" is where the row goes, not something the
     //  app does to the Mac.

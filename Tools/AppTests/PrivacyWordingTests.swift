@@ -39,7 +39,7 @@ import WellkeptCore
     ///
     /// ⚠️ The list is the *claims*, not the words. "What leaves this Mac" is a heading this app
     /// needs and now has; banning the phrase outright would fail the honest wording along with the
-    /// dishonest, and the next owner would delete the test rather than the sentence.
+    /// dishonest, and the next maintainer would delete the test rather than the sentence.
     @Test func noScreenMakesTheAbsoluteClaim() {
         for claim in ["nothing leaves", "never leaves", "nothing ever leaves",
                       "no data leaves", "nothing is sent",
@@ -89,7 +89,7 @@ import WellkeptCore
 
 //  ⭐ **The list is ours, it is short, and being wrong on it is cheap — but it is not free.**
 //
-//  John declined a hand-maintained list of vendor *version endpoints* on 2026-08-27: *"I don't know
+//  A hand-maintained list of vendor *version endpoints* was declined on 2026-08-27: *"I don't know
 //  that I want that responsibility. They frequently release updates."* This list survives because
 //  its failure mode is different — a stale entry swaps one truthful sentence for another truthful
 //  sentence, where a stale endpoint reports a wrong version. These tests hold that distinction.
@@ -98,7 +98,7 @@ import WellkeptCore
 
     /// ⚠️ **Short enough that a person can audit it in a minute.** That is the entire justification
     /// for shipping a hardcoded list at all. If this ever fails, the approach was wrong and the
-    /// conversation to have is with John.
+    /// conversation to have is with the developer.
     @Test func theListIsShortEnoughToRead() {
         #expect(SelfUpdatingApps.entries.count <= 40)
         #expect(!SelfUpdatingApps.entries.isEmpty)

@@ -176,7 +176,7 @@ struct ChangesShot {
 
     // MARK: - ⭐ One change, with its three sentences
 
-    /// ⭐ **The picture John asked for when he said "let's show him up and do it better".**
+    /// ⭐ **The picture asked for with "let's show him up and do it better".**
     ///
     /// One change, at the width it actually gets, carrying what the setting does, what turning it
     /// off costs you, and why it might have changed. The prior art everybody points at attempts the
@@ -248,7 +248,7 @@ struct ChangesShot {
 
     // MARK: - Full Disk Access refused
 
-    /// ⭐ **John's answer 4, 2026-08-28** — one line saying the privacy permissions changed and we
+    /// ⭐ **Answer 4, 2026-08-28** — one line saying the privacy permissions changed and we
     /// could not see what, with the button that grants access. **Once, never repeated per
     /// permission.**
     ///

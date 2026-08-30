@@ -227,7 +227,7 @@ struct QuarantineRecord: Codable, Sendable, Identifiable, Equatable, Hashable {
 
     let quarantinedOn: Date
 
-    /// Whether it was somewhere iCloud syncs. Drives John's one line — *"This also removes it from
+    /// Whether it was somewhere iCloud syncs. Drives the one line — *"This also removes it from
     /// your iPhone and iPad."* — and nothing else. An iCloud file is allowed, never refused.
     let wasInICloud: Bool
 

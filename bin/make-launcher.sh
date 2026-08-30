@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# make-launcher.sh — build the double-clickable "Rebuild Wellkept" app and put it where John keeps
-# the others.
+# make-launcher.sh — build the double-clickable "Rebuild Wellkept" app and put it where the
+# other rebuild launchers live.
 #
 #   ./bin/make-launcher.sh
 #
@@ -9,8 +9,8 @@
 # icon once one exists — what the launcher DOES lives in `bin/rebuild-and-launch.sh`, which it
 # calls by path, so ordinary fixes need no rebuild of the applet.
 #
-# It exists because John does not open Xcode. This applet is the entire build interface: double
-# click, wait, the new build is running.
+# It exists because the person building this app does not open Xcode. This applet is the entire
+# build interface: double click, wait, the new build is running.
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -18,7 +18,7 @@ PROJECT_ROOT="$PWD"
 
 APP_NAME="Wellkept"
 # ~/Library/Scripts, beside Rebuild Scout, Rebuild Lode, Rebuild Waypoint and the rest. That is
-# where John keeps them; the Desktop was Scout's choice and copying it would have scattered them.
+# where they live; the Desktop was Scout's choice and copying it would have scattered them.
 DEST="$HOME/Library/Scripts/Rebuild $APP_NAME.app"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT

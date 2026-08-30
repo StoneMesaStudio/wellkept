@@ -30,7 +30,7 @@ import WellkeptCore
 //  - **It never materialises a cloud file.** `ScanPolicy.prepareThisThread()` is called on every
 //    thread that looks at anything, and the judgement is made on the kernel's `SF_DATALESS` flag
 //    rather than on a size. During the Storage research, reading without that policy pulled **524
-//    files** down over the owner's internet and turned a 36-second scan into over nine minutes.
+//    files** down over somebody's internet and turned a 36-second scan into over nine minutes.
 //  - ⛔ **It never descends into a third-party file provider.** `~/Library/CloudStorage/GoogleDrive-…`
 //    is indistinguishable from an ordinary folder by every test this app uses — same filesystem,
 //    same device as `~/Documents`. Reading it **timed out and killed a scan**, and had it succeeded
@@ -43,7 +43,7 @@ import WellkeptCore
 //  - **It never walks the whole home folder.** That is `Scanner`'s job and it takes 56.7 seconds.
 //    This runs in well under a second on a Mac with no cloud storage, and the one walk it does make
 //    is bounded to the two roots that can hold a placeholder.
-//  - ⛔ **It never reads the Apple ID.** `MobileMeAccounts.plist` carries the owner's email address,
+//  - ⛔ **It never reads the Apple ID.** `MobileMeAccounts.plist` carries the person's email address,
 //    display name, first name, last name and two directory identifiers, an arm's length from the
 //    `Services` array this file wants. Only `Services` is parsed. A backup tool that quietly learnt
 //    somebody's name has answered a question about itself.
@@ -340,7 +340,7 @@ enum CoverageReader {
 
     /// **What the iCloud account says about which services are switched on.**
     ///
-    /// ⛔ Only the `Services` array is parsed. The same file carries the owner's email address,
+    /// ⛔ Only the `Services` array is parsed. The same file carries the person's email address,
     /// display name, first and last name and two directory identifiers; none of them is read, none
     /// is stored, and there is no property on this type that could hold one.
     struct ICloudAccount: Sendable, Hashable {
@@ -393,7 +393,7 @@ enum CoverageReader {
 
     /// ⭐ **Reads which iCloud services are on, and nothing else about the account.**
     ///
-    /// The shape, verified on this Mac: a top-level `Accounts` array, each with a `Services` array,
+    /// The shape, verified on one real Mac: a top-level `Accounts` array, each with a `Services` array,
     /// each service carrying a `ServiceID` and — for 4 of 24 — an `Enabled` boolean. Desktop &
     /// Documents is the odd one: it states `status = "active"` and no `Enabled` at all.
     static func readICloud(from file: URL? = nil, home: URL = StorageManifest.home()) -> ICloudAccount {
@@ -488,7 +488,7 @@ enum CoverageReader {
 
     /// ⚠️ **The provider's name, with the account stripped off.**
     ///
-    /// The folder is named `GoogleDrive-johndseidner@gmail.com` — the person's Google address, in a
+    /// The folder is named `GoogleDrive-someone@gmail.com` — the person's Google address, in a
     /// path, ready to be printed on a row or copied to a repair shop. Everything after the first
     /// hyphen is dropped. `Dropbox` has no hyphen and survives whole.
     static func providerName(_ folder: String) -> String {
@@ -556,7 +556,7 @@ enum CoverageReader {
 
     // MARK: ── ⚠️ The files that are not on the disk at all ──────────────────────────────────────
 
-    /// **What is in the cloud and not here.** On this Mac: 72.2 GB across roughly 11,000 files.
+    /// **What is in the cloud and not here.** On one measured Mac: 72.2 GB across roughly 11,000 files.
     ///
     /// ⚠️ **`apparent` is what the placeholders claim, and it is never a size we stand behind** —
     /// there is nothing on the disk to measure. It is stated anyway, because "72 GB of your files
@@ -594,7 +594,7 @@ enum CoverageReader {
     /// refused here, plus everything under `~/Library/CloudStorage`.
     ///
     /// ⚠️ **So this figure is smaller than "everything of yours that is not on the disk", on
-    /// purpose.** Of the 72.2 GB measured on this Mac, 65.4 GB is `~/Documents` and is counted here;
+    /// purpose.** Of the 72.2 GB measured on one Mac, 65.4 GB is `~/Documents` and is counted here;
     /// the other 6.5 GB is Google Drive, which gets its own row precisely because measuring it would
     /// mean walking into it.
     ///

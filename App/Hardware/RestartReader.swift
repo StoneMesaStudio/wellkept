@@ -33,7 +33,7 @@ import WellkeptCore
 //  ## ⚠️ Readable only by administrator accounts, and no permission fixes it
 //
 //  `/Library/Logs/DiagnosticReports` is `drwxrwx--- root:_analyticsusers`, and `_analyticsusers`
-//  nests the `admin` group — verified on this Mac, 2026-08-27. So it is **the kind of account you
+//  nests the `admin` group — verified on one real Mac, 2026-08-27. So it is **the kind of account you
 //  sign in with** that decides this, not Full Disk Access and not any privacy setting. There is
 //  no switch to offer and no button that would help, which is exactly the case `Unreadable`
 //  allows to carry no remedy.
@@ -49,7 +49,7 @@ import WellkeptCore
 //
 //  ## What we still cannot see, and say so
 //
-//  macOS prunes this folder. On this Mac the oldest surviving report of any kind was eight days
+//  macOS prunes this folder. On one real Mac the oldest surviving report of any kind was eight days
 //  old, so "nothing here" is a claim about eight days, not about the machine's life. The row
 //  states the date it can see back to rather than implying it looked further. And a restart caused
 //  by a power cut, a held power button or a dead battery writes no report at all — there is no
@@ -506,7 +506,7 @@ enum RestartReader {
                     hour: time[0], minute: time[1], second: time[2], zone: zone)
     }
 
-    /// "Kernel_2026-08-26-060919_Johns-MacBook-Air.panic" → the moment in the name.
+    /// "Kernel_2026-08-26-060919_Adas-MacBook-Air.panic" → the moment in the name.
     ///
     /// The name carries no time zone, because it was written in local time on this machine, which
     /// is the zone we want anyway.

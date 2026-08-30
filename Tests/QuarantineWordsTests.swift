@@ -12,9 +12,9 @@
 //
 //  ⚠️ **This is a source scan and not a behaviour test, on purpose**, and for the same reason as
 //  `ContainerGuardTests`: the failure it guards against is a sentence on somebody's screen, and by
-//  the time a behaviour test could observe it the wrong claim has already been made. It also catches
-//  the realistic version of the mistake, which is not a deliberate lie — it is a later owner writing
-//  a perfectly ordinary "Freed 4.2 GB" on a new screen, having never read the measurement.
+//  the time a behaviour test could observe it the wrong claim has already been made. It also
+//  catches the realistic version of the mistake, which is not a deliberate lie — it is a later
+//  maintainer writing a perfectly ordinary "Freed 4.2 GB" on a new screen, having never read the measurement.
 //
 //  Only **string literals in shipping code** are scanned. Comments are where the reason gets
 //  recorded, so they are exempt; the test bundles are exempt too, since half their job is asserting
@@ -61,8 +61,8 @@ struct QuarantineWordsTests {
 
     /// Every double-quoted run on a line, with comment lines dropped first.
     ///
-    /// Deliberately crude. It over-reports rather than under-reports — a doc comment that happens to
-    /// contain quotes is exempt because the whole line is dropped, and an escaped quote inside a
+    /// Deliberately crude. It over-reports rather than under-reports — a doc comment that happens
+    /// to contain quotes is exempt because the whole line is dropped, and an escaped quote inside a
     /// literal splits the literal, which at worst scans the same words twice.
     static func stringLiterals(in line: String) -> [String] {
         let trimmed = line.trimmingCharacters(in: .whitespaces)

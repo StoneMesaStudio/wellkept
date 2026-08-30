@@ -8,7 +8,7 @@ import WellkeptCore
 //  NeverAScoreGuardTests.swift
 //  WellkeptTests
 //
-//  ⛔ **"Never a score" is John's oldest instruction about this app, and this is what enforces it.**
+//  ⛔ **"Never a score" is the oldest instruction about this app, and this is what enforces it.**
 //
 //  From `SHELL-QUESTIONS.md` B6, and repeated in `CLAUDE.md` and `docs/CONTRACTS.md`: the clean
 //  state is *"Everything looks fine"* and the date, and **never a score**. The reasoning is in
@@ -20,8 +20,8 @@ import WellkeptCore
 //  `QuarantineWordsTests` and `ContainerGuardTests`. The failure this guards against is a number on
 //  somebody's screen, and by the time a behaviour test could observe it the wrong thing has already
 //  been drawn. It also catches the realistic version of the mistake, which is not a deliberate
-//  betrayal: it is a later owner adding a perfectly ordinary "Health score: 84" to a new summary,
-//  having never read the question John answered in 2026-08-26.
+//  betrayal: it is a later maintainer adding a perfectly ordinary "Health score: 84" to a new
+//  summary, having never read the question answered in 2026-08-26.
 //
 //  Only **string literals in shipping code** are scanned. Comments are where the reason gets
 //  recorded — this file's own subject matter has to be sayable — and the test bundles are exempt
@@ -30,11 +30,11 @@ import WellkeptCore
 //  ## What is NOT banned, and why the list is phrases rather than words
 //
 //  "Rated", "scored" and "graded" all appear legitimately and correctly today: a drive is *rated*
-//  for so many terabytes written, a battery is *rated* for so many cycles, macOS *re-scores* its app
-//  suggestions every few minutes, and the Help page explains that a Mac would end up *graded* on how
-//  little was installed. Banning the words would fail the honest sentences along with the dishonest
-//  ones, and the next owner would delete the test rather than the sentence. **What is banned is the
-//  shape of a grade.**
+//  for so many terabytes written, a battery is *rated* for so many cycles, macOS *re-scores* its
+//  app suggestions every few minutes, and the Help page explains that a Mac would end up *graded*
+//  on how little was installed. Banning the words would fail the honest sentences along with the
+//  dishonest ones, and the next maintainer would delete the test rather than the sentence. **What
+//  is banned is the shape of a grade.**
 
 @Suite("Nothing in Wellkept ever gives the Mac a score")
 struct NeverAScoreGuardTests {
@@ -124,14 +124,14 @@ struct NeverAScoreGuardTests {
 
         #expect(offenders.isEmpty, """
             These grade the Mac: \(offenders.joined(separator: "; ")).
-            John settled this on 2026-08-26 and it is not open: the clean state is "Everything looks
+            This was settled on 2026-08-26 and it is not open: the clean state is "Everything looks
             fine" and the date. A number invites the user to chase it, and a Mac with nothing wrong
             would be graded on how little happened to be installed on it.
             """)
     }
 
-    /// ⚠️ The ban has no exemption list. If a screen genuinely needs one of these phrases, that is a
-    /// conversation with John, not an entry here.
+    /// ⚠️ The ban has no exemption list. If a screen genuinely needs one of these phrases, that is
+    /// a conversation with the developer, not an entry here.
     @Test("The ban has nowhere to grow an exception")
     func thereIsNowhereToAddAnException() {
         #expect(Self.banned.count == 9,

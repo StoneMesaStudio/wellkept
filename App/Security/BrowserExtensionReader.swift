@@ -123,7 +123,7 @@ enum BrowserExtensionReader {
         /// We could not tell.
         case unknown
 
-        /// ⚠️ The sentence John's rule turns on. It says what the extension **can** do, in the
+        /// ⚠️ The sentence the rule turns on. It says what the extension **can** do, in the
         /// second person, with no verdict attached and no imperative after it.
         var sentence: String {
             switch self {

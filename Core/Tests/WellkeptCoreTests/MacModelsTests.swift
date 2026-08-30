@@ -209,7 +209,7 @@ import Foundation
     }
 
     /// ⚠️ **"Among the oldest supported" and "no longer patched" are different states and must
-    /// never be merged.** John, 2026-08-27: *"Not about fear, it is about security. Why not be
+    /// never be merged.** Decided 2026-08-27: *"Not about fear, it is about security. Why not be
     /// honest? We are not selling them a new machine, we are protecting them."*
     ///
     /// The first is a fact about a Mac that is working and fully patched — first in line to be

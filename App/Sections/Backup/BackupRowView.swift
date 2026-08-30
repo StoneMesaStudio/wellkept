@@ -11,8 +11,8 @@ import WellkeptCore
 //
 //  ## The head every row wears
 //
-//  What it is · how it stands · why it says so. The same three facts in the same three places on all
-//  four rows, so a person learns the shape once. `BackupRow` already decided the severity and
+//  What it is · how it stands · why it says so. The same three facts in the same three places on
+//  all four rows, so a person learns the shape once. `BackupRow` already decided the severity and
 //  clamped it per topic; nothing here may soften or sharpen a verdict on the way to the screen.
 //
 //  ## ⭐ The one thing this file does that no other row view does: it draws a refusal that is ours
@@ -106,10 +106,10 @@ struct BackupTopicCard<Content: View>: View {
 
 /// **The sentence that stands where the button would be.**
 ///
-/// John's condition, 2026-08-29: the gate is a shipped, visible thing in the code, not a note in a
-/// document. This is the visible half. It says what has not happened — nobody has erased a drive and
-/// restored from it — rather than that a feature is unavailable, because those two sentences send a
-/// person to completely different conclusions about whether the app is working.
+/// The condition, 2026-08-29: the gate is a shipped, visible thing in the code, not a note in a
+/// document. This is the visible half. It says what has not happened — nobody has erased a drive
+/// and restored from it — rather than that a feature is unavailable, because those two sentences
+/// send a person to completely different conclusions about whether the app is working.
 struct WithheldNote: View {
     let sentence: String
 
@@ -136,11 +136,11 @@ struct WithheldNote: View {
 
 /// **The coverage list: what is in a backup, what is not, and where each thing actually lives.**
 ///
-/// ⚠️ **A row here is not an accusation.** 72.2 GB of this Mac's files are in the cloud and not on
-/// the disk, and a tool that counted those as "missing from your backup" would open with a 72 GB
-/// alarm about an arrangement working exactly as designed. `Coverage.isGap` is the only thing that
-/// may say something is missing, and it is `true` only for something that lives **on this Mac and
-/// nowhere else**. Everything else prints its own reason for not being a gap.
+/// ⚠️ **A row here is not an accusation.** 72.2 GB of one measured Mac's files are in the cloud and
+/// not on the disk, and a tool that counted those as "missing from your backup" would open with a
+/// 72 GB alarm about an arrangement working exactly as designed. `Coverage.isGap` is the only thing
+/// that may say something is missing, and it is `true` only for something that lives **on this Mac
+/// and nowhere else**. Everything else prints its own reason for not being a gap.
 struct CoverageList: View {
     let coverage: [Coverage]
 

@@ -26,8 +26,8 @@ import WellkeptCore
 //     `.isUbiquitousItemKey` — or `.ubiquitousItemDownloadingStatusKey`, either one alone — takes
 //     **24.8 s**. That is about 92 µs per file spent asking a daemon something a `stat` already
 //     answers. Neither key is fetched here. See `cloudStanding(datalessFlags:mightNotBeHere:)`.
-//  2. **A file that is not on this Mac is `SF_DATALESS`, and the flag is the only proof.** Four of
-//     the owner's iCloud photos read `flags=0x40000060`, `st_blocks=0`, `st_size=2.9 MB`. **A
+//  2. **A file that is not on this Mac is `SF_DATALESS`, and the flag is the only proof.** Four
+//     measured iCloud photos read `flags=0x40000060`, `st_blocks=0`, `st_size=2.9 MB`. **A
 //     sparse file reads the same in every respect except the flag** — a 100 MB sparse file made for
 //     the test reads `blocks=0, size=104857600, flags=0x0`. So "a size but no blocks" is the cheap
 //     candidate test and the flag is the answer. Deciding on the numbers alone would file somebody's
@@ -88,7 +88,7 @@ enum Scanner {
     ///
     /// Named rather than discovered, and named the way a person and `ScanPolicy` both spell them.
     /// The alternative — walking `/System/Volumes/Data` itself — is one line shorter and quietly
-    /// unsafe: every path underneath then reads `/System/Volumes/Data/Users/jds/…`, while every
+    /// unsafe: every path underneath then reads `/System/Volumes/Data/Users/ada/…`, while every
     /// entry in `ScanPolicy.neverOffered` is written `Library/Mail`, `.Trash`, `Library/Keychains`.
     /// Not one of them would match, and the scan would offer buttons on somebody's mail.
     ///
@@ -155,7 +155,7 @@ enum Scanner {
         let includeHidden: Bool
 
         /// How deep folder totals are kept. Depth counts from each root: `/Users` is 0,
-        /// `/Users/jds` is 1, `/Users/jds/Documents` is 2.
+        /// `/Users/ada` is 1, `/Users/ada/Documents` is 2.
         let folderDepth: Int
 
         /// A package deeper than `folderDepth` is still recorded when it is at least this big. A
@@ -284,7 +284,7 @@ enum Scanner {
     /// A folder and everything under it, rolled up as the walk left it.
     ///
     /// This is what the row "what is using the space" is built from, and it carries both numbers for
-    /// the same reason every other total does: `~/Documents/Media` is **14.8 GB on disk** and
+    /// the same reason every other total does: one measured media folder is **14.8 GB on disk** and
     /// **0.5 GB back today**, and a face showing one of those is a face telling half the truth.
     struct FolderTotal: Sendable, Hashable, Identifiable {
         let identity: ItemIdentity
@@ -449,7 +449,7 @@ enum Scanner {
         ///
         /// `StorageReport` computes the same thing in its own initialiser, from the same two
         /// figures, and there is no way to build a report without it. This is here for the caller
-        /// that wants the sentence before it has rows to put around it — measured on this Mac,
+        /// that wants the sentence before it has rows to put around it — measured on one real Mac,
         /// 389.87 GB used against 142.98 GB walked, and the sentence names the snapshot and the
         /// refused folders instead of drawing a slice labelled "Other".
         func gap(against freeSpace: FreeSpacePicture) -> MeasuredGap {
@@ -570,7 +570,7 @@ enum Scanner {
 
         let notEvenMeasured = plan.placesNotEvenMeasured
         // ⚠️ Which level of folder is worth naming while it runs. One below the root, except under
-        // `/Users`, where the first level is an account name — "Looking in jds" tells nobody
+        // `/Users`, where the first level is an account name — "Looking in ada" tells nobody
         // anything, and "Looking in Documents" tells them exactly where the scan is.
         let placeDepth = rootPath == "/Users" ? 2 : 1
         var seen = 0
@@ -638,7 +638,7 @@ enum Scanner {
         guard let values = try? url.resourceValues(forKeys: keys) else { return nil }
 
         // ⚠️ Foundation hands back a directory's path with a trailing slash and a file's without
-        // one, so `/Users/jds` and `/Users/jds/` would be two spellings of one folder on the same
+        // one, so `/Users/ada` and `/Users/ada/` would be two spellings of one folder on the same
         // screen — and two different keys anywhere a path is used as one.
         var path = url.path(percentEncoded: false)
         while path.count > 1, path.hasSuffix("/") { path.removeLast() }
@@ -648,7 +648,7 @@ enum Scanner {
         let isPackage = values.isPackage ?? false
 
         // ⚠️ `.totalFileAllocatedSizeKey` is the size on disk: blocks actually allocated, after
-        // compression, after sparseness. `.fileSizeKey` is what the file claims. On this Mac the
+        // compression, after sparseness. `.fileSizeKey` is what the file claims. On one real Mac the
         // claimed figure is wrong by 56% and moved 11% between two runs minutes apart; the
         // allocated figure moved 0.2%. Directories publish neither, which is why a folder's own few
         // kilobytes go uncounted — see `Survey.honestyNotes`.
@@ -714,7 +714,7 @@ enum Scanner {
     /// The cheap half first: a file with a size and no blocks *might* not be here. Then the answer:
     /// `SF_DATALESS`, which macOS sets on a placeholder for a file that lives in the cloud.
     ///
-    /// ⚠️ **The two look identical without the flag.** Measured 2026-08-28: four of the owner's
+    /// ⚠️ **The two look identical without the flag.** Measured 2026-08-28: four real
     /// iCloud photos read `blocks=0, size=2.9 MB, flags=0x40000060`; a 100 MB sparse file made for
     /// the test reads `blocks=0, size=104857600, flags=0x0`. Deciding on the numbers alone would
     /// file somebody's sparse disk image under "in iCloud, using no space here" — and then offer to

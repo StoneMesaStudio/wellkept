@@ -100,7 +100,7 @@ import WellkeptCore
         #expect(VersionComparison.parse("version") == nil)
     }
 
-    /// ⭐ **The blanket rule, stated as a test.** Over every hazardous pair measured on this Mac,
+    /// ⭐ **The blanket rule, stated as a test.** Over every hazardous pair measured on one real Mac,
     /// `.newerAvailable` may appear only where the published version is unambiguously greater.
     @Test func neverClaimsNewerWithoutAnUnambiguousComparison() {
         let hazards: [(installed: String, current: String)] = [

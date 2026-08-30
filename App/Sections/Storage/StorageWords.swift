@@ -13,7 +13,7 @@ import WellkeptCore
 //
 //  | Where | What it owns |
 //  |---|---|
-//  | `QuarantineWords` | John's four sentences about setting aside, including the disk-is-full one |
+//  | `QuarantineWords` | The four sentences about setting aside, including the disk-is-full one |
 //  | `FreeSpace.Says` | the arithmetic on the sheet, and the two routes off it |
 //  | `QuarantineText` | the quarantine row, its two confirmations, and the ignore list |
 //  | `StorageTopic.explanation` | one plain sentence per row, in `WellkeptCore` |
@@ -28,7 +28,7 @@ enum StorageWords {
     //
     // Fixed app-wide: Quarantine · Restore · Delete · Ignore. The two buttons on the sheet are
     // `FreeSpace.Says.setAsideOnly` and `.setAsideAndEmpty` — they are not a fifth and sixth verb,
-    // they are the two routes John asked for, and their words are his.
+    // they are the two routes asked for, and the words are the settled ones.
 
     static let quarantine = "Quarantine"
     static let showInFinder = "Reveal in Finder"

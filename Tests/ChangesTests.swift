@@ -21,7 +21,7 @@ import WellkeptCore
 @Suite("Every watched thing says all three things")
 struct ChangesDescriptionTests {
 
-    /// John, 2026-08-28: *"Let's show him up and do it better."* Better was defined concretely —
+    /// Decided 2026-08-28: *"Let's show him up and do it better."* Better was defined concretely —
     /// what the setting does, what turning it off costs you, and why it might have changed. This is
     /// the test that stops the third field being filled by repeating the first.
     @Test func everyWatchedThingSaysAllThreeThings() {
@@ -234,7 +234,7 @@ struct OutageTests {
         #expect(Self.outage(240, .toTheSecond).sentence == "four minutes")
     }
 
-    /// ⭐ The wording John was shown, and the half of it that matters most.
+    /// ⭐ The wording that was approved, and the half of it that matters most.
     @Test func theSentenceSaysDuringAndNeverBecause() {
         let update = MacOSUpdate(version: "26.6.2",
                                  installedAt: Date(timeIntervalSince1970: 1_787_623_732),
@@ -326,7 +326,7 @@ struct ChangesReportTests {
         #expect(report.changes.isEmpty)
     }
 
-    /// **John's answer 4, 2026-08-28.** A run that could not see the privacy grants may not report
+    /// **Answer 4, 2026-08-28.** A run that could not see the privacy grants may not report
     /// a clean bill of health.
     @Test func aRefusedGrantStopsTheSectionSayingGood() {
         let report = ChangesReport(ranAt: Date(), previous: Date(timeIntervalSince1970: 1_000),

@@ -39,7 +39,7 @@ command -v xcodegen >/dev/null 2>&1 || { echo "xcodegen not found — brew insta
 xcodegen generate >/dev/null
 
 # Old shots are cleared first. A stale PNG from a suite that no longer exists is worse than a
-# missing one: it looks current, and it is the picture somebody will send to John.
+# missing one: it looks current, and it is the picture somebody will send on.
 rm -f "$OUT"/*.png
 
 echo "Rendering into $OUT…"

@@ -34,7 +34,7 @@ import Foundation
 //
 //  ## The two states that are deliberately separate
 //
-//  John's instruction, 2026-08-27: *"Not about fear, it is about security. Why not be honest? We
+//  The instruction, 2026-08-27: *"Not about fear, it is about security. Why not be honest? We
 //  are not selling them a new machine, we are protecting them."* So the table distinguishes:
 //
 //  - **"This is among the oldest models this macOS supports"** — a fact about a working Mac,

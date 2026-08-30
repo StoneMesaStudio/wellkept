@@ -30,14 +30,15 @@ import Foundation
 //    files and ignores hard links.** All four are repairable, and all four were found by measuring
 //    rather than by reasoning — which is the argument for measuring the restore too.
 //
-//  The research verdict was that a backup engine could not honestly ship. **John removed that
-//  blocker on 2026-08-29 by agreeing to buy a spare drive and rehearse a real restore**, on this
-//  condition, in his words: nothing in the engine is offered to anybody until that rehearsal has
+//  The research verdict was that a backup engine could not honestly ship. **That
+//  blocker was removed on 2026-08-29 by a decision to buy a spare drive and rehearse a real
+//  restore**, on this condition: nothing in the engine is offered to anybody until that rehearsal has
 //  been walked on real hardware. Not a green test suite — a real drive, a real backup, a real
 //  Migration Assistant restore.
 //
-//  ⚠️ His other condition was that **the gate is a shipped, visible thing in the code, not a note in
-//  a document.** So it is a type, not a comment:
+//  ⚠️ The second condition was that **the gate is a shipped, visible thing in the code, not a note
+//  in a document** — a note in a document is what everybody agrees to and nobody reads on the day
+//  it matters. So it is a type, not a comment:
 //
 //  ## How it is enforced — three layers, and the first one is the compiler
 //

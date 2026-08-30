@@ -22,12 +22,12 @@ import WellkeptCore
 //  3. **When** — the window, with the asleep-or-off clause where it applies, and the cause clause,
 //     which is where the macOS update sentence lands when the evidence supports one.
 //  4. **What it costs** — our three sentences: what the setting does, what turning it off actually
-//     costs you, and why it might have changed. This is the part John asked us to do better than
+//     costs you, and why it might have changed. This is the part we were asked to do better than
 //     the prior art, and it is the reason the section is worth opening twice.
 //
 //  ## ⛔ The button changes nothing, and its words say so
 //
-//  Wellkept writes no setting, ever — John, 2026-08-28. Every button here opens Apple's own pane
+//  Wellkept writes no setting, ever — decided 2026-08-28. Every button here opens Apple's own pane
 //  and names the pane it opens, borrowed from `ConcernView.words(for:)` so Security and Changes
 //  cannot drift into two different labels for the same destination. There is no fifth verb;
 //  "Open Settings" is a destination, not something the app does to the Mac.
@@ -217,7 +217,7 @@ struct ChangeBlockView: View {
 /// **What the setting does, what turning it off costs you, and why it might have changed.**
 ///
 /// The prior art everybody points at is 787 one-line descriptions, 383 of them flagged
-/// AI-generated, and not one attempts the second or the third. John, 2026-08-28: *"let's show him
+/// AI-generated, and not one attempts the second or the third. Decided 2026-08-28: *"let's show him
 /// up and do it better"*. This view is where "better" is actually visible — three labelled
 /// sentences, on every change, written by us for the few dozen settings Wellkept already reads.
 ///

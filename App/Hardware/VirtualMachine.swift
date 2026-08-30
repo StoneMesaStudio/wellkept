@@ -14,8 +14,8 @@ import Foundation
 //  everything is fine" — about a battery that does not exist. One screenshot of that costs more
 //  credibility than the whole section earns.
 //
-//  It also matters for the honest reason: John's permission and helper flows are meant to be
-//  tested on a clean VM rather than on his own upgraded M3. That is exactly the machine where the
+//  It also matters for the honest reason: the app's permission and helper flows are meant to be
+//  tested on a clean VM rather than on an already-upgraded M3. That is exactly the machine where the
 //  readings are least real, so the app has to say so on screen rather than in a release note.
 //
 //  ## How it decides, cheapest first

@@ -1,6 +1,6 @@
 # Wellkept — the quarantine engine: findings and decisions
 
-2026-08-28. Six agents, measured on throwaway files in a scratch directory; nothing of John's was
+2026-08-28. Six agents, measured on throwaway files in a scratch directory; nothing real was
 touched. This is the piece every remaining destructive action depends on, and the one place where
 being wrong loses somebody's files.
 
@@ -32,17 +32,17 @@ was empty. Now `.atomic`. Committed 2026-08-28 before anything else was built on
 and a fresh install alike — which breaks the app's own "never report zero because we could not
 look" rule in the one place where zero means somebody's files are unaccounted for.
 
-## Asked of John
+## Decided
 
-| # | Question | Answer |
+| # | Question | Decision |
 |---|---|---|
-| 1 | At thirty days, what actually happens? | **30 CALENDAR days**, not days-the-app-was-open (John, 2026-08-28), **and the user chooses**: *auto-delete at 30 days* or *manual delete at 30 days*, set in Settings. Manual is the default. Note the one wrinkle: with no background piece, "auto" can only act the next time Wellkept is opened, and it says what it removed. That is still the user's own standing instruction, not the app acting unbidden, which is why it does not break "nothing changes the Mac on a schedule". |
-| 2 | iCloud files — refuse outright, or allow with a warning? | **Allow, with the warning** (John, 2026-08-28): one line, *"This also removes it from your iPhone and iPad."* Refusing would block the most ordinary finding in the product on any Mac with Desktop & Documents sync on. |
+| 1 | At thirty days, what actually happens? | **30 CALENDAR days**, not days-the-app-was-open (decided 2026-08-28), **and the user chooses**: *auto-delete at 30 days* or *manual delete at 30 days*, set in Settings. Manual is the default. Note the one wrinkle: with no background piece, "auto" can only act the next time Wellkept is opened, and it says what it removed. That is still the user's own standing instruction, not the app acting unbidden, which is why it does not break "nothing changes the Mac on a schedule". |
+| 2 | iCloud files — refuse outright, or allow with a warning? | **Allow, with the warning** (decided 2026-08-28): one line, *"This also removes it from your iPhone and iPad."* Refusing would block the most ordinary finding in the product on any Mac with Desktop & Documents sync on. |
 | 3 | What does Storage say when 40 GB is set aside and free space does not move? | **Never the word "freed".** Before: "Set aside 40 GB. Nothing is deleted and no space comes back until you empty the quarantine." After: a permanent row — "40 GB set aside — oldest is 12 days old" — with the Empty button on it. The real number is measured after the delete, never promised before. |
 
 ## What quarantine actually is, settled 2026-08-28
 
-John asked the question that reframes the feature: *"why would I do that? What is the context?"*
+The question that reframes the feature: why would anybody press this button? What is the context?
 
 **Quarantine is not "free up space". It frees nothing.** It is the first half of deleting
 something, with a month to change your mind. The sequence is: set it aside → nothing on the Mac

@@ -127,7 +127,7 @@ final class AppState {
         }
     }
 
-    /// Which invented Mac the demo shows. John, 2026-08-27: *"I would give them both. The goal is
+    /// Which invented Mac the demo shows. Decided 2026-08-27: *"I would give them both. The goal is
     /// a healthy mac."* — so the default is the healthy one, and the unwell one is a choice.
     var demoMachine: DemoMachine {
         didSet {

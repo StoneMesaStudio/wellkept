@@ -48,7 +48,7 @@ struct StorageTopicTests {
         #expect(preSelectable == [.machineJunk])
     }
 
-    /// John's two ceremonies, 2026-08-28: a batch for junk, one at a time for everything else.
+    /// The two ceremonies, 2026-08-28: a batch for junk, one at a time for everything else.
     @Test func everyOtherTopicIsOneAtATime() {
         #expect(StorageTopic.machineJunk.ceremony == .batch)
         for topic in StorageTopic.allCases where topic != .machineJunk {
@@ -125,7 +125,7 @@ struct OriginTests {
         #expect(mineRow.preSelected.isEmpty)
     }
 
-    /// John's line, 2026-08-28. Shown for a file that is here **and** synced, because that is the
+    /// The settled line, 2026-08-28. Shown for a file that is here **and** synced, because that is the
     /// case where the thirty days cost something on another device.
     @Test func theICloudWarningAppearsOnlyWhereItIsTrue() {
         #expect(CloudStanding.bothPlaces.warning == CloudStanding.alsoRemovesItFromYourDevices)
@@ -139,7 +139,7 @@ struct OriginTests {
 @Suite("How big it is and what would come back are different numbers")
 struct BytesTests {
 
-    /// The real case from `~/Documents/Media` on this Mac: 14.8 GB on disk, 0.5 GB back today.
+    /// The real case from one media folder on a real Mac: 14.8 GB on disk, 0.5 GB back today.
     private let media = Bytes(onDisk: SizeOnDisk(14_800_000_000),
                               recoverableToday: .all(of: SizeOnDisk(500_000_000)))
 
@@ -205,7 +205,7 @@ struct FinderFigureTests {
         #expect(picture.differenceLine == nil)
     }
 
-    /// ⭐ John's ruling: the real number leads, Finder's is underneath, one line explains it.
+    /// ⭐ The ruling: the real number leads, Finder's is underneath, one line explains it.
     @Test func theRealNumberLeadsAndTheDifferenceIsExplained() {
         let picture = FreeSpacePicture(capacity: SizeOnDisk(494_384_795_648),
                                        actuallyFree: actuallyFree,
@@ -268,7 +268,7 @@ struct SnapshotArithmeticTests {
         #expect(SnapshotStanding.couldNotBeRead.recoverable(onDisk: gigabyte, modifiedOn: nil).isZero)
     }
 
-    /// ⭐ John's ruling: one flat line on the face, no button — and only where it is true.
+    /// ⭐ The ruling: one flat line on the face, no button — and only where it is true.
     @Test func theLineAppearsOnlyForAStuckSnapshot() {
         let now = stuck.oldest!.takenOn.addingTimeInterval(30 * 86_400)
         #expect(stuck.isStuck(now: now))

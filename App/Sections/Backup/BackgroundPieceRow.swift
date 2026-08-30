@@ -8,7 +8,7 @@ import WellkeptCore
 //  Wellkept — App/Sections/Backup
 //
 //  ⭐ **The one switch in this app that lets a piece of Wellkept keep running after the window
-//  closes** — John's answer, 2026-08-29.
+//  closes** — the answer, 2026-08-29.
 //
 //  ## Why it is switchable today, when the copying is not
 //

@@ -84,7 +84,7 @@ struct SecuritySectionTests {
         }
     }
 
-    /// **Good never stands alone.** John's rule, 2026-08-27: the clean sentence carries its scope
+    /// **Good never stands alone.** The rule, 2026-08-27: the clean sentence carries its scope
     /// and its window, because "everything is fine" is worth exactly as much as the list of what
     /// was actually looked at.
     @Test("A clean answer carries what was looked at and how far back")
@@ -157,7 +157,7 @@ struct SecuritySectionTests {
         #expect(row?.concerns.isEmpty == true)
     }
 
-    /// Wellkept holds Full Disk Access, so Wellkept is in its own list. John's call, 2026-08-27:
+    /// Wellkept holds Full Disk Access, so Wellkept is in its own list. Settled 2026-08-27:
     /// say so rather than filter ourselves out.
     @Test("Wellkept appears in its own permission list")
     func wellkeptIsInItsOwnList() {
@@ -330,7 +330,7 @@ struct SecuritySectionTests {
     /// A grant given to an app that is already running does not reach it; macOS offers "Quit &
     /// Reopen" and somebody who declines is left with an app insisting it was not allowed. The
     /// detection is the privacy store's own modification date, which reads with **no permission at
-    /// all** — measured on this Mac, 2026-08-27: `stat` succeeds where `open` is refused.
+    /// all** — measured on one real Mac, 2026-08-27: `stat` succeeds where `open` is refused.
     ///
     /// If this ever returns `nil`, the store moved and the reopen offer has quietly stopped
     /// appearing for anybody who granted the permission after tapping "Finish later".

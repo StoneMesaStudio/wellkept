@@ -11,7 +11,7 @@ import WellkeptCore
 //  ⭐ **The one question this app asks before anything about this Mac leaves it.**
 //
 //  Checking whether an app is current is the only thing the Apps section does that reaches off the
-//  machine. John's instruction on 2026-08-27 was **inform and consent**:
+//  machine. The instruction on 2026-08-27 was **inform and consent**:
 //
 //  > *"Information leaving the computer to benefit their experience and app functionality is
 //  > disclosed and optional, but just like not granting whole disc access, you lose functionality.

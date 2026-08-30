@@ -212,7 +212,7 @@ struct FileReading: Sendable, Equatable, Hashable {
 
     let volume: VolumeReading
 
-    /// Whether the file lives somewhere iCloud syncs. Drives John's one-line warning, and nothing
+    /// Whether the file lives somewhere iCloud syncs. Drives the one-line warning, and nothing
     /// else — an iCloud file is allowed, with the warning. It is never refused.
     let isInICloud: Bool
 
@@ -543,7 +543,7 @@ enum Movable {
     ///
     /// Compared component by component, case-folded and canonically composed, because the filesystem
     /// folds both. A plain `hasPrefix` gets two things wrong at once: it folds nothing, and it says
-    /// `/Users/jdsmith` is inside `/Users/jds`.
+    /// `/Users/adams` is inside `/Users/ada`.
     static func isInside(_ path: String, any roots: [String]) -> Bool {
         let subject = fold(path)
         for root in roots {
@@ -564,7 +564,7 @@ enum Movable {
 
     /// Whether this lives somewhere iCloud syncs.
     ///
-    /// John's answer, 2026-08-28: an iCloud file is **allowed, with a warning** — one line, *"This
+    /// The answer, 2026-08-28: an iCloud file is **allowed, with a warning** — one line, *"This
     /// also removes it from your iPhone and iPad."* Refusing would block the most ordinary finding in
     /// the product on any Mac with Desktop & Documents sync switched on.
     ///
@@ -596,7 +596,7 @@ enum Movable {
         return lstat(path, &status) == 0
     }
 
-    /// The one line John approved. **Used verbatim, everywhere, or not at all.**
+    /// The one approved line. **Used verbatim, everywhere, or not at all.**
     static let iCloudWarning = "This also removes it from your iPhone and iPad."
 }
 

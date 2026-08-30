@@ -307,7 +307,7 @@ import WellkeptCore
     }
 
     /// **The recovery-key sentence goes on the row, never behind Options**, and it never says "you
-    /// should". John's decision, 2026-08-27: it is the one piece of advice in this app that can cost
+    /// should". The decision, 2026-08-27: it is the one piece of advice in this app that can cost
     /// somebody every file they own.
     @Test func theRecoveryKeySentenceIsOnTheRowAndGivesNoOrders() {
         let off = ProtectionReader.fileVault(volume: ["FileVault": false])
@@ -454,7 +454,7 @@ import WellkeptCore
     }
 
     /// A clean row carries the evidence that it is clean — what was read, and what this Mac would
-    /// not say. John's addition, 2026-08-26: a clean result with no audit trail is indistinguishable
+    /// not say. Added 2026-08-26: a clean result with no audit trail is indistinguishable
     /// from a check that never ran.
     @Test func aCleanRowSaysWhatItCouldNotSee() {
         let row = ProtectionReader.row(
@@ -528,7 +528,7 @@ import WellkeptCore
     ///
     /// It is read-only: `system_profiler`, `spctl --status` and `diskutil info -plist`, plus three
     /// world-readable property lists. Nothing here can raise an authorization dialog, and that is
-    /// not an accident — an earlier research round put a system password box on the owner's screen,
+    /// not an accident — an earlier research round put a system password box on somebody's screen,
     /// which is why this section's rule is that a fact needing elevation *is* the finding.
     @Test func theWholeBlockReadsOnThisMacWithoutLyingAboutAnything() {
         let result = ProtectionReader.read()
@@ -570,7 +570,7 @@ import WellkeptCore
     }
 
     /// The whole run has to fit inside a press. It is the second slowest read in the section, after
-    /// the six-second log query that made John decide Security does not run on launch.
+    /// the six-second log query that settled Security not running on launch.
     @Test func theWholeBlockReadsInUnderThreeSeconds() {
         let started = Date()
         _ = ProtectionReader.read()

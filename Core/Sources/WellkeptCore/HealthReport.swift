@@ -8,7 +8,7 @@ import Foundation
 //
 //  ⭐ **The page a person hands to somebody else.**
 //
-//  John approved it as question 34 of `SHELL-QUESTIONS.md`, and the want he described is a
+//  It was approved as question 34 of `SHELL-QUESTIONS.md`, and the want described is a
 //  specific one: *"mail this to the person who fixes my Mac."* So the deliverable is not a screen.
 //  It is a page — printed, or saved as a PDF and attached to an email — and it is read by somebody
 //  who was not sitting in front of the Mac when the checks ran.
@@ -82,10 +82,10 @@ public struct HealthReport: Sendable, Hashable {
 
     /// One of the seven, and when it ran.
     ///
-    /// ⚠️ **`ranAt` is optional and that is the point.** John asked for the audit trail by name —
+    /// ⚠️ **`ranAt` is optional and that is the point.** The developer asked for the audit trail by name —
     /// *"an audit trail for reassurance of what was checked please"* — and a list that quietly
-    /// omitted the checks that never ran would be reassurance about nothing. All seven appear, every
-    /// time, and the ones that did not run say so.
+    /// omitted the checks that never ran would be reassurance about nothing. All seven appear,
+    /// every time, and the ones that did not run say so.
     public struct AuditLine: Sendable, Hashable, Identifiable {
 
         public let section: SectionID
@@ -265,7 +265,7 @@ public struct HealthReport: Sendable, Hashable {
             : String(localized: "\(Words.sentenceCase(Words.spelled(findings.count))) things need you.")
     }
 
-    /// The dated line under the headline. John's clean state is the sentence **and** the date, and
+    /// The dated line under the headline. The clean state is the sentence **and** the date, and
     /// on a page that somebody else reads weeks later the date is the more load-bearing half.
     public var subtitle: String {
         let stamp = ShortDate.stamp(writtenOn)

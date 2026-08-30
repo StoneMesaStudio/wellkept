@@ -110,8 +110,8 @@ struct QuarantineTextTests {
         }
     }
 
-    /// John's line is used verbatim or not at all.
-    @Test("The iCloud line is the one John approved")
+    /// The settled line is used verbatim or not at all.
+    @Test("The iCloud line is the one approved")
     func theICloudLineIsVerbatim() {
         #expect(QuarantineWords.iCloud == "This also removes it from your iPhone and iPad.")
         #expect(QuarantineWords.iCloudGap.contains("taking up the same room"))
@@ -144,7 +144,7 @@ struct QuarantineModelTests {
             containment: record.containment)
     }
 
-    /// ⚠️ **Ready first, oldest first within each group** — John's shape. A list sorted by date
+    /// ⚠️ **Ready first, oldest first within each group** — the settled shape. A list sorted by date
     /// alone would bury a ready item under a week of newer ones.
     @Test("The list is ready first, then oldest first")
     func theOrderIsTheScreensOrder() async throws {
@@ -352,7 +352,7 @@ struct UninstallQuarantineTests {
             section: .storage, reason: "unused", quarantinedOn: Date(), wasInICloud: false)
     }
 
-    /// ⚠️ John, 2026-08-26: never decide it for them, never leave them buried. Two real outcomes,
+    /// ⚠️ Decided 2026-08-26: never decide it for them, never leave them buried. Two real outcomes,
     /// and the question counts correctly in the singular — a dialog that says "1 of your files are"
     /// is a dialog nobody wrote for this moment.
     @Test("The question offers two real outcomes and counts properly")
