@@ -80,8 +80,15 @@ import WellkeptCore
     /// the page under a sentence still claiming there are two.
     @Test func helpCountsTheDeparturesRatherThanStatingTwo() throws {
         let article = try #require(HelpLibrary.all.first { $0.id == "never" })
-        #expect(article.searchText.contains("Two things, and there is nothing else."))
-        #expect(Privacy.Departure.allCases.count == 2)
+        // ⚠️ The page counts from the register, and so must this. Asserting the literal "Two
+        // things" was itself the mistake the test's own name warns about — it went red on
+        // 2026-08-30 when `wellkeptUpdateCheck` was removed for describing an updater nobody built,
+        // which is exactly the change this test should have waved through.
+        let spelled = ["Nothing", "One thing", "Two things", "Three things"]
+        let count = Privacy.Departure.allCases.count
+        let expected = count < spelled.count ? spelled[count] : "\(count) things"
+        #expect(article.searchText.contains("\(expected), and there is nothing else."))
+        #expect(count >= 1, "the register is empty — either something was lost, or the app stopped talking to anything at all")
     }
 }
 

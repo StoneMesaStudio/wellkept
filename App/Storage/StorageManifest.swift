@@ -77,7 +77,6 @@ enum StorageManifest {
         static let checkAppUpdates = Privacy.Departure.appUpdateCheck.settingsKey
 
         /// Whether Wellkept may check for a newer Wellkept. Same shape, same register.
-        static let checkWellkeptUpdates = Privacy.Departure.wellkeptUpdateCheck.settingsKey
 
         /// What happens to a quarantined item at thirty days — `manual` or `auto`.
         ///
@@ -99,7 +98,6 @@ enum StorageManifest {
             fullDiskAccessAsked,
             backupDestination,
             checkAppUpdates,
-            checkWellkeptUpdates,
             quarantineExpiry,
         ]
     }

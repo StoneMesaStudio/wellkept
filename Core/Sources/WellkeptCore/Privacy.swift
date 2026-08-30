@@ -93,8 +93,15 @@ public enum Privacy {
         /// version.
         case appUpdateCheck
 
-        /// Asking Stone Mesa Studio whether a newer Wellkept exists.
-        case wellkeptUpdateCheck
+        // ⚠️ **There was a `wellkeptUpdateCheck` case here, and it was removed on 2026-08-30
+        // because it described something the app does not do.** Wellkept has no updater: no
+        // Sparkle, no appcast, no call home of any kind. The register's rule is that anything
+        // leaving this Mac must appear here — and the converse matters just as much. A switch in
+        // Settings for a departure that never happens tells a person we send something we do not,
+        // and invites them to "turn off" a thing that was never on. An app whose whole argument is
+        // that it says what it actually does cannot carry a promise about a feature nobody built.
+        //
+        // If an updater is ever added, this case comes back **with** it, in the same commit.
 
         public var id: String { rawValue }
 
@@ -102,7 +109,6 @@ public enum Privacy {
         public var title: String {
             switch self {
             case .appUpdateCheck:      String(localized: "Checking whether your apps are current")
-            case .wellkeptUpdateCheck: String(localized: "Checking whether Wellkept has an update")
             }
         }
 
@@ -120,11 +126,6 @@ public enum Privacy {
                     version of an app is. Asking necessarily tells them a copy is installed \
                     somewhere. Nothing about you or about this Mac goes with the question.
                     """)
-            case .wellkeptUpdateCheck:
-                String(localized: """
-                    Wellkept asks Stone Mesa Studio whether a newer Wellkept exists, and sends the \
-                    version it is now. Nothing about you or about this Mac goes with the question.
-                    """)
             }
         }
 
@@ -141,11 +142,6 @@ public enum Privacy {
                     just says it does not know whether any of them is current, rather than telling \
                     you.
                     """)
-            case .wellkeptUpdateCheck:
-                String(localized: """
-                    Off, Wellkept will not tell you when a new version comes out. Everything else \
-                    works exactly the same.
-                    """)
             }
         }
 
@@ -160,7 +156,6 @@ public enum Privacy {
         public var settingsKey: String {
             switch self {
             case .appUpdateCheck:      "checkAppUpdates"
-            case .wellkeptUpdateCheck: "checkWellkeptUpdates"
             }
         }
 

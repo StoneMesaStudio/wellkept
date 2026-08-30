@@ -106,7 +106,9 @@ struct WelcomePageContentTests {
     /// that leaves this Mac shows up here the day its case is added, whether or not anybody
     /// remembered to edit the welcome screen.
     @Test func thePageIsDrivenByTheRegisterRatherThanAList() {
-        #expect(Privacy.Departure.allCases.count == 2)
+        // ⚠️ Not a literal count. The point of this test is that the page follows the register, so
+        // pinning the register's size here contradicts it — and it did, on 2026-08-30.
+        #expect(!Privacy.Departure.allCases.isEmpty)
         for departure in Privacy.Departure.allCases {
             #expect(!departure.title.isEmpty)
             #expect(!departure.whatLeaves.isEmpty)

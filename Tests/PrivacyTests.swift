@@ -86,7 +86,10 @@ import WellkeptCore
     /// checking whether Wellkept has an update. A third one changes this number, and changing this
     /// number is meant to be a decision rather than an accident.
     @Test func thereAreExactlyTwoThingsThatLeave() {
-        #expect(Privacy.Departure.allCases == [.appUpdateCheck, .wellkeptUpdateCheck])
+        // ⚠️ One departure, not two. `wellkeptUpdateCheck` was removed on 2026-08-30: the app has
+        // no updater, and a register that names a departure nobody built is as dishonest as one
+        // that omits a real departure. If an updater arrives, this list grows in the same commit.
+        #expect(Privacy.Departure.allCases == [.appUpdateCheck])
     }
 
     /// Every departure answers all four questions: what it is called, what actually goes out, what
@@ -126,14 +129,12 @@ import WellkeptCore
         let keys = Privacy.Departure.allCases.map(\.settingsKey)
         #expect(Set(keys).count == keys.count)
         #expect(Privacy.Departure.appUpdateCheck.settingsKey == "checkAppUpdates")
-        #expect(Privacy.Departure.wellkeptUpdateCheck.settingsKey == "checkWellkeptUpdates")
     }
 
     /// Raw values are storage — they go into preferences and into anything that records a consent
     /// answer. Renaming one is a migration; renaming a title is a one-line edit.
     @Test func rawValuesArePermanentAndTitlesAreSeparate() {
         #expect(Privacy.Departure.appUpdateCheck.rawValue == "appUpdateCheck")
-        #expect(Privacy.Departure.wellkeptUpdateCheck.rawValue == "wellkeptUpdateCheck")
         for departure in Privacy.Departure.allCases {
             #expect(departure.title != departure.rawValue)
         }
