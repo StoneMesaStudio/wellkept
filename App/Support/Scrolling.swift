@@ -107,6 +107,18 @@ private struct ReadableColumn: ViewModifier {
 extension View {
     /// The 700-pt readable column, centred in whatever pane it is given. One number across the
     /// house; a full-screen line of text on a 34-inch monitor is not generous, it is unreadable.
+    ///
+    /// ⚠️ **The width does NOT scale with the type, and that is load-bearing.** Making it
+    /// `AppFont.pt(width)` looks obviously right — a readable measure is characters per line, not
+    /// points, so a 700-pt column holds half as many words at 200% text. It was tried on
+    /// 2026-08-30 and two tests killed it inside a minute: `ShellShot`'s "On a wide window the
+    /// content stays in the readable column" and `HardwareShot`'s 200% twin both render at 2000
+    /// points and fail if anything draws in the right-hand tenth. A column that doubles reaches
+    /// the edge of a large display, which is the exact failure they exist to catch.
+    ///
+    /// So the narrow ribbon at 200% text is the house's decision, not an oversight — and it is
+    /// the same on all seven faces. Reopening it means changing `~/Sites/DESIGN.md` §210 and both
+    /// probes, for all six apps at once. Do not do it as a side effect of some other fix.
     func readableColumn(_ width: CGFloat = Layout.readableColumn) -> some View {
         modifier(ReadableColumn(width: width))
     }

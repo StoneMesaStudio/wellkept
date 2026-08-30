@@ -36,26 +36,35 @@ import WellkeptCore
 @MainActor
 struct WelcomeShot {
 
-    /// The real sheet size from `SetupFlow`, typed out rather than read from `SheetMetrics`.
+    /// The canvas: the window's own opening size, because setup covers the whole window.
     ///
-    /// `SheetMetrics` shrinks a sheet to fit the screen it will open on, which is the right
-    /// behaviour in the app and the wrong one here: a picture whose size depends on the build
-    /// machine's display is a picture two people cannot compare.
-    private let sheet = CGSize(width: 560, height: 520)
+    /// ⚠️ **This was `CGSize(width: 560, height: 520)` — the sheet frame `SetupFlow` used to
+    /// assert.** These pictures were therefore an accurate photograph of the bug: at 560 pt the
+    /// welcome text clipped mid-sentence behind a scroll bar, and nobody read the picture as a
+    /// fault because the harness and the app agreed with each other. They agreed on the wrong
+    /// thing. `SetupFlow` now fills its pane, so the canvas is the window.
+    ///
+    /// `Layout.windowDefault` is a constant, not a measurement of this Mac's display — which is
+    /// the property that matters here. A picture whose size depends on the build machine's screen
+    /// is a picture two people cannot compare, and that is why `SheetMetrics` is still not read.
+    private let canvas = Layout.windowDefault
 
-    /// The page inside the chrome `SetupFlow` puts around it.
+    /// The page inside the chrome `SetupFlow` puts around it. **Mirrors `SetupFlow.body`** — if
+    /// that gains or loses a modifier, this has to follow, or the pictures stop being of the app.
     private var page: some View {
         VStack(alignment: .leading, spacing: 0) {
             WelcomeView {}
                 .padding(Space.page)
+                .readableColumn()
         }
+        .fillsPane()
         .pageGround()
     }
 
     private func bothAppearances(_ view: some View, _ number: Int, _ name: String) {
-        ShotWriter.write(view, width: sheet.width, height: sheet.height,
+        ShotWriter.write(view, width: canvas.width, height: canvas.height,
                          name: "\(number)-\(name)-light", scheme: .light)
-        ShotWriter.write(view, width: sheet.width, height: sheet.height,
+        ShotWriter.write(view, width: canvas.width, height: canvas.height,
                          name: "\(number + 1)-\(name)-dark", scheme: .dark)
     }
 

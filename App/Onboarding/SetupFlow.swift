@@ -104,11 +104,23 @@ struct SetupFlow: View {
         VStack(alignment: .leading, spacing: 0) {
             content
                 .padding(Space.page)
+                // ⚠️ **A page, not a sheet.** This used to carry
+                // `.frame(width: SheetMetrics.width(560), height: SheetMetrics.height(520))` —
+                // sheet chrome on something `RootView` renders as a full-window cover, and
+                // `SheetMetrics` measures against the *screen*, never the window, so dragging the
+                // window wider bought it nothing. The result was a 560-pt island in an 1800-pt
+                // field, with half the welcome text behind a scroll bar and a sentence sliced
+                // through the middle. Reported from a real screenshot, 2026-08-30.
+                //
+                // The house answer is the one every section face already uses: fill the pane and
+                // let the 700-pt readable column do the narrowing. Setup was the only screen in
+                // the app asserting its own size.
+                .readableColumn()
                 // Fade in; the outgoing step leaves instantly. Never a slide between our own
                 // screens — see `AnyTransition.faceFade`.
                 .faceTransition(step)
         }
-        .frame(width: SheetMetrics.width(560), height: SheetMetrics.height(520))
+        .fillsPane()
         .pageGround()
     }
 
