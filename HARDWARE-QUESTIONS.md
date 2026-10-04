@@ -16,6 +16,7 @@ contradicted each other on it and the whole section hangs on the answer.
 | **Crashes / panics** | ⚠️ ~8 days of history only. 108 files here, of which 74 are performance notices where nothing crashed. Kernel panics are readable only by administrator accounts — **by account type, not by Full Disk Access, and no permission fixes it.** |
 | **Disk speed** | ⚠️ Read speed repeats to within 1.3%. Write speed swung 1,500 → 3,200 MB/s in an hour. macOS filed a report against the benchmark for exceeding the ~2 GB/day write budget it allows a well-behaved app. |
 | **Full Disk Access** | ✅ **Nothing in Hardware needs it.** The section works completely for someone who taps "Finish later". |
+| **How long the whole check takes** | ⏱️ **197 ms**, median of 15 timed runs against the shipping sources; range 130–217 ms. **About 90% of it is the one `system_profiler SPPowerDataType` subprocess** behind the battery row; everything else is IOKit registry and sysctl reads. **On a Mac with no battery the check is 11 ms**, because `BatteryReader.facts()` returns at the presence guard before that subprocess runs — so the desktop case is 18x faster, and it is untested against anything that assumes the check is visible. Measured 2026-08-30 after the check was reported as untrustworthy *because* it returned instantly. It is not cached: `check()` re-runs the whole sweep every press, and the reading log carries a separate batch per run. |
 
 ## Decided
 
