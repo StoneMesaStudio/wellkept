@@ -1,12 +1,12 @@
 # Wellkept — the shell: full question set
 
-Working document, 2026-08-26. Assembled by 12 agents from the build plan, `~/Sites/DESIGN.md`,
+Working document, 2026-08-26. Assembled by 12 agents from the build plan, `~/Development/Applications/DESIGN.md`,
 the Wellkept memory bank, and the six sibling Swift apps. It was never meant to be read start to
 finish — the questions were put a few at a time, in this order, and the answers recorded here.
 
 ## Two corrections found while mining
 
-1. **Scout (`~/Sites/scout`) is the plumbing template, not Lode or Waypoint.** It is the only
+1. **Scout (`~/Development/Applications/Scout`) is the plumbing template, not Lode or Waypoint.** It is the only
    shipped, unsandboxed, notarized, Developer-ID, direct-download macOS app in the house. It
    already has `bin/release.sh` (hardened-runtime check → notarytool → stapler → DMG),
    `App/Uninstaller.swift`, `App/Permissions.swift` and SMAppService register/unregister.

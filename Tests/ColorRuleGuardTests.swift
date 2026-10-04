@@ -3,7 +3,7 @@ import Foundation
 
 /// ⭐ **The readability rule, enforced by something other than good intentions.**
 ///
-/// `~/Sites/DESIGN.md` §3.5 states it, measured on macOS 26.6.2: AppKit's `secondaryLabelColor`
+/// `~/Development/Applications/DESIGN.md` §3.5 states it, measured on macOS 26.6.2: AppKit's `secondaryLabelColor`
 /// scores **3.95∶1** on white against Apple's own 4.5∶1 bar, and `tertiaryLabelColor` **1.88∶1** —
 /// which fails even the 3∶1 large-text bar. Neither moves under the accessibility high-contrast
 /// appearance. `Theme.textSecondary` (0.78 of `.primary`) and `Theme.textTertiary` (0.62) replace

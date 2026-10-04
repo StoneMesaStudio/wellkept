@@ -117,7 +117,7 @@ extension View {
     /// the edge of a large display, which is the exact failure they exist to catch.
     ///
     /// So the narrow ribbon at 200% text is the house's decision, not an oversight — and it is
-    /// the same on all seven faces. Reopening it means changing `~/Sites/DESIGN.md` §210 and both
+    /// the same on all seven faces. Reopening it means changing `~/Development/Applications/DESIGN.md` §210 and both
     /// probes, for all six apps at once. Do not do it as a side effect of some other fix.
     func readableColumn(_ width: CGFloat = Layout.readableColumn) -> some View {
         modifier(ReadableColumn(width: width))
